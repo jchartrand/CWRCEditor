@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+	<head>
+		<link type="text/css" rel="stylesheet" href="resources/css/style.css" />
+		<link type="text/css" rel="stylesheet" href="resources/smoothness/jquery-ui-1.8.13.custom.css" />
+		<script type="text/javascript" src="resources/js/jquery/jquery-1.6.1.js"></script>
+		<script type="text/javascript" src="resources/js/jquery/jquery-ui-1.8.13.custom.min.js"></script>
+		<script type="text/javascript" src="resources/js/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
+		<script type="text/javascript" src="resources/js/editor.js"></script>
+		<script type="text/javascript" src="resources/js/dialog.js"></script>
+	</head>
+	<body>
+		<div id="wrap">
+			<div id="header">
+				<h1>Entities Editor</h1>
+			</div>
+			<div id="leftcol">
+				<div id="entities">
+					<div id="sortBy">
+						<span>Sort By</span>
+						<input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input>
+						<input type="radio" id="category" name="sortBy"><label for="category">Category</label></input>
+					</div>
+					<ul></ul>
+				</div>
+				<div id="separator" class="arrowLeft" title="Click to expand/contract"></div>
+			</div>
+			<div id="main">
+				<form method="post" action="">
+					<textarea id="editor" name="editor" class="tinymce"><p>As World War II loomed after 1938, with the Japanese invasion of China and the aggressions of Nazi Germany, FDR gave strong diplomatic and financial support to China and Britain, while remaining officially neutral. His goal was to make America the "Arsenal of Democracy" which would supply munitions to the Allies. In March 1941, Roosevelt, with Congressional approval, provided Lend-Lease aid to the countries fighting against Nazi Germany with Britain. With very strong nation support he made war on Japan and Germany after the the Japanese attack on Pearl Harbor on December 7, 1941, calling it a "date which will live in infamy". He supervised the mobilization of the US economy to support the Allied war effort. Unemployment dropped to 2%, relief programs largely ended, and the industrial economy grew rapidly to new heights as millions of people moved to new jobs in war centers, and 16 million men and 300,000 women were drafted or volunteered for military service.</p><p>As World War II loomed after 1938, with the Japanese invasion of China and the aggressions of Nazi Germany, FDR gave strong diplomatic and financial support to China and Britain, while remaining officially neutral. His goal was to make America the "Arsenal of Democracy" which would supply munitions to the Allies. In March 1941, Roosevelt, with Congressional approval, provided Lend-Lease aid to the countries fighting against Nazi Germany with Britain. With very strong nation support he made war on Japan and Germany after the the Japanese attack on Pearl Harbor on December 7, 1941, calling it a "date which will live in infamy". He supervised the mobilization of the US economy to support the Allied war effort. Unemployment dropped to 2%, relief programs largely ended, and the industrial economy grew rapidly to new heights as millions of people moved to new jobs in war centers, and 16 million men and 300,000 women were drafted or volunteered for military service.</p><p>As World War II loomed after 1938, with the Japanese invasion of China and the aggressions of Nazi Germany, FDR gave strong diplomatic and financial support to China and Britain, while remaining officially neutral. His goal was to make America the "Arsenal of Democracy" which would supply munitions to the Allies. In March 1941, Roosevelt, with Congressional approval, provided Lend-Lease aid to the countries fighting against Nazi Germany with Britain. With very strong nation support he made war on Japan and Germany after the the Japanese attack on Pearl Harbor on December 7, 1941, calling it a "date which will live in infamy". He supervised the mobilization of the US economy to support the Allied war effort. Unemployment dropped to 2%, relief programs largely ended, and the industrial economy grew rapidly to new heights as millions of people moved to new jobs in war centers, and 16 million men and 300,000 women were drafted or volunteered for military service.</p><p>As World War II loomed after 1938, with the Japanese invasion of China and the aggressions of Nazi Germany, FDR gave strong diplomatic and financial support to China and Britain, while remaining officially neutral. His goal was to make America the "Arsenal of Democracy" which would supply munitions to the Allies. In March 1941, Roosevelt, with Congressional approval, provided Lend-Lease aid to the countries fighting against Nazi Germany with Britain. With very strong nation support he made war on Japan and Germany after the the Japanese attack on Pearl Harbor on December 7, 1941, calling it a "date which will live in infamy". He supervised the mobilization of the US economy to support the Allied war effort. Unemployment dropped to 2%, relief programs largely ended, and the industrial economy grew rapidly to new heights as millions of people moved to new jobs in war centers, and 16 million men and 300,000 women were drafted or volunteered for military service.</p></textarea>
+				</form>
+			</div>
+		</div>
+		<div id="messageDialog">
+			<p></p>
+		</div>
+		<div id="searchDialog">
+			<label for="query">Search</label>
+			<input type="text" name="query" />
+			<div id="results"><ul></ul></div>
+		</div>
+		<div id="noteDialog">
+			<textarea name="note"></textarea>
+		</div>
+		<div id="dateDialog">
+			<input type="text" id="datePicker" />
+			<p>Format: yyyy-mm-dd<br/>e.g. 2010-10-05</p>
+		</div>
+		<div id="dialogEvents" />
+	</body>
+</html>

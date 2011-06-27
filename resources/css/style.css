@@ -1,0 +1,236 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 10px;
+}
+
+h1 {
+	font-size: 14px;
+}
+
+h2 {
+	font-size: 12px;
+}
+
+h1, h2 {
+	margin: 0;
+}
+
+textarea {
+	overflow: auto;
+	resize: none;
+}
+
+#wrap {
+	margin: 0;
+	padding: 0;
+}
+
+#header {
+	height: 17px;
+	padding: 5px 10px;
+	background-color: #e2e2e0;
+	border-bottom: 1px solid #ccc;
+}
+
+#main {
+	margin: 0 0 0 250px;
+}
+
+#leftcol {
+	float: left;
+	width: 250px;
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+}
+
+#separator {
+	float: left;
+	width: 5px;
+	background-color: #e2e2e0;
+	border-left: 1px solid #ccc;
+	background-repeat: no-repeat;
+	background-position: center;
+	cursor: pointer;
+}
+
+.arrowLeft {
+	background-image: url('../img/arrow_left.gif');
+}
+
+.arrowRight {
+	background-image: url('../img/arrow_right.gif');
+}
+
+#sortBy {
+	padding: 3px 10px;
+}
+
+#entities {
+	float: left;
+	width: 244px;
+	overflow: auto;
+}
+
+#entities ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+#entities ul li .box {
+	width: 6px;
+	height: 18px;
+	margin-right: 2px;
+	display: inline-block;
+}
+
+#entities ul li .title {
+	font-size: 11px;
+	vertical-align: 4px;
+}
+
+#entities ul li .info {
+	display: none;
+	padding: 0 6px 6px 6px;
+}
+
+#entities ul li .info ul {
+	list-style: none;
+	background-color: #fff;
+	padding: 2px;
+	color: #000;
+	max-height: 160px;
+	overflow: auto;
+}
+
+#entities ul li .info ul li {
+	height: auto;
+	font-size: 11px;
+}
+
+#entities ul li .info ul li:hover {
+	cursor: auto;
+	background-color: #fff;
+}
+
+#entities ul li {
+	height: 18px;
+	margin-bottom: 2px;
+}
+
+#entities ul li.selected {
+	color: #ffffff;
+	height: auto;
+}
+
+#entities ul li:hover {
+	cursor: pointer;
+	background-color: #eee;
+}
+
+#results {
+	margin: 10px 0;
+	border: 1px solid #fff;
+}
+
+#results ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+#results ul li {
+	font-size: 10px;
+	background-color: #fff;
+	padding: 2px 5px;
+	border-bottom: 1px solid #ccc;
+}
+
+#results ul li.last {
+	border: none;
+}
+
+#results ul li:hover {
+	background-color: #F0F0EE;
+	cursor: pointer;
+}
+
+#results ul li.selected {
+	background-color: #9ac6eb;
+}
+
+#results span {
+	display: block;
+}
+
+.unselectable {
+   -moz-user-select: none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   -o-user-select: none;
+   user-select: none;
+}
+
+#noteDialog textarea {
+	width: 275px;
+	height: 150px;
+}
+
+#noteDialog button, #dateDialog button {
+	margin-top: 5px;
+	float: right;
+}
+
+#dialogEvents, #searchDialog, #noteDialog, #dateDialog {
+	display: none;
+}
+
+#datePicker {
+	border: 1px solid #ccc;
+}
+
+.person {
+	background-color: #FF0000;
+}
+
+.date {
+	background-color: #FF7400;
+}
+
+.place {
+	background-color: #009999;
+}
+
+.event {
+	background-color: #00CC00;
+}
+
+.org {
+	background-color: #3914AF; 
+}
+
+.bibref {
+	background-color: #CD0074;
+}
+
+.note {
+	background-color: #0D56A6;
+}
+
+/* tinymce style override */
+.defaultSkin table.mceLayout tr.mceFirst td {
+	border: 0 none !important;
+}
+
+/* used by the entity plugin */
+.entityButton img {
+	height: 16px !important;
+	width: 16px !important;
+	margin: 2px !important;
+}
+
+.entityIcon .mceIcon img {
+	margin: 2px 0 0 2px;
+}
