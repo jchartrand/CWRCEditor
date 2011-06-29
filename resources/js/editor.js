@@ -18,9 +18,9 @@ $(function() {
 		finalizeEntity(editor.currentEntity, info);
 	});
 	
-	var cssLocation = 'resources/css/editor.css';
+	var cssLocation = 'css/editor.css';
 //	if ($.browser.msie) {
-//		cssLocation = 'resources/css/editor_ie.css';
+//		cssLocation = 'css/editor_ie.css';
 //	}
 	
 	var editor_oninit = function(ed) {
@@ -500,7 +500,7 @@ $(function() {
 	
 	$('#editor').tinymce({
 		
-		script_url : 'resources/js/tinymce/jscripts/tiny_mce/tiny_mce.js',
+		script_url : 'js/tinymce/jscripts/tiny_mce/tiny_mce.js',
 		theme: 'advanced',
 		
 		content_css: cssLocation,
@@ -518,14 +518,14 @@ $(function() {
 			
 			ed.addButton('removeentity', {
 				title: 'Remove Entity',
-				image: 'resources/img/script_delete.png',
+				image: 'img/script_delete.png',
 				'class': 'entityButton',
 				cmd: 'remove_entity'
 			});
 			
 //			ed.addButton('toggleeditor', {
 //				title: 'Show Advanced Mode',
-//				image: 'resources/img/html.png',
+//				image: 'img/html.png',
 //				'class': 'entityButton',
 //				cmd: 'toggle_editor'
 //			});

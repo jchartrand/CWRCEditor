@@ -219,7 +219,7 @@ var Dialog = function(config) {
 				maxDate: new Date(2020, 11, 31),
 				showOn: 'button',
 				buttonText: 'Date Picker',
-				buttonImage: 'resources/img/calendar.png',
+				buttonImage: 'img/calendar.png',
 				buttonImageOnly: true,
 				onSelect: doDateSelect
 			});
