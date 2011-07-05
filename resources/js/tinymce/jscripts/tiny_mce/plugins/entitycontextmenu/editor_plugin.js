@@ -117,46 +117,79 @@
 
 			var d = se.isCollapsed();
 			var url = t.url+'/../../../../../../img/';
+			var tagMenu = m.addMenu({
+				title: 'Tags',
+				icon_src: url+'tag.png'
+			});
+			tagMenu.add({
+				title: 'Paragraph',
+				icon_src: url+'para.gif',
+				onclick : function() {
+					ed.execCommand('addCustomTag', 'para');
+				}
+			}).setDisabled(d);
+			tagMenu.add({
+				title: 'Heading',
+				icon_src: url+'heading.png',
+				onclick : function() {
+					ed.execCommand('addCustomTag', 'head');
+				}
+			}).setDisabled(d);
+			tagMenu.add({
+				title: 'Emphasized',
+				icon_src: url+'text_italic.png',
+				onclick : function() {
+					ed.execCommand('addCustomTag', 'emph');
+				}
+			}).setDisabled(d);
+			tagMenu.add({
+				title: 'Title',
+				icon_src: url+'title.gif',
+				onclick : function() {
+					ed.execCommand('addCustomTag', 'title');
+				}
+			}).setDisabled(d);
+			tagMenu.add({
+				title: 'Quotation',
+				icon_src: url+'quote.png',
+				onclick : function() {
+					ed.execCommand('addCustomTag', 'quote');
+				}
+			}).setDisabled(d);
+			m.addSeparator();
 			m.add({
 				title: 'Add Person',
 				icon_src: url+'user.png',
-				'class': 'entityIcon',
 				cmd: 'add_person'
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Place',
 				icon_src: url+'world.png',
-				'class': 'entityIcon',
 				cmd: 'add_place'
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Date',
 				icon_src: url+'calendar.png',
-				'class': 'entityIcon',
 				cmd: 'add_date'
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Event',
 				icon_src: url+'cake.png',
-				'class': 'entityIcon',
 				cmd: 'add_event'
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Organization',
 				icon_src: url+'building.png',
-				'class': 'entityIcon',
 				cmd: 'add_org'
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Bib. Ref.',
 				icon_src: url+'book.png',
-				'class': 'entityIcon',
 				cmd: 'add_bibref'
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Note',
 				icon_src: url+'pencil.png',
-				'class': 'entityIcon',
 				cmd: 'add_note'
 			}).setDisabled(d);
 			d = ed.currentEntity == null;
@@ -164,7 +197,6 @@
 			m.add({
 				title: 'Remove Entity',
 				icon_src: url+'delete.png',
-				'class': 'entityIcon',
 				cmd: 'remove_entity'
 			}).setDisabled(d);
 

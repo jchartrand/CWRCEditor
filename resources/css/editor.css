@@ -1,5 +1,7 @@
 body {
-	font-size: 12px;
+	font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+	font-size: 13px;
+	color: #333;
 }
 
 .entity {
@@ -49,4 +51,36 @@ body {
 
 .note {
 	border-color: #0D56A6;
+}
+
+.paraTag {
+	display: block;
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+
+.titleTagQuotes:before, .quoteTagShort:before {
+	content: open-quote;
+}
+
+.titleTagQuotes:after, .quoteTagShort:after {
+	content: close-quote;
+}
+
+.titleTagItalics {
+	font-style: italic;
+}
+
+.quoteTagLong {
+	display: block;
+	margin-left: 25px;
+}
+
+.headTag {
+	font-size: 120%;
+	font-weight: bold;
+}
+
+.emphTag {
+	font-style: italic;
 }

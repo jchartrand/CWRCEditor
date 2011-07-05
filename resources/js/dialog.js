@@ -128,6 +128,25 @@ var Dialog = function(config) {
 	
 	return {
 		init: function() {
+			$(document.body).append(''+
+				'<div id="messageDialog">'+
+				    '<p></p>'+
+				'</div>'+
+				'<div id="searchDialog">'+
+				    '<label for="query">Search</label>'+
+				    '<input type="text" name="query" />'+
+				    '<div id="results"><ul></ul></div>'+
+				'</div>'+
+				'<div id="noteDialog">'+
+				    '<textarea name="note"></textarea>'+
+				'</div>'+
+				'<div id="dateDialog">'+
+				    '<input type="text" id="datePicker" />'+
+				    '<p>Format: yyyy-mm-dd<br/>e.g. 2010-10-05</p>'+
+				'</div>'+
+				'<div id="dialogEvents" />'
+			);
+			
 			dialogEvents = $('#dialogEvents');
 			
 			message = $('#messageDialog');
@@ -150,7 +169,7 @@ var Dialog = function(config) {
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
-				open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+				open: function(event, ui) { $('#searchDialog .ui-dialog-titlebar-close').hide(); },
 				height: 450,
 				width: 300,
 				autoOpen: false,
@@ -172,7 +191,7 @@ var Dialog = function(config) {
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
-				open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+				open: function(event, ui) { $('#noteDialog .ui-dialog-titlebar-close').hide(); },
 				height: 250,
 				width: 300,
 				autoOpen: false,
@@ -192,7 +211,7 @@ var Dialog = function(config) {
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
-				open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+				open: function(event, ui) { $('#dateDialog .ui-dialog-titlebar-close').hide(); },
 				height: 250,
 				width: 300,
 				autoOpen: false,

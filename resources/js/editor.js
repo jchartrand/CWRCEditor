@@ -537,9 +537,9 @@ $(function() {
 		extended_valid_elements: 'entity[class|name]',
 		custom_elements: '~entity',
 		
-		plugins: 'save,entitycontextmenu,entitybutton',
-		
-		theme_advanced_buttons1: 'save,|,bold,italic,underline,|,justifyleft,justifycenter,justifyright,justifyfull,formatselect,|,entitybutton,removeentity,|,code',
+		plugins: 'save,entitycontextmenu,entitybutton,customtags,viewsource',
+		theme_advanced_blockformats: 'p,h1,blockquote',
+		theme_advanced_buttons1: 'save,|,customtags,|,entitybutton,removeentity,|,viewsource',
 		theme_advanced_buttons2: '',
 		theme_advanced_buttons3: '',
 		theme_advanced_toolbar_location: 'top',

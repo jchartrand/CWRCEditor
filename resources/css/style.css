@@ -3,6 +3,7 @@ body {
 	padding: 0;
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
 	font-size: 10px;
+	color: #333;
 }
 
 h1 {
@@ -20,6 +21,10 @@ h1, h2 {
 textarea {
 	overflow: auto;
 	resize: none;
+}
+
+label {
+	margin-right: 5px;
 }
 
 #wrap {
@@ -219,9 +224,13 @@ textarea {
 	background-color: #0D56A6;
 }
 
-/* tinymce style override */
+/* tinymce style overrides */
 .defaultSkin table.mceLayout tr.mceFirst td {
 	border: 0 none !important;
+}
+
+.mceMenuItem .mceIcon img {
+	margin: 2px 0 0 2px;
 }
 
 /* used by the entity plugin */
@@ -231,6 +240,14 @@ textarea {
 	margin: 2px !important;
 }
 
-.entityIcon .mceIcon img {
-	margin: 2px 0 0 2px;
+#editor_viewSourceButton {
+	height: 20px !important;
+	width: 34px !important;
+	margin: 2px !important;
+}
+
+#editor_viewSourceButton img {
+	height: 20px !important;
+	width: 32px !important;
+	margin: 2px !important;
 }

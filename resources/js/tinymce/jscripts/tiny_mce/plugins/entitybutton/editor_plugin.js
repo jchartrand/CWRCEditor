@@ -18,43 +18,36 @@
 					m.add({
 						title: 'Add Person',
 						icon_src: url+'user.png',
-						'class': 'entityIcon',
 						cmd: 'add_person'
 					});
 					m.add({
 						title: 'Add Place',
 						icon_src: url+'world.png',
-						'class': 'entityIcon',
 						cmd: 'add_place'
 					});
 					m.add({
 						title: 'Add Date',
 						icon_src: url+'calendar.png',
-						'class': 'entityIcon',
 						cmd: 'add_date'
 					});
 					m.add({
 						title: 'Add Event',
 						icon_src: url+'cake.png',
-						'class': 'entityIcon',
 						cmd: 'add_event'
 					});
 					m.add({
 						title: 'Add Organization',
 						icon_src: url+'building.png',
-						'class': 'entityIcon',
 						cmd: 'add_org'
 					});
 					m.add({
 						title: 'Add Bib. Ref.',
 						icon_src: url+'book.png',
-						'class': 'entityIcon',
 						cmd: 'add_bibref'
 					});
 					m.add({
 						title: 'Add Note',
 						icon_src: url+'pencil.png',
-						'class': 'entityIcon',
 						cmd: 'add_note'
 					});
 				});
