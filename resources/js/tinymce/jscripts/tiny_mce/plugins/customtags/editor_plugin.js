@@ -10,7 +10,10 @@
 			ed.addCommand('addCustomTag', function(val) {
 				var se = t.editor.selection;
 
-				if (se.isCollapsed()) return;
+				if (se.isCollapsed()) {
+					ed.execCommand('showError', 0);
+					return;
+				}
 				
 				// reset values
 				$('select[name="lang"]')[0].value = '';
@@ -20,13 +23,15 @@
 				
 				t.currentVal = val;
 				if (val == 'head') {
-					t.addTag('span', {
+					t.editor.execCommand('addStructureTag', {
 						'class': 'headTag'
 					});
+					t.editor.execCommand('updateStructureTree', true);
 				} else if (val == 'emph') {
-					t.addTag('span', {
+					t.editor.execCommand('addStructureTag', {
 						'class': 'emphTag'
 					});
+					t.editor.execCommand('updateStructureTree', true);
 				} else if (val != '') {
 					if (val == 'title') {
 						$('#lang').hide();
@@ -144,19 +149,19 @@
 						var ref = $('input[name="ref"]')[0].value;
 						
 						if (t.currentVal == 'para') {
-							t.addTag('span', {
+							t.editor.execCommand('addStructureTag', {
 								'class': 'paraTag',
 								lang: lang
 							});
 						} else if (t.currentVal == 'title') {
 							if (level == 'a' || level == 'u') {
-								t.addTag('span', {
+								t.editor.execCommand('addStructureTag', {
 									'class': 'titleTagQuotes',
 									level: level,
 									ref: ref
 								});
 							} else if (level == 'm' || level == 'j' || level == 's') {
-								t.addTag('span', {
+								t.editor.execCommand('addStructureTag', {
 									'class': 'titleTagItalics',
 									level: level,
 									ref: ref
@@ -168,12 +173,12 @@
 						} else if (t.currentVal == 'quote') {
 							var selection = t.editor.selection.getContent();
 							if (selection.length > 250) {
-								t.addTag('span', {
+								t.editor.execCommand('addStructureTag', {
 									'class': 'quoteTagLong',
 									lang: lang
 								});
 							} else {
-								t.addTag('span', {
+								t.editor.execCommand('addStructureTag', {
 									'class': 'quoteTagShort',
 									lang: lang
 								});
@@ -186,18 +191,6 @@
 					}
 				}
 			});
-		},
-		addTag: function(tag, attributes) {
-			var open_tag, close_tag;
-			var selection = this.editor.selection.getContent();
-			open_tag = '<'+tag;
-			for (var key in attributes) {
-				open_tag += ' '+key+'="'+attributes[key]+'"';
-			}
-			open_tag += '>';
-			close_tag = '</'+tag+'>';
-			var content = open_tag + selection + close_tag;
-			this.editor.execCommand('mceReplaceContent', false, content);
 		},
 		createControl: function(n, cm) {
 			if (n == 'customtags') {

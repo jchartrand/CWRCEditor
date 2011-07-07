@@ -3,6 +3,8 @@ $(function() {
 	
 	var entities = {}; // entities store
 	
+	var structs = {}; // structs store
+	
 	// possible results when trying to add entity
 	var NO_SELECTION = 0;
 	var NO_COMMON_PARENT = 1;
@@ -24,6 +26,7 @@ $(function() {
 //	}
 	
 	var editor_oninit = function(ed) {
+		ed.addCommand('showError', showError);
 		ed.addCommand('add_person', addPerson);
 		ed.addCommand('add_date', addDate);
 		ed.addCommand('add_place', addPlace);
@@ -32,6 +35,8 @@ $(function() {
 		ed.addCommand('add_bibref', addBibRef);
 		ed.addCommand('add_note', addNote);
 		ed.addCommand('remove_entity', removeEntity);
+		ed.addCommand('addStructureTag', addStructureTag);
+		ed.addCommand('updateStructureTree', updateStructureTree);
 		
 		// highlight tracking
 		ed.onMouseUp.add(doHighlightCheck);
@@ -53,7 +58,8 @@ $(function() {
 			
 			// delete keys check
 			if (evt.keyCode == 8 || evt.keyCode == 46) {
-				for (var key in entities) {
+				var key;
+				for (key in entities) {
 					var nodes = editor.dom.select('entity[name="'+key+'"]');
 					switch (nodes.length) {
 						case 0:
@@ -64,6 +70,13 @@ $(function() {
 							editor.dom.remove(nodes[0]);
 							delete entities[key];
 							removeFromEntitiesList(key);
+					}
+				}
+				for (key in structs) {
+					var struct = editor.dom.get('#'+key);
+					if (!struct) {
+						updateStructureTree();
+						break;
 					}
 				}
 			}
@@ -434,15 +447,15 @@ $(function() {
 	};
 	
 	var toggleEntitiesList = function() {
-		if ($('#main').css('marginLeft') == '5px') {
+		if ($('#main').css('marginLeft') == '6px') {
 			$('#main').css('marginLeft', '250px');
-			$('#entities').width(244);
+			$('#tabs').show();
 			$('#leftcol').width(250);
 			$('#separator').addClass('arrowLeft').removeClass('arrowRight');
 		} else {
-			$('#main').css('marginLeft', '5px');
-			$('#entities').width(0);
-			$('#leftcol').width(5);
+			$('#main').css('marginLeft', '6px');
+			$('#tabs').hide();
+			$('#leftcol').width(6);
 			$('#separator').addClass('arrowRight').removeClass('arrowLeft');
 		}
 	};
@@ -486,7 +499,52 @@ $(function() {
 		$('#'+editor.id+'_ifr').height(newHeight - 28);
 	};
 	
+	var addStructureTag = function(attributes) {
+		var id = tinymce.DOM.uniqueId('struct_');
+		attributes.id = id;
+		var open_tag, close_tag;
+		var selection = editor.selection.getContent();
+		open_tag = '<struct';
+		for (var key in attributes) {
+			open_tag += ' '+key+'="'+attributes[key]+'"';
+		}
+		open_tag += '>';
+		close_tag = '</struct>';
+		var content = open_tag + selection + close_tag;
+		editor.execCommand('mceReplaceContent', false, content);
+		structs[id] = attributes;
+		updateStructureTree();
+	};
+	
+	var updateStructureTree = function() {
+		var body = editor.dom.select('body');
+		$('#tree').jstree('delete_node', '#root');
+		var root = $('#tree').jstree('create_node', $('#tree'), 'first', {
+			data: 'Tags',
+			attr: {id: 'root'},
+			state: 'open'
+		});
+		doStructureTreeUpdate($(body).children(), root);
+	};
+	
+	var doStructureTreeUpdate = function(children, nodeParent) {
+		children.each(function(index, el) {
+			var newChildren = $(this).children();
+			var newNodeParent = nodeParent;
+			if ($(this).is('struct')) {
+				var isLeaf = newChildren.length > 0 ? 'open' : null;
+				newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
+					data: $(this).attr('class'),
+					state: isLeaf
+				});
+			}
+			doStructureTreeUpdate(newChildren, newNodeParent);
+		});
+	};
+	
 	$('#separator').click(toggleEntitiesList);
+	
+	$('#tabs').tabs();
 	
 	$('#sequence').button().click(function() {
 		updateEntitesList('sequence');
@@ -497,6 +555,19 @@ $(function() {
 		highlightEntity(editor.currentEntity);
 	});
 	$('#sortBy').buttonset();
+	
+	$('#tree').jstree({
+		core: {},
+		themeroller: {},
+		json_data: {
+			data: [{
+				data: 'Tags',
+				attr: {id: 'root'},
+				state: 'closed'
+			}]
+		},
+		plugins: ['json_data', 'themeroller']
+	});
 	
 	$('#editor').tinymce({
 		
@@ -534,8 +605,12 @@ $(function() {
 		doctype: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
 		element_format: 'xhtml',
 		
-		extended_valid_elements: 'entity[class|name]',
-		custom_elements: '~entity',
+//		forced_root_block : 'div',
+//		force_br_newlines: false,
+//		force_p_newlines: false,
+		
+		extended_valid_elements: 'entity[class|name],struct[class|level|ref|lang|id]',
+		custom_elements: '~entity,~struct',
 		
 		plugins: 'save,entitycontextmenu,entitybutton,customtags,viewsource',
 		theme_advanced_blockformats: 'p,h1,blockquote',

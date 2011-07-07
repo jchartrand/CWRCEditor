@@ -35,7 +35,8 @@ label {
 #header {
 	height: 17px;
 	padding: 5px 10px;
-	background-color: #e2e2e0;
+	color: #eee;
+	background-color: #455372;
 	border-bottom: 1px solid #ccc;
 }
 
@@ -72,10 +73,30 @@ label {
 	padding: 3px 10px;
 }
 
+#tabs {
+	float: left;
+	width: 244px;
+	border: none !important;
+	padding: 0 !important;
+}
+
+#tabs > ul {
+	padding: 3px 2px 0 !important;
+	border-top: none !important;
+	border-left: none !important;
+	border-right: none !important;
+	border-radius: 0 !important;
+}
+
+#tabs > ul li a {
+	padding: 4px 1em !important;
+}
+
 #entities {
 	float: left;
 	width: 244px;
-	overflow: auto;
+	/*overflow: auto;*/
+	padding: 0 !important;
 }
 
 #entities ul {
@@ -108,6 +129,7 @@ label {
 	color: #000;
 	max-height: 160px;
 	overflow: auto;
+	border-radius: 3px;
 }
 
 #entities ul li .info ul li {
@@ -133,6 +155,10 @@ label {
 #entities ul li:hover {
 	cursor: pointer;
 	background-color: #eee;
+}
+
+#tree {
+	border: none !important;
 }
 
 #results {

@@ -59,6 +59,10 @@ body {
 	margin-bottom: 12px;
 }
 
+.paraTag:before {
+	/*content: "¶";*/
+}
+
 .titleTagQuotes:before, .quoteTagShort:before {
 	content: open-quote;
 }

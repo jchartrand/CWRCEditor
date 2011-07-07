@@ -8,6 +8,7 @@
 		<script type="text/javascript" src="js/jquery/jquery-1.6.1.js"></script>
 		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.13.custom.min.js"></script>
 		<script type="text/javascript" src="js/tinymce/jscripts/tiny_mce/jquery.tinymce.js"></script>
+		<script type="text/javascript" src="js/jstree/jquery.jstree.js"></script>
 		<script type="text/javascript" src="js/snippet/jquery.snippet.min.js"></script>
 		<script type="text/javascript" src="js/editor.js"></script>
 		<script type="text/javascript" src="js/dialog.js"></script>
@@ -18,13 +19,22 @@
 				<h1>CWRCWriter v0.14</h1>
 			</div>
 			<div id="leftcol">
-				<div id="entities">
-					<div id="sortBy">
-						<span>Sort By</span>
-						<input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input>
-						<input type="radio" id="category" name="sortBy"><label for="category">Category</label></input>
+				<div id="tabs">
+					<ul>
+						<li><a href="#entities">Entities</a></li>
+						<li><a href="#structure">Structure</a></li>
+					</ul>
+					<div id="entities">
+						<div id="sortBy">
+							<span>Sort By</span>
+							<input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input>
+							<input type="radio" id="category" name="sortBy"><label for="category">Category</label></input>
+						</div>
+						<ul></ul>
 					</div>
-					<ul></ul>
+					<div id="structure">
+						<div id="tree"></div>
+					</div>
 				</div>
 				<div id="separator" class="arrowLeft" title="Click to expand/contract"></div>
 			</div>
