@@ -157,6 +157,10 @@ label {
 	background-color: #eee;
 }
 
+#structure {
+	padding: 5px !important;
+}
+
 #tree {
 	border: none !important;
 }
@@ -194,6 +198,22 @@ label {
 
 #results span {
 	display: block;
+}
+
+#popup {
+	display: none;
+	position: absolute;
+	width: 150px;
+	border-radius: 4px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 0;
+}
+
+#popup ul {
+	padding: 5px;
+	margin: 0;
+	list-style: none;
 }
 
 .unselectable {
@@ -276,4 +296,9 @@ label {
 	height: 20px !important;
 	width: 32px !important;
 	margin: 2px !important;
+}
+
+/* jstree overrides */
+#vakata-contextmenu, #vakata-contextmenu ul {
+	min-width: 100px !important;	
 }

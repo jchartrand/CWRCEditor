@@ -18,37 +18,51 @@
 					m.add({
 						title: 'Add Person',
 						icon_src: url+'user.png',
-						cmd: 'add_person'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'person');
+						}
 					});
 					m.add({
 						title: 'Add Place',
 						icon_src: url+'world.png',
-						cmd: 'add_place'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'place');
+						}
 					});
 					m.add({
 						title: 'Add Date',
 						icon_src: url+'calendar.png',
-						cmd: 'add_date'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'date');
+						}
 					});
 					m.add({
 						title: 'Add Event',
 						icon_src: url+'cake.png',
-						cmd: 'add_event'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'event');
+						}
 					});
 					m.add({
 						title: 'Add Organization',
 						icon_src: url+'building.png',
-						cmd: 'add_org'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'org');
+						}
 					});
 					m.add({
 						title: 'Add Bib. Ref.',
 						icon_src: url+'book.png',
-						cmd: 'add_bibref'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'bibref');
+						}
 					});
 					m.add({
 						title: 'Add Note',
 						icon_src: url+'pencil.png',
-						cmd: 'add_note'
+						onclick : function() {
+							t.editor.execCommand('addEntity', 'note');
+						}
 					});
 				});
 				

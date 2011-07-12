@@ -51,7 +51,10 @@
 				var c = cm.createButton('viewSourceButton', {
 					title: 'View Source',
 					image: url+'viewsource.gif',
-					cmd: 'viewSource'
+					onclick: function() {
+						t.editor.execCommand('removeHighlights');
+						t.editor.execCommand('viewSource');
+					}
 				});
 				
 				return c;

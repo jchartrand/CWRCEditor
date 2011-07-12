@@ -5,6 +5,22 @@ $(function() {
 	
 	var structs = {}; // structs store
 	
+	// tag types and their titles
+	var titles = {
+		person: 'Person',
+		date: 'Date',
+		place: 'Place',
+		event: 'Event',
+		org: 'Organization',
+		bibref: 'Bib. Ref.',
+		note: 'Note',
+		para: 'Paragraph',
+		head: 'Heading',
+		emph: 'Emphasized',
+		title: 'Title',
+		quote: 'Quotation'
+	};
+	
 	// possible results when trying to add entity
 	var NO_SELECTION = 0;
 	var NO_COMMON_PARENT = 1;
@@ -27,16 +43,12 @@ $(function() {
 	
 	var editor_oninit = function(ed) {
 		ed.addCommand('showError', showError);
-		ed.addCommand('add_person', addPerson);
-		ed.addCommand('add_date', addDate);
-		ed.addCommand('add_place', addPlace);
-		ed.addCommand('add_event', addEvent);
-		ed.addCommand('add_org', addOrg);
-		ed.addCommand('add_bibref', addBibRef);
-		ed.addCommand('add_note', addNote);
-		ed.addCommand('remove_entity', removeEntity);
+		ed.addCommand('addEntity', addEntity);
+		ed.addCommand('removeEntity', removeEntity);
 		ed.addCommand('addStructureTag', addStructureTag);
+		ed.addCommand('editStructureTag', editStructureTag);
 		ed.addCommand('updateStructureTree', updateStructureTree);
+		ed.addCommand('removeHighlights', removeHighlights);
 		
 		// highlight tracking
 		ed.onMouseUp.add(doHighlightCheck);
@@ -57,35 +69,62 @@ $(function() {
 			}
 			
 			// delete keys check
-			if (evt.keyCode == 8 || evt.keyCode == 46) {
-				var key;
-				for (key in entities) {
-					var nodes = editor.dom.select('entity[name="'+key+'"]');
-					switch (nodes.length) {
-						case 0:
-							delete entities[key];
-							removeFromEntitiesList(key);
-							break;
-						case 1:
-							editor.dom.remove(nodes[0]);
-							delete entities[key];
-							removeFromEntitiesList(key);
-					}
-				}
-				for (key in structs) {
-					var struct = editor.dom.get('#'+key);
-					if (!struct) {
-						updateStructureTree();
-						break;
-					}
-				}
-			}
+//			if (evt.keyCode == 8 || evt.keyCode == 46) {
+//				var key;
+//				for (key in entities) {
+//					var nodes = editor.dom.select('entity[name="'+key+'"]');
+//					switch (nodes.length) {
+//						case 0:
+//							delete entities[key];
+//							removeFromEntitiesList(key);
+//							break;
+//						case 1:
+//							editor.dom.remove(nodes[0]);
+//							delete entities[key];
+//							removeFromEntitiesList(key);
+//					}
+//				}
+//				for (key in structs) {
+//					var struct = editor.dom.get('#'+key);
+//					if (!struct) {
+//						updateStructureTree();
+//						break;
+//					}
+//				}
+//			}
+//			
+//			// enter key check
+//			if (evt.keyCode == 13) {
+//				updateStructureTree();
+//			}
 		});
 		
 		doResize();
 	};
 	
+	var onChangeHandler = function(ed) {
+		if (ed.isDirty()) {
+			updateStructureTree();
+			
+			for (var key in entities) {
+				var nodes = editor.dom.select('entity[name="'+key+'"]');
+				switch (nodes.length) {
+					case 0:
+						delete entities[key];
+						removeFromEntitiesList(key);
+						break;
+					case 1:
+						editor.dom.remove(nodes[0]);
+						delete entities[key];
+						removeFromEntitiesList(key);
+				}
+			}
+		}
+	};
+	
 	var doHighlightCheck = function(ed, evt) {		
+		highlightStructureTag();
+		
 		var range = ed.selection.getRng(true);
 		
 		var entityStart = findEntityBoundary('start', range.startContainer, null, [range.startContainer.parentNode]);
@@ -102,8 +141,8 @@ $(function() {
 		// priority goes to startKey if they aren't the same
 		if (startKey == ed.currentEntity) return;
 		
-		var bmId = ed.selection.getBookmark();
-		highlightEntity(startKey, bmId);
+		var bm = ed.selection.getBookmark();
+		highlightEntity(startKey, bm);
 	};
 	
 	/**
@@ -156,7 +195,7 @@ $(function() {
 		return null;
 	};
 	
-	var highlightEntity = function(key, bmId, doScroll) {
+	var highlightEntity = function(key, bm, doScroll) {
 		editor.currentEntity = null;
 		
 		var prevHighlight = editor.$('#entityHighlight');
@@ -193,8 +232,8 @@ $(function() {
 			});
 			
 			// maintain the original caret position
-			if (bmId) {
-				editor.selection.moveToBookmark(bmId);
+			if (bm) {
+				editor.selection.moveToBookmark(bm);
 			}
 			
 			if (doScroll) {
@@ -235,81 +274,25 @@ $(function() {
 		}
 	};
 	
-	var addPerson = function() {
+	var addEntity = function(type) {
 		var result = isEntityValid();
 		if (result == VALID) {
-			editor.currentEntity = addEntity('person');
-			var query = entities[editor.currentEntity].content;
-			dialog.showSearch({type: 'person', title: 'Person', query: query, pos: getPos()});
+			editor.currentEntity = addEntityTag(type);
+			var title = titles[type];
+			if (type == 'note' || type == 'bibref') {
+				dialog.showNote({type: type, title: title, pos: getPos()});
+			} else if (type == 'date') {
+				dialog.showDate({type: type, title: title, pos: getPos()});
+			} else {
+				var query = entities[editor.currentEntity].content;
+				dialog.showSearch({type: type, title: title, query: query, pos: getPos()});
+			}
 		} else {
 			showError(result);
 		}
 	};
 	
-	var addDate = function() {
-		var result = isEntityValid();
-		if (result == VALID) {
-			editor.currentEntity = addEntity('date');
-			dialog.showDate({type: 'date', title: 'Date', pos: getPos()});
-		} else {
-			showError(result);
-		}
-	};
-	
-	var addPlace = function() {
-		var result = isEntityValid();
-		if (result == VALID) {
-			editor.currentEntity = addEntity('place');
-			var query = entities[editor.currentEntity].content;
-			dialog.showSearch({type: 'place', title: 'Place', query: query, pos: getPos()});
-		} else {
-			showError(result);
-		}
-	};
-	
-	var addEvent = function() {
-		var result = isEntityValid();
-		if (result == VALID) {
-			editor.currentEntity = addEntity('event');
-			var query = entities[editor.currentEntity].content;
-			dialog.showSearch({type: 'event', title: 'Event', query: query, pos: getPos()});
-		} else {
-			showError(result);
-		}
-	};
-	
-	var addOrg = function() {
-		var result = isEntityValid();
-		if (result == VALID) {
-			editor.currentEntity = addEntity('org');
-			var query = entities[editor.currentEntity].content;
-			dialog.showSearch({type: 'org', title: 'Organization', query: query, pos: getPos()});
-		} else {
-			showError(result);
-		}
-	};
-	
-	var addBibRef = function() {
-		var result = isEntityValid();
-		if (result == VALID) {
-			editor.currentEntity = addEntity('bibref');
-			dialog.showNote({type: 'bibref', title: 'Bib. Ref.', pos: getPos()});
-		} else {
-			showError(result);
-		}
-	};
-	
-	var addNote = function() {
-		var result = isEntityValid();
-		if (result == VALID) {
-			editor.currentEntity = addEntity('note');
-			dialog.showNote({type: 'note', title: 'Note', pos: getPos()});
-		} else {
-			showError(result);
-		}
-	};
-	
-	var addEntity = function(type, info) {
+	var addEntityTag = function(type) {
 		var sel = editor.selection;
 		var content = sel.getContent();
 		var range = sel.getRng(true);
@@ -333,28 +316,22 @@ $(function() {
 			key: key,
 			type: type,
 			title: title,
-			content: content,
-			info: info
+			content: content
 		};
 		
-		var bmId = editor.selection.getBookmark();
+		var bm = editor.selection.getBookmark();
 		
 		var start = editor.dom.create('entity', {'class': 'entity '+type+' start', 'name': key});
 		range.insertNode(start);
 		editor.dom.bind(start, 'click', doMarkerClick);
 		
-		editor.selection.moveToBookmark(bmId);
+		editor.selection.moveToBookmark(bm);
 		
 		var end = editor.dom.create('entity', {'class': 'entity '+type+' end', 'name': key});
 		sel.collapse(false);
 		range = sel.getRng(true);
 		range.insertNode(end);
 		editor.dom.bind(end, 'click', doMarkerClick);
-		
-		if (info != null) {
-			updateEntitesList();
-			highlightEntity(key);
-		}
 		
 		return key;
 	};
@@ -496,28 +473,62 @@ $(function() {
 	var doResize = function() {
 		var newHeight = $(window).height() - 30;
 		$('#leftcol > div').height(newHeight);
-		$('#'+editor.id+'_ifr').height(newHeight - 28);
+		$('#'+editor.id+'_ifr').height(newHeight - 49);
 	};
 	
-	var addStructureTag = function(attributes) {
+	var showPopup = function(pos, content) {
+		$('#popup').html(content).show().offset(pos);
+	};
+	
+	var hidePopup = function() {
+		$('#popup').hide();
+	};
+	
+	var addStructureTag = function(bookmark, attributes) {
 		var id = tinymce.DOM.uniqueId('struct_');
 		attributes.id = id;
-		var open_tag, close_tag;
+		structs[id] = attributes;
+		
+		var tag, open_tag, close_tag;
+		tag = 'struct';
+		if (attributes.type == 'para') {
+			tag = 'p';
+		}
+		editor.selection.moveToBookmark(bookmark);
 		var selection = editor.selection.getContent();
-		open_tag = '<struct';
+		open_tag = '<'+tag;
 		for (var key in attributes) {
 			open_tag += ' '+key+'="'+attributes[key]+'"';
 		}
 		open_tag += '>';
-		close_tag = '</struct>';
+		close_tag = '</'+tag+'>';
 		var content = open_tag + selection + close_tag;
 		editor.execCommand('mceReplaceContent', false, content);
+	};
+	
+	var editStructureTag = function(tag, attributes) {
+		var id = tag.attr('id');
+		for (var key in attributes) {
+			tag.attr(key, attributes[key]);
+		}
 		structs[id] = attributes;
 		updateStructureTree();
 	};
 	
+	var removeStructureTag = function(id) {
+		var tag = editor.$('#'+id)[0];
+		var children = tag.childNodes;
+		editor.$(children).unwrap();
+		updateStructureTree();
+	};
+	
 	var updateStructureTree = function() {
+		highlightStructureTag(); // remove previous highlight
+		
 		var body = editor.dom.select('body');
+//		$('#tree').jstree('_get_children').each(function(index, element) {
+//			$('#tree').jstree('delete_node', $(this));
+//		});
 		$('#tree').jstree('delete_node', '#root');
 		var root = $('#tree').jstree('create_node', $('#tree'), 'first', {
 			data: 'Tags',
@@ -531,15 +542,43 @@ $(function() {
 		children.each(function(index, el) {
 			var newChildren = $(this).children();
 			var newNodeParent = nodeParent;
-			if ($(this).is('struct')) {
-				var isLeaf = newChildren.length > 0 ? 'open' : null;
+			if ($(this).is('struct') || $(this).is('p')) {
+				var id = $(this).attr('id');
+				
+				// handling for p tag created on enter
+				if (id == '' || id == null) {
+					id = tinymce.DOM.uniqueId('struct_');
+					$(this).attr('id', id).attr('class', 'paraTag');
+					structs[id] = {
+						lang: $(this).attr('lang'),
+						'class': 'paraTag',
+						type: 'para'
+					};
+				}
+				
+				var info = structs[id];
+				var title = titles[info.type];
 				newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
-					data: $(this).attr('class'),
-					state: isLeaf
+					data: title,
+					attr: {name: id, 'class': $(this).attr('class')},
+					state: null
 				});
+				$('#tree').jstree('open_node', nodeParent, false, true);
 			}
 			doStructureTreeUpdate(newChildren, newNodeParent);
 		});
+	};
+	
+	var highlightStructureTag = function(id) {
+		editor.dom.setAttribs(editor.dom.select('*[name="selected"]'), {name: '', style: ''});
+		if (id) {
+			editor.dom.setAttribs(editor.dom.select('#'+id), {name: 'selected', style: 'background-color: #eee'});
+		}
+	};
+	
+	var removeHighlights = function() {
+		highlightEntity();
+		highlightStructureTag();
 	};
 	
 	$('#separator').click(toggleEntitiesList);
@@ -559,14 +598,69 @@ $(function() {
 	$('#tree').jstree({
 		core: {},
 		themeroller: {},
+		ui: {
+			select_limit: 1
+		},
 		json_data: {
-			data: [{
+			data: {
 				data: 'Tags',
 				attr: {id: 'root'},
-				state: 'closed'
-			}]
+				state: 'open'
+			}
 		},
-		plugins: ['json_data', 'themeroller']
+		contextmenu: {
+			select_node: true,
+			items: function(node) {
+				if ($(node).attr('id') == 'root') return {};
+				var items = {
+					'edit': {
+						label: 'Edit',
+						action: function(obj) {
+							var tag = editor.$('#'+obj.attr('name'));
+							editor.execCommand('editCustomTag', tag);
+						}
+					},
+					'delete': {
+						label: 'Delete',
+						action: function(obj) {
+							removeStructureTag(obj.attr('name'));
+						}
+					}
+				};
+				if ($(node).hasClass('headTag') || $(node).hasClass('emphTag')) {
+					delete items.edit;
+				} else if ($(node).hasClass('paraTag')) {
+					delete items['delete'];
+				}
+				return items;
+			}
+		},
+		plugins: ['json_data', 'ui', 'themeroller', 'contextmenu']
+	});
+	$('#tree').bind('select_node.jstree', function(event, data) {
+		var node = data.rslt.obj;
+		var id = node.attr('name');
+		highlightStructureTag(id);
+	});
+	$('#tree').bind('hover_node.jstree', function(event, data) {
+		var node = data.rslt.obj;
+		
+		if (node.attr('id') == 'root') return;
+		
+		var pos = node.offset();
+		pos.left += node.width();
+		
+		var id = node.attr('name');
+		var info = structs[id];
+		var content = '<ul>';
+		for (var key in info) {
+			content += '<li>'+key+': '+info[key]+'</li>';
+		}
+		content += '</ul>';
+		showPopup(pos, content);
+	});
+	$('#tree').bind('dehover_node.jstree', function(event, data) {
+		hidePopup();
 	});
 	
 	$('#editor').tinymce({
@@ -586,12 +680,13 @@ $(function() {
 			ed.contextMenuPos = null; // the position of the context menu (used to position related dialog box)
 			
 			ed.onInit.add(editor_oninit);
+			ed.onChange.add(onChangeHandler);
 			
 			ed.addButton('removeentity', {
 				title: 'Remove Entity',
 				image: 'img/script_delete.png',
 				'class': 'entityButton',
-				cmd: 'remove_entity'
+				cmd: 'removeEntity'
 			});
 			
 //			ed.addButton('toggleeditor', {
@@ -614,14 +709,12 @@ $(function() {
 		
 		plugins: 'save,entitycontextmenu,entitybutton,customtags,viewsource',
 		theme_advanced_blockformats: 'p,h1,blockquote',
-		theme_advanced_buttons1: 'save,|,customtags,|,entitybutton,removeentity,|,viewsource',
+		theme_advanced_buttons1: 'customtags,|,entitybutton,removeentity,|,viewsource',
 		theme_advanced_buttons2: '',
 		theme_advanced_buttons3: '',
 		theme_advanced_toolbar_location: 'top',
-		theme_advanced_toolbar_align: 'left'
-		
-//        theme_advanced_statusbar_location: 'bottom',
-//        save_onsavecallback: 'onSave'
+		theme_advanced_toolbar_align: 'left',
+        theme_advanced_statusbar_location: 'bottom'
 	});
 	
 	$(window).resize(doResize);

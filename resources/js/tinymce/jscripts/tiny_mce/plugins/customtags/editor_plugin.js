@@ -5,6 +5,13 @@
 			t.url = url;
 			t.editor = ed;
 			t.currentVal = null;
+			
+			t.ADD = 0;
+			t.EDIT = 1;
+			t.mode = null;
+			
+			t.tag = null;
+			
 			t.bm = null;
 			
 			ed.addCommand('addCustomTag', function(val) {
@@ -15,47 +22,33 @@
 					return;
 				}
 				
-				// reset values
+				t.bm = t.editor.selection.getBookmark();
+				
 				$('select[name="lang"]')[0].value = '';
 				$('select[name="level"]')[0].value = '';
 				$('input[name="ref"]')[0].value = '';
 				$('select[name="level"]').css({borderColor: ''});
 				
-				t.currentVal = val;
-				if (val == 'head') {
-					t.editor.execCommand('addStructureTag', {
-						'class': 'headTag'
-					});
-					t.editor.execCommand('updateStructureTree', true);
-				} else if (val == 'emph') {
-					t.editor.execCommand('addStructureTag', {
-						'class': 'emphTag'
-					});
-					t.editor.execCommand('updateStructureTree', true);
-				} else if (val != '') {
-					if (val == 'title') {
-						$('#lang').hide();
-						$('#level').show();
-						$('#ref').show();
-					} else {
-						$('#lang').show();
-						$('#level').hide();
-						$('#ref').hide();
-					}
-					
-					var title = '';
-					for (var i = 0; i < t.box.items.length; i++) {
-						var item = t.box.items[i];
-						if (item.value == val) {
-							title = item.title;
-							break;
-						}
-					}
-					t.d.dialog('option', 'title', title);
-					t.d.dialog('open');
-				}
+				t.mode = t.ADD;
+				t.showDialog(val);
 			});
 			
+			ed.addCommand('editCustomTag', function(tag) {
+				var val = tag.attr('class').split('Tag')[0]; 
+				t.currentVal = val;
+				t.tag = tag;
+				
+				var lang = tag.attr('lang');
+				var level = tag.attr('level');
+				var ref = tag.attr('ref');
+				$('select[name="lang"]')[0].value = lang;
+				$('select[name="level"]')[0].value = level;
+				$('input[name="ref"]')[0].value = ref;
+				$('select[name="level"]').css({borderColor: ''});
+				
+				t.mode = t.EDIT;
+				t.showDialog(val);
+			});
 			
 			$(document.body).append(''+
 				'<div id="customTagsDialog">'+
@@ -148,24 +141,25 @@
 						var level = $('select[name="level"]')[0].value;
 						var ref = $('input[name="ref"]')[0].value;
 						
+						var params = {};
 						if (t.currentVal == 'para') {
-							t.editor.execCommand('addStructureTag', {
+							params = {
 								'class': 'paraTag',
 								lang: lang
-							});
+							};
 						} else if (t.currentVal == 'title') {
 							if (level == 'a' || level == 'u') {
-								t.editor.execCommand('addStructureTag', {
+								params = {
 									'class': 'titleTagQuotes',
 									level: level,
 									ref: ref
-								});
+								};
 							} else if (level == 'm' || level == 'j' || level == 's') {
-								t.editor.execCommand('addStructureTag', {
+								params = {
 									'class': 'titleTagItalics',
 									level: level,
 									ref: ref
-								});
+								};
 							} else {
 								$('select[name="level"]').css({borderColor: 'red'});
 								return false;
@@ -173,17 +167,28 @@
 						} else if (t.currentVal == 'quote') {
 							var selection = t.editor.selection.getContent();
 							if (selection.length > 250) {
-								t.editor.execCommand('addStructureTag', {
+								params = {
 									'class': 'quoteTagLong',
 									lang: lang
-								});
+								};
 							} else {
-								t.editor.execCommand('addStructureTag', {
+								params = {
 									'class': 'quoteTagShort',
 									lang: lang
-								});
+								};
 							}
 						}
+						params.type = t.currentVal;
+						
+						switch (t.mode) {
+							case t.ADD:
+								t.editor.execCommand('addStructureTag', t.bm, params);
+								break;
+							case t.EDIT:
+								t.editor.execCommand('editStructureTag', t.tag, params);
+								t.tag = null;
+						}
+						
 						t.d.dialog('close');
 					},
 					'Cancel': function() {
@@ -191,6 +196,44 @@
 					}
 				}
 			});
+		},
+		showDialog: function(val) {
+			var t = this;
+			t.currentVal = val;
+			if (val == 'head') {
+				t.editor.execCommand('addStructureTag', t.bm, {
+					type: 'head',
+					'class': 'headTag'
+				});
+				t.editor.execCommand('updateStructureTree', true);
+			} else if (val == 'emph') {
+				t.editor.execCommand('addStructureTag', t.bm, {
+					type: 'emph',
+					'class': 'emphTag'
+				});
+				t.editor.execCommand('updateStructureTree', true);
+			} else if (val != '') {
+				if (val == 'title') {
+					$('#lang').hide();
+					$('#level').show();
+					$('#ref').show();
+				} else {
+					$('#lang').show();
+					$('#level').hide();
+					$('#ref').hide();
+				}
+				
+				var title = '';
+				for (var i = 0; i < t.box.items.length; i++) {
+					var item = t.box.items[i];
+					if (item.value == val) {
+						title = item.title;
+						break;
+					}
+				}
+				t.d.dialog('option', 'title', title);
+				t.d.dialog('open');
+			}
 		},
 		createControl: function(n, cm) {
 			if (n == 'customtags') {

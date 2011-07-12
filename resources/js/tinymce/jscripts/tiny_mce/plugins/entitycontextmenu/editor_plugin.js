@@ -160,44 +160,58 @@
 			m.add({
 				title: 'Add Person',
 				icon_src: url+'user.png',
-				cmd: 'add_person'
+				onclick : function() {
+					ed.execCommand('addEntity', 'person');
+				}
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Place',
 				icon_src: url+'world.png',
-				cmd: 'add_place'
+				onclick : function() {
+					ed.execCommand('addEntity', 'place');
+				}
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Date',
 				icon_src: url+'calendar.png',
-				cmd: 'add_date'
+				onclick : function() {
+					ed.execCommand('addEntity', 'date');
+				}
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Event',
 				icon_src: url+'cake.png',
-				cmd: 'add_event'
+				onclick : function() {
+					ed.execCommand('addEntity', 'event');
+				}
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Organization',
 				icon_src: url+'building.png',
-				cmd: 'add_org'
+				onclick : function() {
+					ed.execCommand('addEntity', 'org');
+				}
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Bib. Ref.',
 				icon_src: url+'book.png',
-				cmd: 'add_bibref'
+				onclick : function() {
+					ed.execCommand('addEntity', 'bibref');
+				}
 			}).setDisabled(d);
 			m.add({
 				title: 'Add Note',
 				icon_src: url+'pencil.png',
-				cmd: 'add_note'
+				onclick : function() {
+					ed.execCommand('addEntity', 'note');
+				}
 			}).setDisabled(d);
 			d = ed.currentEntity == null;
 			m.addSeparator();
 			m.add({
 				title: 'Remove Entity',
 				icon_src: url+'delete.png',
-				cmd: 'remove_entity'
+				cmd: 'removeEntity'
 			}).setDisabled(d);
 
 			t.onContextMenu.dispatch(t, m, el, col);
