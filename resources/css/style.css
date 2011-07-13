@@ -298,7 +298,35 @@ label {
 	margin: 2px !important;
 }
 
+/* tinymce overrides */
+div.mceDropDown {
+	box-shadow: 1px 1px 2px #ccc;
+}
+
 /* jstree overrides */
+#vakata-contextmenu {
+	border: 1px solid #D4D0C8 !important;
+	background-color: #fff !important;
+	box-shadow: 1px 1px 2px #ccc;
+}
 #vakata-contextmenu, #vakata-contextmenu ul {
 	min-width: 100px !important;	
+}
+
+#vakata-contextmenu li ins {
+	margin: 2px 2px 0 2px !important;
+}
+
+#vakata-contextmenu li a {
+	font-family: Tahoma,Verdana,Arial,Helvetica !important;
+	font-size: 11px !important;
+	color: #000 !important;
+	line-height: 20px !important;
+	padding: 0 !important;
+	margin: 0 !important;
+}
+
+#vakata-contextmenu li a:hover, #vakata-contextmenu li.vakata-hover > a {
+	color: #000 !important;
+	background-color: #DBECF3 !important;	
 }

@@ -169,7 +169,9 @@ var Dialog = function(config) {
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
-				open: function(event, ui) { $('#searchDialog .ui-dialog-titlebar-close').hide(); },
+				open: function(event, ui) {
+					$('#searchDialog').parent().find('.ui-dialog-titlebar-close').hide();
+				},
 				height: 450,
 				width: 300,
 				autoOpen: false,
@@ -191,7 +193,9 @@ var Dialog = function(config) {
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
-				open: function(event, ui) { $('#noteDialog .ui-dialog-titlebar-close').hide(); },
+				open: function(event, ui) {
+					$('#noteDialog').parent().find('.ui-dialog-titlebar-close').hide();
+				},
 				height: 250,
 				width: 300,
 				autoOpen: false,
@@ -211,7 +215,9 @@ var Dialog = function(config) {
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
-				open: function(event, ui) { $('#dateDialog .ui-dialog-titlebar-close').hide(); },
+				open: function(event, ui) {
+					$('#dateDialog').parent().find('.ui-dialog-titlebar-close').hide();
+				},
 				height: 250,
 				width: 300,
 				autoOpen: false,

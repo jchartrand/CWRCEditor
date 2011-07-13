@@ -15,10 +15,9 @@
 			t.bm = null;
 			
 			ed.addCommand('addCustomTag', function(val) {
-				var se = t.editor.selection;
-
-				if (se.isCollapsed()) {
-					ed.execCommand('showError', 0);
+				var valid = ed.execCommand('isSelectionValid');
+				if (valid != 2) {
+					ed.execCommand('showError', valid);
 					return;
 				}
 				
