@@ -10,15 +10,34 @@
 			t.EDIT = 1;
 			t.mode = null;
 			
+			t.titles = {
+				para: 'Paragraph',
+				head: 'Heading',
+				emph: 'Emphasized',
+				title: 'Title',
+				quote: 'Quotation'
+			};
+			
 			t.tag = null;
 			
 			t.bm = null;
 			
-			ed.addCommand('addCustomTag', function(val) {
-				var valid = ed.execCommand('isSelectionValid');
+			ed.addCommand('addCustomTag', function(val, pos) {
+				var valid = ed.execCommand('isSelectionValid', true);
 				if (valid != 2) {
 					ed.execCommand('showError', valid);
 					return;
+				}
+				
+				var sel = ed.selection;
+				var content = sel.getContent();
+				var range = sel.getRng(true);
+				if (range.startContainer == range.endContainer) {
+					var leftTrimAmount = content.match(/^\s{0,1}/)[0].length;
+					var rightTrimAmount = content.match(/\s{0,1}$/)[0].length;
+					range.setStart(range.startContainer, range.startOffset+leftTrimAmount);
+					range.setEnd(range.endContainer, range.endOffset-rightTrimAmount);
+					sel.setRng(range);
 				}
 				
 				t.bm = t.editor.selection.getBookmark();
@@ -29,10 +48,10 @@
 				$('select[name="level"]').css({borderColor: ''});
 				
 				t.mode = t.ADD;
-				t.showDialog(val);
+				t.showDialog(val, pos);
 			});
 			
-			ed.addCommand('editCustomTag', function(tag) {
+			ed.addCommand('editCustomTag', function(tag, pos) {
 				var val = tag.attr('class').split('Tag')[0]; 
 				t.currentVal = val;
 				t.tag = tag;
@@ -46,7 +65,7 @@
 				$('select[name="level"]').css({borderColor: ''});
 				
 				t.mode = t.EDIT;
-				t.showDialog(val);
+				t.showDialog(val, pos);
 			});
 			
 			$(document.body).append(''+
@@ -130,7 +149,10 @@
 			t.d.dialog({
 				modal: true,
 				resizable: false,
-				closeOnEscape: true,
+				closeOnEscape: false,
+				open: function(event, ui) {
+					$('#customTagsDialog').parent().find('.ui-dialog-titlebar-close').hide();
+				},
 				height: 150,
 				width: 325,
 				autoOpen: false,
@@ -191,12 +213,13 @@
 						t.d.dialog('close');
 					},
 					'Cancel': function() {
+						t.editor.selection.moveToBookmark(t.bm);
 						t.d.dialog('close');
 					}
 				}
 			});
 		},
-		showDialog: function(val) {
+		showDialog: function(val, pos) {
 			var t = this;
 			t.currentVal = val;
 			if (val == 'head') {
@@ -222,35 +245,62 @@
 					$('#ref').hide();
 				}
 				
-				var title = '';
-				for (var i = 0; i < t.box.items.length; i++) {
-					var item = t.box.items[i];
-					if (item.value == val) {
-						title = item.title;
-						break;
-					}
-				}
+				var title = t.titles[val];
 				t.d.dialog('option', 'title', title);
+				if (pos) {
+					t.d.dialog('option', 'position', [pos.x, pos.y]);
+				}
 				t.d.dialog('open');
 			}
 		},
 		createControl: function(n, cm) {
 			if (n == 'customtags') {
 				var t = this;
-				t.box = cm.createListBox('customTagsMenu', {
-					title: 'Tags',
-					onselect: function(val) {
-						t.editor.execCommand('addCustomTag', val);
-					}
+				var url = t.url+'/../../../../../../img/';
+				t.menuButton = cm.createMenuButton('customTagsButton', {
+					title: 'Add Tag',
+					image: url+'tag.png',
+					'class': 'entityButton'
+				});
+				t.menuButton.onRenderMenu.add(function(c, m) {
+					m.add({
+						title: 'Paragraph',
+						icon_src: url+'para.png',
+						onclick : function() {
+							t.editor.execCommand('addCustomTag', 'para');
+						}
+					});
+					m.add({
+						title: 'Heading',
+						icon_src: url+'heading.png',
+						onclick : function() {
+							t.editor.execCommand('addCustomTag', 'head');
+						}
+					});
+					m.add({
+						title: 'Emphasized',
+						icon_src: url+'text_italic.png',
+						onclick : function() {
+							t.editor.execCommand('addCustomTag', 'emph');
+						}
+					});
+					m.add({
+						title: 'Title',
+						icon_src: url+'title.png',
+						onclick : function() {
+							t.editor.execCommand('addCustomTag', 'title');
+						}
+					});
+					m.add({
+						title: 'Quotation',
+						icon_src: url+'quote.png',
+						onclick : function() {
+							t.editor.execCommand('addCustomTag', 'quote');
+						}
+					});
 				});
 				
-				t.box.add('Paragraph', 'para');
-				t.box.add('Heading', 'head');
-				t.box.add('Emphasized', 'emph');
-				t.box.add('Title', 'title');
-				t.box.add('Quotation', 'quote');
-				
-				return t.box;
+				return t.menuButton;
 			}
 	
 			return null;

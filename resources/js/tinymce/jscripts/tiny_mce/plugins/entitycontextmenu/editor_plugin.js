@@ -30,6 +30,7 @@
 			var t = this, showMenu, contextmenuNeverUseNative, realCtrlKey;
 			t.url = url;
 			t.editor = ed;
+			t.curPos = {};
 
 			contextmenuNeverUseNative = ed.settings.contextmenu_never_use_native;
 
@@ -50,8 +51,10 @@
 				Event.cancel(e);
 
 				// Select the image if it's clicked. WebKit would other wise expand the selection
-				if (e.target.nodeName == 'IMG')
-					ed.selection.select(e.target);
+				if (e.target.nodeName == 'IMG') ed.selection.select(e.target);
+				
+				var editorPos = ed.$(ed.contentAreaContainer).offset();
+				t.curPos = ed.contextMenuPos = {x: (e.clientX || e.pageX) + editorPos.left, y: (e.clientY || e.pageX) + editorPos.top};
 
 				t._getMenu(ed).showMenu(e.clientX || e.pageX, e.clientY || e.pageX);
 				Event.add(ed.getDoc(), 'click', function(e) {
@@ -67,8 +70,6 @@
 			});
 
 			function hide(ed, e) {
-				ed.contextMenuPos = {x: e.clientX || e.pageX, y: e.clientY || e.pageX}; 
-				
 				realCtrlKey = 0;
 
 				// Since the contextmenu event moves
@@ -112,10 +113,9 @@
 				constrain : 1,
 				keyboard_focus: true
 			});
-
+			
 			t._menu = m;
 
-			var d = se.isCollapsed();
 			var url = t.url+'/../../../../../../img/';
 			var tagMenu = m.addMenu({
 				title: 'Tags',
@@ -123,39 +123,39 @@
 			});
 			tagMenu.add({
 				title: 'Paragraph',
-				icon_src: url+'para.gif',
+				icon_src: url+'para.png',
 				onclick : function() {
-					ed.execCommand('addCustomTag', 'para');
+					ed.execCommand('addCustomTag', 'para', t.curPos);
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			tagMenu.add({
 				title: 'Heading',
 				icon_src: url+'heading.png',
 				onclick : function() {
-					ed.execCommand('addCustomTag', 'head');
+					ed.execCommand('addCustomTag', 'head', t.curPos);
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			tagMenu.add({
 				title: 'Emphasized',
 				icon_src: url+'text_italic.png',
 				onclick : function() {
-					ed.execCommand('addCustomTag', 'emph');
+					ed.execCommand('addCustomTag', 'emph', t.curPos);
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			tagMenu.add({
 				title: 'Title',
-				icon_src: url+'title.gif',
+				icon_src: url+'title.png',
 				onclick : function() {
-					ed.execCommand('addCustomTag', 'title');
+					ed.execCommand('addCustomTag', 'title', t.curPos);
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			tagMenu.add({
 				title: 'Quotation',
 				icon_src: url+'quote.png',
 				onclick : function() {
-					ed.execCommand('addCustomTag', 'quote');
+					ed.execCommand('addCustomTag', 'quote', t.curPos);
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.addSeparator();
 			m.add({
 				title: 'Add Person',
@@ -163,56 +163,56 @@
 				onclick : function() {
 					ed.execCommand('addEntity', 'person');
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.add({
 				title: 'Add Place',
 				icon_src: url+'world.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'place');
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.add({
 				title: 'Add Date',
 				icon_src: url+'calendar.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'date');
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.add({
 				title: 'Add Event',
 				icon_src: url+'cake.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'event');
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.add({
 				title: 'Add Organization',
 				icon_src: url+'building.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'org');
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.add({
 				title: 'Add Bib. Ref.',
 				icon_src: url+'book.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'bibref');
 				}
-			}).setDisabled(d);
+			}).setDisabled(col);
 			m.add({
 				title: 'Add Note',
 				icon_src: url+'pencil.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'note');
 				}
-			}).setDisabled(d);
-			d = ed.currentEntity == null;
+			}).setDisabled(col);
+			col = ed.currentEntity == null;
 			m.addSeparator();
 			m.add({
 				title: 'Remove Entity',
 				icon_src: url+'delete.png',
 				cmd: 'removeEntity'
-			}).setDisabled(d);
+			}).setDisabled(col);
 
 			t.onContextMenu.dispatch(t, m, el, col);
 

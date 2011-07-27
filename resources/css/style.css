@@ -165,38 +165,38 @@ label {
 	border: none !important;
 }
 
-#results {
+#results, #files {
 	margin: 10px 0;
 	border: 1px solid #fff;
 }
 
-#results ul {
+.searchResults {
 	margin: 0;
 	padding: 0;
 	list-style: none;
 }
 
-#results ul li {
+.searchResults li {
 	font-size: 10px;
 	background-color: #fff;
 	padding: 2px 5px;
 	border-bottom: 1px solid #ccc;
 }
 
-#results ul li.last {
+.searchResults li.last {
 	border: none;
 }
 
-#results ul li:hover {
+.searchResults li:hover {
 	background-color: #F0F0EE;
 	cursor: pointer;
 }
 
-#results ul li.selected {
+.searchResults li.selected {
 	background-color: #9ac6eb;
 }
 
-#results span {
+.searchResults li span {
 	display: block;
 }
 
@@ -329,4 +329,29 @@ div.mceDropDown {
 #vakata-contextmenu li a:hover, #vakata-contextmenu li.vakata-hover > a {
 	color: #000 !important;
 	background-color: #DBECF3 !important;	
+}
+
+.jstree .paraTag a .ui-icon {
+	background-image: url('../img/para.png') !important;
+	background-position: 0px 0px !important;
+}
+
+.jstree .headTag a .ui-icon {
+	background-image: url('../img/heading.png') !important;
+	background-position: 0px 0px !important;
+}
+
+.jstree .emphTag a .ui-icon {
+	background-image: url('../img/text_italic.png') !important;
+	background-position: 0px 0px !important;
+}
+
+.jstree .titleTagQuotes a .ui-icon, .jstree .titleTagItalics a .ui-icon {
+	background-image: url('../img/title.png') !important;
+	background-position: 0px 0px !important;
+}
+
+.jstree .quoteTagShort a .ui-icon, .jstree .quoteTagLong a .ui-icon {
+	background-image: url('../img/quote.png') !important;
+	background-position: 0px 0px !important;
 }
