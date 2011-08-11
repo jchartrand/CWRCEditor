@@ -58,6 +58,12 @@ var FileManager = function(config) {
 						msg: 'You may only enter upper or lowercase letters; no numbers, spaces, or punctuation.'
 					});
 					return;
+				} else if (name == 'info') {
+					w.d.showMessage({
+						title: 'Invalid Name',
+						msg: 'This name is reserved, please choose a different one.'
+					});
+					return;
 				}
 				
 				if ($.inArray(name, docNames) != -1) {
