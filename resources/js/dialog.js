@@ -129,7 +129,7 @@ var Dialog = function(config) {
 		
 		if (currentType == 'person') {
 			$.ajax({
-				url: 'http://cwrctc.artsrn.ualberta.ca/solr-cwrc/people/select/',
+				url: 'http://cwrctc.artsrn.ualberta.ca/solr-'+w.project+'/people/select/',
 				data: {
 					q: query,
 					wt: 'json'

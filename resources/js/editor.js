@@ -4,6 +4,8 @@ var Writer = function(config) {
 		entities: {}, // entities store
 		structs: {}, // structs store
 
+		project: null, // the current project (cwrc or russell)
+		
 		// tag types and their titles
 		titles: {
 			person: 'Person',
@@ -469,6 +471,13 @@ var Writer = function(config) {
 	};
 	
 	w.init = function() {
+		$.ajax({
+			url: 'http://cwrctc.artsrn.ualberta.ca/documents/info/projectname',
+			success: function(data, status, xhr) {
+				w.project = data;
+			}
+		});
+		
 		w.fm = new FileManager({
 			writer: w
 		});

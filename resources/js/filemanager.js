@@ -96,7 +96,7 @@ var FileManager = function(config) {
 			type: 'GET',
 			dataType: 'json',
 			success: [function(data, status, xhr) {
-				docNames = data.response;
+				docNames = data;
 			}, callback]
 		});
 //		var data = {
