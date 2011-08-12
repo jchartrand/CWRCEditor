@@ -101,6 +101,9 @@ var Writer = function(config) {
 		});
 		
 		_doResize();
+		
+		// populate with the initial paragraph
+		w.sp.updateStructureTree(true);
 	};
 	
 	var _onChangeHandler = function(ed) {

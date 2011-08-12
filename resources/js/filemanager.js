@@ -67,7 +67,12 @@ var FileManager = function(config) {
 				}
 				
 				if ($.inArray(name, docNames) != -1) {
-					
+					// TODO add overwrite confirmation
+					w.d.showMessage({
+						title: 'Invalid Name',
+						msg: 'This name already exists, please choose a different one.'
+					});
+					return;
 				} else {
 					currentDoc = name;
 					fm.saveDocument();
@@ -148,6 +153,7 @@ var FileManager = function(config) {
 			$('#files ul li').removeClass('selected');
 			$(this).addClass('selected');
 			fm.loadDocument($(this).data('name'));
+			loader.dialog('close');
 		});
 	};
 	
@@ -169,6 +175,12 @@ var FileManager = function(config) {
 					w.d.showMessage({
 						title: 'Document Saved',
 						msg: currentDoc+' was saved successfully.'
+					});
+				},
+				error: function() {
+					w.d.showMessage({
+						title: 'Error',
+						msg: 'An error occurred and '+currentDoc+' was not saved.'
 					});
 				}
 			});
@@ -224,6 +236,8 @@ var FileManager = function(config) {
 	};
 	
 	fm.loadDocument = function(docName) {
+		currentDoc = docName;
+		
 		w.entities = {};
 		w.structs = {};
 		
@@ -231,6 +245,13 @@ var FileManager = function(config) {
 			url: 'http://cwrctc.artsrn.ualberta.ca/documents/'+docName,
 			type: 'GET',
 			success: _loadDocumentHandler,
+			error: function() {
+				currentDoc = null;
+				w.d.showMessage({
+					title: 'Error',
+					msg: 'An error occurred and '+docName+' was not loaded.'
+				});
+			},
 			dataType: 'xml'
 		});
 	};
