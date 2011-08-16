@@ -13,7 +13,7 @@ var Writer = function(config) {
 			place: 'Place',
 			event: 'Event',
 			org: 'Organization',
-			bibref: 'Bib. Ref.',
+			bibref: 'Citation',
 			note: 'Note',
 			para: 'Paragraph',
 			head: 'Heading',
@@ -52,6 +52,7 @@ var Writer = function(config) {
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
 		ed.addCommand('addEntity', w.addEntity);
+		ed.addCommand('removeTag', w.removeTag);
 		ed.addCommand('removeEntity', w.removeEntity);
 		ed.addCommand('addStructureTag', w.addStructureTag);
 		ed.addCommand('editStructureTag', w.editStructureTag);
@@ -123,6 +124,12 @@ var Writer = function(config) {
 		
 		if (entityEnd == null || entityStart == null) {
 			w.highlightEntity();
+			var parentNode = ed.$(ed.selection.getNode());
+			if (parentNode.is('struct') || parentNode.is('p')) {
+				var id = parentNode.attr('id');
+				w.editor.currentStruct = id;
+//				w.highlightStructureTag(id);
+			}
 			return;
 		}
 		
@@ -374,16 +381,30 @@ var Writer = function(config) {
 		}
 	};
 	
+	// a general removal function for entities and structure tags
+	w.removeTag = function(id) {
+		if (id != null) {
+			if (w.entities[id]) {
+				w.removeEntity(id);
+			} else if (w.structs[id]) {
+				w.removeStructureTag(id);
+			}
+		} else {
+			if (w.editor.currentEntity != null) {
+				w.removeEntity(w.editor.currentEntity);		
+			} else if (w.editor.currentStruct != null) {
+				w.removeStructureTag(w.editor.currentStruct);
+			}
+		}
+	};
+	
 	w.removeEntity = function(id) {
 		id = id || w.editor.currentEntity;
 		
 		delete w.entities[id];
-		
 		w.editor.dom.remove(w.editor.dom.select('entity[name="'+id+'"]'));
-		
 		w.highlightEntity();
-		
-		w.sp.removeFromEntitiesList(id);
+		w.sp.removeFromEntitiesList(id);	
 	};
 	
 	w.getTitleFromContent = function(content) {
@@ -455,6 +476,11 @@ var Writer = function(config) {
 	};
 	
 	w.removeStructureTag = function(id) {
+		id = id || w.editor.currentStruct;
+		
+		if (w.editor.$('#'+id).is('p')) return;
+		
+		delete w.structs[id];
 		var parent = w.editor.$('#'+id).parent()[0];
 		w.editor.$('#'+id).contents().unwrap();
 		parent.normalize();
@@ -462,8 +488,10 @@ var Writer = function(config) {
 	};
 	
 	w.highlightStructureTag = function(id) {
+		w.editor.currentStruct = null;
 		w.editor.dom.setAttribs(w.editor.dom.select('*[name="selected"]'), {name: '', style: ''});
 		if (id) {
+			w.editor.currentStruct = id;
 			w.editor.dom.setAttribs(w.editor.dom.select('#'+id), {name: 'selected', style: 'background-color: #eee'});
 		}
 	};
@@ -536,7 +564,7 @@ var Writer = function(config) {
 						},
 						'delete': {
 							label: 'Remove Tag',
-							icon: 'img/delete.png',
+							icon: 'img/cross.png',
 							action: function(obj) {
 								w.removeStructureTag(obj.attr('name'));
 							}
@@ -550,7 +578,19 @@ var Writer = function(config) {
 					return items;
 				}
 			},
-			plugins: ['json_data', 'ui', 'themeroller', 'contextmenu']
+			hotkeys: {
+				del: function(e) {
+					if (this.is_selected()) {
+						var node = this.get_selected();
+						var id = node.attr('name');
+						if (id) {
+							w.removeStructureTag(id);
+						}
+					}
+				},
+				f2: false
+			},
+			plugins: ['json_data', 'ui', 'themeroller', 'contextmenu', 'hotkeys']
 		});
 		$('#tree').mousemove(function(e) {
 			$('#popup').offset({left: e.pageX+15, top: e.pageY+5});
@@ -594,16 +634,84 @@ var Writer = function(config) {
 				
 				// custom properties added to the editor
 				ed.currentEntity = null; // the id of the currently highlighted entity
+				ed.currentStruct = null; // the id of the currently selected structural tag
 				ed.contextMenuPos = null; // the position of the context menu (used to position related dialog box)
 				
 				ed.onInit.add(_onInitHandler);
 				ed.onChange.add(_onChangeHandler);
 				
-				ed.addButton('removeentity', {
-					title: 'Remove Entity',
-					image: 'img/script_delete.png',
+				ed.addButton('addperson', {
+					title: 'Tag Person',
+					image: 'img/user.png',
 					'class': 'entityButton',
-					cmd: 'removeEntity'
+					onclick : function() {
+						ed.execCommand('addEntity', 'person');
+					}
+				});
+				ed.addButton('addplace', {
+					title: 'Tag Place',
+					image: 'img/world.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addEntity', 'place');
+					}
+				});
+				ed.addButton('adddate', {
+					title: 'Tag Date',
+					image: 'img/calendar.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addEntity', 'date');
+					}
+				});
+				ed.addButton('addevent', {
+					title: 'Tag Event',
+					image: 'img/cake.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addEntity', 'event');
+					}
+				});
+				ed.addButton('addorg', {
+					title: 'Tag Organization',
+					image: 'img/group.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addEntity', 'org');
+					}
+				});
+				ed.addButton('addbibref', {
+					title: 'Tag Citation',
+					image: 'img/vcard.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addEntity', 'bibref');
+					}
+				});
+				ed.addButton('addnote', {
+					title: 'Tag Note',
+					image: 'img/note.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addEntity', 'note');
+					}
+				});
+				ed.addButton('addtitle', {
+					title: 'Tag Text/Title',
+					image: 'img/book.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('addCustomTag', 'title');
+					}
+				});
+				
+				ed.addButton('removeentity', {
+					title: 'Remove Tag',
+					image: 'img/cross.png',
+					'class': 'entityButton',
+					onclick : function() {
+						ed.execCommand('removeTag');
+					}
 				});
 				
 				ed.addButton('savebutton', {
@@ -655,9 +763,9 @@ var Writer = function(config) {
 			extended_valid_elements: 'entity[class|name],struct[class|level|ref|lang|id|type],p[class|id|lang|type]',
 			custom_elements: '~entity,~struct',
 			
-			plugins: 'paste,entitycontextmenu,entitybutton,customtags,viewsource',
+			plugins: 'paste,entitycontextmenu,customtags,viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
-			theme_advanced_buttons1: 'customtags,entitybutton,removeentity,|,viewsource,|,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'customtags,|,addperson,addplace,adddate,addevent,addorg,addbibref,addnote,addtitle,|,removeentity,|,viewsource,|,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: '',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',

@@ -118,7 +118,7 @@
 
 			var url = t.url+'/../../../../../../img/';
 			var tagMenu = m.addMenu({
-				title: 'Tags',
+				title: 'Structural Tags',
 				icon_src: url+'tag.png'
 			});
 			tagMenu.add({
@@ -142,13 +142,13 @@
 					ed.execCommand('addCustomTag', 'emph', t.curPos);
 				}
 			}).setDisabled(col);
-			tagMenu.add({
-				title: 'Title',
-				icon_src: url+'title.png',
-				onclick : function() {
-					ed.execCommand('addCustomTag', 'title', t.curPos);
-				}
-			}).setDisabled(col);
+//			tagMenu.add({
+//				title: 'Title',
+//				icon_src: url+'title.png',
+//				onclick : function() {
+//					ed.execCommand('addCustomTag', 'title', t.curPos);
+//				}
+//			}).setDisabled(col);
 			tagMenu.add({
 				title: 'Quotation',
 				icon_src: url+'quote.png',
@@ -158,60 +158,69 @@
 			}).setDisabled(col);
 			m.addSeparator();
 			m.add({
-				title: 'Add Person',
+				title: 'Tag Person',
 				icon_src: url+'user.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'person');
 				}
 			}).setDisabled(col);
 			m.add({
-				title: 'Add Place',
+				title: 'Tag Place',
 				icon_src: url+'world.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'place');
 				}
 			}).setDisabled(col);
 			m.add({
-				title: 'Add Date',
+				title: 'Tag Date',
 				icon_src: url+'calendar.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'date');
 				}
 			}).setDisabled(col);
 			m.add({
-				title: 'Add Event',
+				title: 'Tag Event',
 				icon_src: url+'cake.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'event');
 				}
 			}).setDisabled(col);
 			m.add({
-				title: 'Add Organization',
-				icon_src: url+'building.png',
+				title: 'Tag Organization',
+				icon_src: url+'group.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'org');
 				}
 			}).setDisabled(col);
 			m.add({
-				title: 'Add Bib. Ref.',
-				icon_src: url+'book.png',
+				title: 'Tag Citation',
+				icon_src: url+'vcard.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'bibref');
 				}
 			}).setDisabled(col);
 			m.add({
-				title: 'Add Note',
-				icon_src: url+'pencil.png',
+				title: 'Tag Note',
+				icon_src: url+'note.png',
 				onclick : function() {
 					ed.execCommand('addEntity', 'note');
 				}
 			}).setDisabled(col);
-			col = ed.currentEntity == null;
+			m.add({
+				title: 'Tag Text/Title',
+				icon_src: url+'book.png',
+				onclick : function() {
+					ed.execCommand('addCustomTag', 'title', t.curPos);
+				}
+			}).setDisabled(col);
+			col = (ed.currentEntity == null && ed.currentStruct == null);
 			m.addSeparator();
 			m.add({
-				title: 'Remove Entity',
-				icon_src: url+'delete.png',
-				cmd: 'removeEntity'
+				title: 'Remove Tag',
+				icon_src: url+'cross.png',
+				onclick : function() {
+					ed.execCommand('removeTag');
+				}
 			}).setDisabled(col);
 
 			t.onContextMenu.dispatch(t, m, el, col);

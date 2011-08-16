@@ -14,7 +14,7 @@
 				para: 'Paragraph',
 				head: 'Heading',
 				emph: 'Emphasized',
-				title: 'Title',
+				title: 'Text/Title',
 				quote: 'Quotation'
 			};
 			
@@ -42,10 +42,14 @@
 				
 				t.bm = t.editor.selection.getBookmark();
 				
-				$('select[name="lang"]')[0].value = '';
-				$('select[name="level"]')[0].value = '';
-				$('input[name="ref"]')[0].value = '';
-				$('select[name="level"]').css({borderColor: ''});
+				if (val == 'title') {
+					$('input[value="m"]', t.level).attr('checked', true);
+					$('input[name="ref"]', t.level).attr('value', '');
+					$('input[name="alt"]', t.level).attr('value', '');
+					$('input[name="unformatted"]', t.level).attr('checked', false);
+				} else {
+					$('select[name="lang"] > option[value="en"]', t.lang).attr('selected', true);
+				}
 				
 				t.mode = t.ADD;
 				t.showDialog(val, pos);
@@ -56,21 +60,26 @@
 				t.currentVal = val;
 				t.tag = tag;
 				
-				var lang = tag.attr('lang');
-				var level = tag.attr('level');
-				var ref = tag.attr('ref');
-				$('select[name="lang"]')[0].value = lang;
-				$('select[name="level"]')[0].value = level;
-				$('input[name="ref"]')[0].value = ref;
-				$('select[name="level"]').css({borderColor: ''});
+				if (val == 'title') {
+					var level = tag.attr('level');
+					var ref = tag.attr('ref');
+					var alt = tag.attr('alt');
+					var unformatted = tag.attr('unformatted');
+					$('input[value="'+level+'"]', t.level).attr('checked', true);
+					$('input[name="ref"]', t.level).attr('value', ref);
+					$('input[name="alt"]', t.level).attr('value', alt);
+					$('input[name="unformatted"]', t.level).attr('checked', unformatted);
+				} else {
+					var lang = tag.attr('lang');
+					$('select[name="lang"] > option[value="'+lang+'"]', t.lang).attr('selected', true);
+				}
 				
 				t.mode = t.EDIT;
 				t.showDialog(val, pos);
 			});
 			
 			$(document.body).append(''+
-				'<div id="customTagsDialog">'+
-				'<div id="lang">'+
+				'<div id="langDialog">'+
 				'<label for="lang">Select language (optional)</label>'+
 				'<select name="lang">'+
 				'<option value=""></option>'+
@@ -86,7 +95,7 @@
 				'<option value="cs">Czech</option>'+
 				'<option value="da">Danish</option>'+
 				'<option value="nl">Dutch</option>'+
-				'<option value="en">English</option>'+
+				'<option value="en" selected="selected">English</option>'+
 				'<option value="et">Estonian</option>'+
 				'<option value="tl">Filipino</option>'+
 				'<option value="fi">Finnish</option>'+
@@ -128,78 +137,61 @@
 				'<option value="yi">Yiddish</option>'+
 				'</select>'+
 				'</div>'+
-				'<div id="level">'+
-				'<label for="level">Level</label>'+
-				'<select name="level">'+
-				'<option value="a">Analytic</option>'+
-				'<option value="m">Monographic</option>'+
-				'<option value="j">Journal</option>'+
-				'<option value="s">Series</option>'+
-				'<option value="u">Unpublished</option>'+
-				'</select>'+
+				'<div id="levelDialog">'+
+				'<div>'+
+				'Type<br/>'+
+				'<input type="radio" value="a" name="level" id="level_a"/><label for="level_a">Analytic <span style="font-size: 8px;">(article, poem, or other item published as part of a larger item)</span></label><br/>'+
+				'<input type="radio" value="m" name="level" id="level_m" checked="checked"/><label for="level_m">Monographic <span style="font-size: 8px;">(book, collection, single volume, or other item published as a distinct item)</span></label><br/>'+
+				'<input type="radio" value="j" name="level" id="level_j"/><label for="level_j">Journal <span style="font-size: 8px;">(magazine, newspaper or other periodical publication)</span></label><br/>'+
+				'<input type="radio" value="s" name="level" id="level_s"/><label for="level_s">Series <span style="font-size: 8px;">(book, radio, or other series)</span></label><br/>'+
+				'<input type="radio" value="u" name="level" id="level_u"/><label for="level_u">Unpublished <span style="font-size: 8px;">(thesis, manuscript, letters or other unpublished material)</span></label><br/>'+
 				'</div>'+
-				'<div id="ref">'+
-				'<label for="ref">Reference (optional)</label>'+
-				'<input name="ref" type="text" />'+
+				'<div>'+
+				'Equivalent title (optional) <input name="alt" type="text" /> <span style="font-size: 8px;">(standard form of title)</span>'+
+				'</div>'+
+				'<div>'+
+				'Refer to text (optional) <input name="ref" type="text" />'+
+				'</div>'+
+				'<div>'+
+				'<input type="checkbox" name="unformatted" id="unformatted"/>'+
+				'<label for="unformatted">Unformatted</label>'+
 				'</div>'+
 				'</div>'
 			);
-			$('#customTagsDialog > div').css({marginBottom: '5px'});
-			t.d = $('#customTagsDialog');
-			t.d.dialog({
+			$('#levelDialog > div').css({marginBottom: '10px'});
+			
+			t.lang = $('#langDialog');
+			t.level = $('#levelDialog');
+			
+			t.lang.dialog({
 				modal: true,
 				resizable: false,
 				closeOnEscape: false,
 				open: function(event, ui) {
-					$('#customTagsDialog').parent().find('.ui-dialog-titlebar-close').hide();
+					$('#langDialog').parent().find('.ui-dialog-titlebar-close').hide();
 				},
-				height: 150,
+				height: 125,
 				width: 325,
 				autoOpen: false,
 				buttons: {
 					'Ok': function() {
-						var lang = $('select[name="lang"]')[0].value;
-						var level = $('select[name="level"]')[0].value;
-						var ref = $('input[name="ref"]')[0].value;
+						var lang = $('select[name="lang"]', t.lang).val();
 						
-						var params = {};
+						var params = {
+							lang: lang,
+							type: t.currentVal
+						};
+						
 						if (t.currentVal == 'para') {
-							params = {
-								'class': 'paraTag',
-								lang: lang
-							};
-						} else if (t.currentVal == 'title') {
-							if (level == 'a' || level == 'u') {
-								params = {
-									'class': 'titleTagQuotes',
-									level: level,
-									ref: ref
-								};
-							} else if (level == 'm' || level == 'j' || level == 's') {
-								params = {
-									'class': 'titleTagItalics',
-									level: level,
-									ref: ref
-								};
-							} else {
-								$('select[name="level"]').css({borderColor: 'red'});
-								return false;
-							}
+							params['class'] = 'paraTag';
 						} else if (t.currentVal == 'quote') {
 							var selection = t.editor.selection.getContent();
 							if (selection.length > 250) {
-								params = {
-									'class': 'quoteTagLong',
-									lang: lang
-								};
+								params['class'] = 'quoteTagLong';
 							} else {
-								params = {
-									'class': 'quoteTagShort',
-									lang: lang
-								};
+								params['class'] = 'quoteTagShort';
 							}
 						}
-						params.type = t.currentVal;
 						
 						switch (t.mode) {
 							case t.ADD:
@@ -210,11 +202,60 @@
 								t.tag = null;
 						}
 						
-						t.d.dialog('close');
+						t.lang.dialog('close');
 					},
 					'Cancel': function() {
 						t.editor.selection.moveToBookmark(t.bm);
-						t.d.dialog('close');
+						t.lang.dialog('close');
+					}
+				}
+			});
+			
+			t.level.dialog({
+				modal: true,
+				resizable: false,
+				closeOnEscape: false,
+				open: function(event, ui) {
+					$('#levelDialog').parent().find('.ui-dialog-titlebar-close').hide();
+				},
+				height: 310,
+				width: 435,
+				autoOpen: false,
+				buttons: {
+					'Ok': function() {
+						var level = $('input[name="level"]:checked', t.level).val();
+						var ref = $('input[name="ref"]', t.level).val();
+						var alt = $('input[name="alt"]', t.level).val();
+						var unformatted = $('input[name="unformatted"]', t.level).attr('checked');
+						
+						var params = {
+							type: t.currentVal,
+							level: level,
+							ref: ref,
+							alt: alt,
+							unformatted: unformatted
+						};
+						
+						if (level == 'a' || level == 'u') {
+							params['class'] = 'titleTagQuotes';
+						} else if (level == 'm' || level == 'j' || level == 's') {
+							params['class'] = 'titleTagItalics';
+						}
+						
+						switch (t.mode) {
+							case t.ADD:
+								t.editor.execCommand('addStructureTag', t.bm, params);
+								break;
+							case t.EDIT:
+								t.editor.execCommand('editStructureTag', t.tag, params);
+								t.tag = null;
+						}
+						
+						t.level.dialog('close');
+					},
+					'Cancel': function() {
+						t.editor.selection.moveToBookmark(t.bm);
+						t.level.dialog('close');
 					}
 				}
 			});
@@ -235,22 +276,13 @@
 				});
 				t.editor.execCommand('updateStructureTree', true);
 			} else if (val != '') {
-				if (val == 'title') {
-					$('#lang').hide();
-					$('#level').show();
-					$('#ref').show();
-				} else {
-					$('#lang').show();
-					$('#level').hide();
-					$('#ref').hide();
-				}
+				var d = t.lang;
+				if (val == 'title') d = t.level;
 				
 				var title = t.titles[val];
-				t.d.dialog('option', 'title', title);
-				if (pos) {
-					t.d.dialog('option', 'position', [pos.x, pos.y]);
-				}
-				t.d.dialog('open');
+				d.dialog('option', 'title', title);
+				if (pos) d.dialog('option', 'position', [pos.x, pos.y]);
+				d.dialog('open');
 			}
 		},
 		createControl: function(n, cm) {
@@ -258,7 +290,7 @@
 				var t = this;
 				var url = t.url+'/../../../../../../img/';
 				t.menuButton = cm.createMenuButton('customTagsButton', {
-					title: 'Add Tag',
+					title: 'Structural Tags',
 					image: url+'tag.png',
 					'class': 'entityButton'
 				});
@@ -284,13 +316,13 @@
 							t.editor.execCommand('addCustomTag', 'emph');
 						}
 					});
-					m.add({
-						title: 'Title',
-						icon_src: url+'title.png',
-						onclick : function() {
-							t.editor.execCommand('addCustomTag', 'title');
-						}
-					});
+//					m.add({
+//						title: 'Title',
+//						icon_src: url+'title.png',
+//						onclick : function() {
+//							t.editor.execCommand('addCustomTag', 'title');
+//						}
+//					});
 					m.add({
 						title: 'Quotation',
 						icon_src: url+'quote.png',
