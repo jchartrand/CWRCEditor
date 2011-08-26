@@ -174,36 +174,7 @@
 				width: 325,
 				autoOpen: false,
 				buttons: {
-					'Ok': function() {
-						var lang = $('select[name="lang"]', t.lang).val();
-						
-						var params = {
-							lang: lang,
-							type: t.currentVal
-						};
-						
-						if (t.currentVal == 'para') {
-							params['class'] = 'paraTag';
-						} else if (t.currentVal == 'quote') {
-							var selection = t.editor.selection.getContent();
-							if (selection.length > 250) {
-								params['class'] = 'quoteTagLong';
-							} else {
-								params['class'] = 'quoteTagShort';
-							}
-						}
-						
-						switch (t.mode) {
-							case t.ADD:
-								t.editor.execCommand('addStructureTag', t.bm, params);
-								break;
-							case t.EDIT:
-								t.editor.execCommand('editStructureTag', t.tag, params);
-								t.tag = null;
-						}
-						
-						t.lang.dialog('close');
-					},
+					'Ok': langResult,
 					'Cancel': function() {
 						t.editor.selection.moveToBookmark(t.bm);
 						t.lang.dialog('close');
@@ -222,43 +193,90 @@
 				width: 435,
 				autoOpen: false,
 				buttons: {
-					'Ok': function() {
-						var level = $('input[name="level"]:checked', t.level).val();
-						var ref = $('input[name="ref"]', t.level).val();
-						var alt = $('input[name="alt"]', t.level).val();
-						var unformatted = $('input[name="unformatted"]', t.level).attr('checked');
-						
-						var params = {
-							type: t.currentVal,
-							level: level,
-							ref: ref,
-							alt: alt,
-							unformatted: unformatted
-						};
-						
-						if (level == 'a' || level == 'u') {
-							params['class'] = 'titleTagQuotes';
-						} else if (level == 'm' || level == 'j' || level == 's') {
-							params['class'] = 'titleTagItalics';
-						}
-						
-						switch (t.mode) {
-							case t.ADD:
-								t.editor.execCommand('addStructureTag', t.bm, params);
-								break;
-							case t.EDIT:
-								t.editor.execCommand('editStructureTag', t.tag, params);
-								t.tag = null;
-						}
-						
-						t.level.dialog('close');
-					},
+					'Ok': levelResult,
 					'Cancel': function() {
 						t.editor.selection.moveToBookmark(t.bm);
 						t.level.dialog('close');
 					}
 				}
 			});
+			
+			$('#langDialog select').keyup(function(event) {
+				if (event.keyCode == '13') {
+					event.preventDefault();
+					langResult();
+				}
+			});
+			
+			$('#levelDialog input').keyup(function(event) {
+				if (event.keyCode == '13') {
+					event.preventDefault();
+					levelResult();
+				}
+			});
+			
+			var langResult = function() {
+				var lang = $('select[name="lang"]', t.lang).val();
+				
+				var params = {
+					lang: lang,
+					type: t.currentVal
+				};
+				
+				if (t.currentVal == 'para') {
+					params['class'] = 'paraTag';
+				} else if (t.currentVal == 'quote') {
+					var selection = t.editor.selection.getContent();
+					if (selection.length > 250) {
+						params['class'] = 'quoteTagLong';
+					} else {
+						params['class'] = 'quoteTagShort';
+					}
+				}
+				
+				switch (t.mode) {
+					case t.ADD:
+						t.editor.execCommand('addStructureTag', t.bm, params);
+						break;
+					case t.EDIT:
+						t.editor.execCommand('editStructureTag', t.tag, params);
+						t.tag = null;
+				}
+				
+				t.lang.dialog('close');
+			};
+			
+			var levelResult = function() {
+				var level = $('input[name="level"]:checked', t.level).val();
+				var ref = $('input[name="ref"]', t.level).val();
+				var alt = $('input[name="alt"]', t.level).val();
+				var unformatted = $('input[name="unformatted"]', t.level).attr('checked');
+				
+				var params = {
+					type: t.currentVal,
+					level: level,
+					ref: ref,
+					alt: alt,
+					unformatted: unformatted
+				};
+				
+				if (level == 'a' || level == 'u') {
+					params['class'] = 'titleTagQuotes';
+				} else if (level == 'm' || level == 'j' || level == 's') {
+					params['class'] = 'titleTagItalics';
+				}
+				
+				switch (t.mode) {
+					case t.ADD:
+						t.editor.execCommand('addStructureTag', t.bm, params);
+						break;
+					case t.EDIT:
+						t.editor.execCommand('editStructureTag', t.tag, params);
+						t.tag = null;
+				}
+				
+				t.level.dialog('close');
+			};
 		},
 		showDialog: function(val, pos) {
 			var t = this;

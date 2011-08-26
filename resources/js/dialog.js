@@ -17,8 +17,18 @@ var Dialog = function(config) {
 		    '<textarea name="note"></textarea>'+
 		'</div>'+
 		'<div id="dateDialog">'+
-		    '<input type="text" id="datePicker" />'+
-		    '<p>Format: yyyy-mm-dd<br/>e.g. 2010-10-05</p>'+
+			'<div style="float: right; width: 100px;">'+
+			'<input type="radio" name="dateType" value="date" id="type_date" checked="checked"/><label for="type_date">Date</label><br/>'+
+			'<input type="radio" name="dateType" value="range" id="type_range"/><label for="type_range">Date Range</label>'+
+			'</div>'+
+			'<div id="date">'+
+			'<label for="datePicker">Date</label><input type="text" id="datePicker" />'+
+			'</div>'+
+			'<div id="range">'+
+			'<label for="startDate">Start Date</label><input type="text" id="startDate" style="margin-bottom: 5px;"/><br />'+
+		    '<label for="endDate">End Date</label><input type="text" id="endDate" />'+
+		    '</div>'+
+		    '<p>Format: yyyy or yyyy-mm-dd<br/>e.g. 2010, 2010-10-05</p>'+
 		'</div>'
 	);
 	
@@ -58,7 +68,9 @@ var Dialog = function(config) {
 		}
 	});
 	var searchInput = $('#searchDialog input')[0];
-	$(searchInput).bind('keyup', doQuery);
+	$(searchInput).bind('keyup', function() {
+		doQuery();
+	});
 	var resultsDiv = $('#results');
 	
 	var note = $('#noteDialog');
@@ -83,6 +95,11 @@ var Dialog = function(config) {
 	});
 	var noteInput = $('#noteDialog textarea')[0];
 	
+	$('input[name="dateType"]').change(function() {
+		var type = this.id.split('_')[1];
+		toggleDate(type);
+	});
+	
 	var date = $('#dateDialog');
 	date.dialog({
 		modal: true,
@@ -91,8 +108,8 @@ var Dialog = function(config) {
 		open: function(event, ui) {
 			$('#dateDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 250,
-		width: 300,
+		height: 200,
+		width: 375,
 		autoOpen: false,
 		buttons: {
 			'Ok': function() {
@@ -103,10 +120,19 @@ var Dialog = function(config) {
 			}
 		}
 	});
+	
 	var dateInput = $('#datePicker')[0];
 	$(dateInput).focus(function() {
 		$(this).css({borderBottom: ''});
 	});
+	
+	$('#dateDialog input').keyup(function(event) {
+		if (event.keyCode == '13') {
+			event.preventDefault();
+			dateResult();
+		}
+	});
+	
 	$('#datePicker').datepicker({
 		dateFormat: 'yy-mm-dd',
 		constrainInput: false,
@@ -118,12 +144,42 @@ var Dialog = function(config) {
 		showOn: 'button',
 		buttonText: 'Date Picker',
 		buttonImage: 'img/calendar.png',
+		buttonImageOnly: true
+	});
+	
+	var startDate = $('#startDate')[0];
+	$(startDate).focus(function() {
+		$(this).css({borderBottom: ''});
+	});
+	var endDate = $('#endDate')[0];
+	$(endDate).focus(function() {
+		$(this).css({borderBottom: ''});
+	});
+	
+	var dateRange = $('#startDate, #endDate').datepicker({
+		dateFormat: 'yy-mm-dd',
+		constrainInput: false,
+		changeMonth: true,
+		changeYear: true,
+		yearRange: '-210:+10',
+		minDate: new Date(1800, 0, 1),
+		maxDate: new Date(2020, 11, 31),
+		showOn: 'button',
+		buttonText: 'Date Picker',
+		buttonImage: 'img/calendar.png',
 		buttonImageOnly: true,
-		onSelect: doDateSelect
+		onSelect: function(selectedDate) {
+			var option = this.id == "startDate" ? "minDate" : "maxDate";
+			var instance = $(this).data("datepicker");
+			var date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+			dateRange.not(this).datepicker("option", option, date);
+		}
 	});
 	
 	var doQuery = function(event) {
 		resultsDiv.css({borderColor: '#fff'});
+		
+		$('#results ul').first().html('<li class="unselectable last"><span>Searching...</span></li>');
 		
 		var query = searchInput.value;
 		
@@ -135,7 +191,10 @@ var Dialog = function(config) {
 					wt: 'json'
 				},
 				dataType: 'json',
-				success: handleResults
+				success: handleResults,
+				error: function() {
+					$('#results ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
+				}
 			});
 		} else {
 			var data = {
@@ -160,39 +219,43 @@ var Dialog = function(config) {
 		var last = '';
 		var results = data.response.docs;
 		
-		var r, i, j;
-		for (i = 0; i < results.length; i++) {
-			
-			r = results[i];
-			
-			if (i == results.length - 1) last = 'last';
-			else last = '';
-			
-			formattedResults += '<li class="unselectable '+last+'">';
-			for (j in r) {
-				formattedResults += '<span>'+r[j]+'</span>';
+		if (results.length == 0) {
+			$('#results ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
+		} else {
+			var r, i, j;
+			for (i = 0; i < results.length; i++) {
+				
+				r = results[i];
+				
+				if (i == results.length - 1) last = 'last';
+				else last = '';
+				
+				formattedResults += '<li class="unselectable '+last+'">';
+				for (j in r) {
+					formattedResults += '<span>'+r[j]+'</span>';
+				}
+				formattedResults += '</li>';
 			}
-			formattedResults += '</li>';
+			
+			$('#results ul').first().html(formattedResults);
+			
+			$('#results ul li').each(function(index) {
+				$(this).data(results[index]);
+			});
+			
+			$('#results ul li').click(function(event) {
+				resultsDiv.css({borderColor: '#fff'});
+				var remove = $(this).hasClass('selected');
+				$('#results ul li').removeClass('selected');
+				if (!remove ) $(this).addClass('selected');
+			});
+			
+			$('#results ul li').dblclick(function(event) {
+				$('#results ul li').removeClass('selected');
+				$(this).addClass('selected');
+				searchResult();
+			});
 		}
-
-		$('#results ul').first().html(formattedResults);
-		
-		$('#results ul li').each(function(index) {
-			$(this).data(results[index]);
-		});
-		
-		$('#results ul li').click(function(event) {
-			resultsDiv.css({borderColor: '#fff'});
-			var remove = $(this).hasClass('selected');
-			$('#results ul li').removeClass('selected');
-			if (!remove ) $(this).addClass('selected');
-		});
-		
-		$('#results ul li').dblclick(function(event) {
-			$('#results ul li').removeClass('selected');
-			$(this).addClass('selected');
-			searchResult();
-		});
 	};
 	
 	var searchResult = function(cancelled) {
@@ -225,24 +288,76 @@ var Dialog = function(config) {
 		currentType = null;
 	};
 	
-	var doDateSelect = function(dateText, picker) {
+	var toggleDate = function(type) {
+		if (type == 'date') {
+			$('#date').show();
+			$('#range').hide();
+		} else {
+			$('#date').hide();
+			$('#range').show();
+		}
 	};
 	
 	var dateResult = function(cancelled) {
-		var data = null;
+		var data = {};
 		if (!cancelled) {
-			var dateString = dateInput.value;
-			if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
-				data = {date: dateString};
+			var type = $('input[name="dateType"]:checked', date).val();
+			if (type == 'date') {
+				var dateString = dateInput.value;
+				if (dateString.match(/^\d{4}-\d{2}-\d{2}$/) || dateString.match(/^\d{4}$/)) {
+					data.date = dateString;
+				} else {
+					$(dateInput).css({borderBottom: '1px solid red'});
+					return false;
+				}
 			} else {
-				$(dateInput).css({borderBottom: '1px solid red'});
-				return false;
+				var startString = startDate.value;
+				var endString = endDate.value;
+				var error = false;
+				var padStart = '';
+				var padEnd = '';
+				
+				if (startString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+					data.startDate = startString;
+				} else if (startString.match(/^\d{4}$/)) {
+					data.startDate = startString;
+					padStart = '-01-01';
+				} else {
+					$(startDate).css({borderBottom: '1px solid red'});
+					error = true;
+				}
+				
+				if (endString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+					data.endDate = endString;
+				} else if (endString.match(/^\d{4}$/)) {
+					data.endDate = endString;
+					padEnd = '-01-01';
+				} else {
+					$(endDate).css({borderBottom: '1px solid red'});
+					error = true;
+				}
+				
+				var start = $.datepicker.parseDate('yy-mm-dd', startString+padStart);
+				var end = $.datepicker.parseDate('yy-mm-dd', endString+padEnd);
+				
+				if (start > end) {
+					$(startDate).css({borderBottom: '1px solid red'});
+					$(endDate).css({borderBottom: '1px solid red'});
+					error = true;
+				}
+				
+				if (error) return false;
 			}
+		} else {
+			data = null;
 		}
+		
 		w.finalizeEntity(w.editor.currentEntity, data);
 		date.dialog('close');
 		currentType = null;
 	};
+	
+	
 	
 	return {
 		showMessage: function(config) {
@@ -293,8 +408,16 @@ var Dialog = function(config) {
 		showDate: function(config) {
 			currentType = config.type;
 			
+			toggleDate('date');
+			
+			$('#type_date').attr('checked', true);
+			
 			dateInput.value = '';
 			$(dateInput).css({borderBottom: ''});
+			startDate.value = '';
+			$(startDate).css({borderBottom: ''});
+			endDate.value = '';
+			$(endDate).css({borderBottom: ''});
 			
 			var title = 'Add '+config.title;
 			date.dialog('option', 'title', title);
