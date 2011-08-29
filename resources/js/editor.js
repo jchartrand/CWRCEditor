@@ -49,6 +49,8 @@ var Writer = function(config) {
 	};
 	
 	var _onInitHandler = function(ed) {
+		ed.setContent('<p>Paste or type your text here.</p>');
+		
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
 		ed.addCommand('addEntity', w.addEntity);
@@ -739,6 +741,15 @@ var Writer = function(config) {
 					}
 				});
 				
+				ed.addButton('editsource', {
+					title: 'Edit Source',
+					image: 'img/editsource.gif',
+					'class': 'wideButton',
+					onclick: function() {
+						w.fm.editSource();
+					}
+				});
+				
 //				ed.addButton('toggleeditor', {
 //					title: 'Show Advanced Mode',
 //					image: 'img/html.png',
@@ -765,7 +776,7 @@ var Writer = function(config) {
 			
 			plugins: 'paste,entitycontextmenu,customtags,viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
-			theme_advanced_buttons1: 'customtags,|,addperson,addplace,adddate,addevent,addorg,addbibref,addnote,addtitle,|,removeentity,|,viewsource,|,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'customtags,|,addperson,addplace,adddate,addevent,addorg,addbibref,addnote,addtitle,|,removeentity,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: '',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',

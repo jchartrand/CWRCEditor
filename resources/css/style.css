@@ -286,13 +286,13 @@ label {
 	margin: 2px !important;
 }
 
-#editor_viewSourceButton {
+.wideButton {
 	height: 20px !important;
 	width: 34px !important;
 	margin: 2px !important;
 }
 
-#editor_viewSourceButton img {
+.wideButton img {
 	height: 20px !important;
 	width: 32px !important;
 	margin: 2px !important;

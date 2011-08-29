@@ -14,7 +14,11 @@ var FileManager = function(config) {
 			'<label for="filename">Name</label>'+
 			'<input type="text" name="filename"/>'+
 			'<p>Please enter letters only.</p>'+
-		'</div>'
+		'</div>'+
+		'<div id="editSourceDialog">'+
+			'<textarea style="width: 100%; height: 98%;"></textarea>'+
+		'</div>'+
+		'<iframe id="editDocLoader" style="display: none;"></iframe>'
 	);
 	
 	var loader = $('#loader');
@@ -85,6 +89,31 @@ var FileManager = function(config) {
 		}
 	});
 	var filenameInput = $('#saver input')[0];
+	
+	var edit = $('#editSourceDialog');
+	edit.dialog({
+		title: 'Edit Source',
+		modal: true,
+		resizable: true,
+		closeOnEscape: true,
+		height: 480,
+		width: 640,
+		autoOpen: false,
+		buttons: {
+			'Ok': function() {
+				var newDocString = $('textarea', edit).val();
+				$('#editDocLoader').contents().find('html').html(newDocString);
+				w.entities = {};
+				w.structs = {};
+				var newDoc = $('#editDocLoader').contents().clone()[0];
+				_loadDocumentHandler(newDoc);
+				edit.dialog('close');
+			},
+			'Cancel': function() {
+				edit.dialog('close');
+			}
+		}
+	});
 	
 	var fm = {};
 	
@@ -188,12 +217,16 @@ var FileManager = function(config) {
 	};
 	
 	var _exportDocument = function() {
+		// remove highlights
+		w.highlightEntity();
+		w.highlightStructureTag();
+		
 		var offsets = [];
 		var doc = w.editor.getDoc();
 		var originalDoc = $(doc.body).clone(false, true); // make a copy, don't clone body events, but clone child events
 		_processNodes($(doc.body), offsets);
 		$(doc.body).find('entity').remove();
-		var content = '<body>'+w.editor.getContent()+'</body></html>';
+		var content = '\n<body>\n'+w.editor.getContent()+'\n</body>\n</html>';
 		var head = '<?xml version="1.0"?><html><head><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
 		for (var i = 0; i < offsets.length; i++) {
 			var o = offsets[i];
@@ -261,17 +294,17 @@ var FileManager = function(config) {
 		
 		var maxId = 0; // track what the largest id num is
 		
-		var rdfs = $(doc).find('[nodeName="rdf:RDF"]');
+		var rdfs = $(doc).find('rdf\\:RDF');
 		rdfs.children().each(function(i1, el1) {
-			var id = $(this).find('[nodeName="w:id"]').text();
+			var id = $(this).find('w\\:id').text();
 			
 			var idNum = parseInt(id.split('_')[1]);
 			if (idNum > maxId) maxId = idNum;
 			
 			offsets[id] = {
-				parent: $(this).find('[nodeName="w:parent"]').text(),
-				offset: parseInt($(this).find('[nodeName="w:offset"]').text()),
-				length: parseInt($(this).find('[nodeName="w:length"]').text())
+				parent: $(this).find('w\\:parent').text(),
+				offset: parseInt($(this).find('w\\:offset').text()),
+				length: parseInt($(this).find('w\\:length').text())
 			};
 			w.entities[id] = {
 				props: {
@@ -280,7 +313,7 @@ var FileManager = function(config) {
 				info: {}
 			};
 			$(this).children('[type="props"]').each(function(i2, el2) {
-				var key = $(this)[0].nodeName.split(':')[1];
+				var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
 				if (key == 'content') {
 					var title = w.getTitleFromContent($(this).text());
 					w.entities[id]['props']['title'] = title;
@@ -288,10 +321,11 @@ var FileManager = function(config) {
 				w.entities[id]['props'][key] = $(this).text();
 			});
 			$(this).children('[type="info"]').each(function(i2, el2) {
-				var key = $(this)[0].nodeName.split(':')[1];
+				var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
 				w.entities[id]['info'][key] = $(this).text();
 			});
 		});
+		$(doc).find('rdf\\:RDF').remove();
 		
 		var body = doc.getElementsByTagName('body')[0];
 		var xmlString = '';
@@ -371,6 +405,12 @@ var FileManager = function(config) {
 		
 		w.sp.updateEntitesList();
 		w.sp.updateStructureTree(true);
+	};
+	
+	fm.editSource = function() {
+		var docText = _exportDocument();
+		$('textarea', edit).val(docText);
+		edit.dialog('open');
 	};
 	
 	return fm;
