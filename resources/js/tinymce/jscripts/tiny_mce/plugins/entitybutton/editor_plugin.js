@@ -1,64 +1,64 @@
 (function(tinymce) {
-	tinymce.create('tinymce.plugins.EntityButton', {
+	tinymce.create('tinymce.plugins.EntityButtons', {
 		init: function(ed, url) {
 			var t = this;
 			t.url = url;
 			t.editor = ed;
 		},
 		createControl: function(n, cm) {
-			if (n == 'entitybutton') {
+			if (n == 'entitybuttons') {
 				var t = this;
 				var url = t.url+'/../../../../../../img/';
 				var c = cm.createMenuButton('entityActions', {
-					title: 'Add Entity',
+					title: 'Tag Entity',
 					image: url+'script_add.png',
 					'class': 'entityButton'
 				});
 				c.onRenderMenu.add(function(c, m) {
 					m.add({
-						title: 'Add Person',
+						title: 'Tag Person',
 						icon_src: url+'user.png',
 						onclick : function() {
 							t.editor.execCommand('addEntity', 'person');
 						}
 					});
 					m.add({
-						title: 'Add Place',
+						title: 'Tag Place',
 						icon_src: url+'world.png',
 						onclick : function() {
 							t.editor.execCommand('addEntity', 'place');
 						}
 					});
 					m.add({
-						title: 'Add Date',
+						title: 'Tag Date',
 						icon_src: url+'calendar.png',
 						onclick : function() {
 							t.editor.execCommand('addEntity', 'date');
 						}
 					});
 					m.add({
-						title: 'Add Event',
+						title: 'Tag Event',
 						icon_src: url+'cake.png',
 						onclick : function() {
 							t.editor.execCommand('addEntity', 'event');
 						}
 					});
 					m.add({
-						title: 'Add Organization',
+						title: 'Tag Organization',
 						icon_src: url+'building.png',
 						onclick : function() {
 							t.editor.execCommand('addEntity', 'org');
 						}
 					});
 					m.add({
-						title: 'Add Bib. Ref.',
+						title: 'Tag Citation',
 						icon_src: url+'book.png',
 						onclick : function() {
-							t.editor.execCommand('addEntity', 'bibref');
+							t.editor.execCommand('addEntity', 'citation');
 						}
 					});
 					m.add({
-						title: 'Add Note',
+						title: 'Tag Note',
 						icon_src: url+'pencil.png',
 						onclick : function() {
 							t.editor.execCommand('addEntity', 'note');
@@ -73,5 +73,5 @@
 		}
 	});
 	
-	tinymce.PluginManager.add('entitybutton', tinymce.plugins.EntityButton);
+	tinymce.PluginManager.add('entitybuttons', tinymce.plugins.EntityButtons);
 })(tinymce);

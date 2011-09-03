@@ -4,6 +4,10 @@ var Dialog = function(config) {
 	
 	var currentType = null;
 	
+	var mode = null;
+	var ADD = 0;
+	var EDIT = 1;
+	
 	$(document.body).append(''+
 		'<div id="messageDialog">'+
 		    '<p></p>'+
@@ -273,7 +277,9 @@ var Dialog = function(config) {
 				return false;
 			}
 		}
-		w.finalizeEntity(w.editor.currentEntity, data);
+		if (!(mode == EDIT && data == null)) {
+			w.finalizeEntity(w.editor.currentEntity, data);
+		}
 		search.dialog('close');
 		currentType = null;
 	};
@@ -281,9 +287,12 @@ var Dialog = function(config) {
 	var noteResult = function(cancelled) {
 		var data = null;
 		if (!cancelled) {
-			data = {note: noteInput.value};
+			data = {};
+			data[currentType] = noteInput.value;
 		}
-		w.finalizeEntity(w.editor.currentEntity, data);
+		if (!(mode == EDIT && data == null)) {
+			w.finalizeEntity(w.editor.currentEntity, data);
+		}
 		note.dialog('close');
 		currentType = null;
 	};
@@ -352,7 +361,9 @@ var Dialog = function(config) {
 			data = null;
 		}
 		
-		w.finalizeEntity(w.editor.currentEntity, data);
+		if (!(mode == EDIT && data == null)) {
+			w.finalizeEntity(w.editor.currentEntity, data);
+		}
 		date.dialog('close');
 		currentType = null;
 	};
@@ -371,6 +382,12 @@ var Dialog = function(config) {
 		},
 		showSearch: function(config) {
 			currentType = config.type;
+			mode = config.entry ? EDIT : ADD;
+			var prefix = 'Add ';
+			
+			if (mode == EDIT) {
+				prefix = 'Edit ';
+			}
 			
 			resultsDiv.css({borderColor: '#fff'});
 			resultsDiv.children('ul').html('');
@@ -382,7 +399,7 @@ var Dialog = function(config) {
 				searchInput.value = '';
 			}
 			
-			var title = 'Add '+config.title;
+			var title = prefix+config.title;
 			search.dialog('option', 'title', title);
 			if (config.pos) {
 				search.dialog('option', 'position', [config.pos.x, config.pos.y]);
@@ -393,10 +410,17 @@ var Dialog = function(config) {
 		},
 		showNote: function(config) {
 			currentType = config.type;
+			mode = config.entry ? EDIT : ADD;
+			var prefix = 'Add ';
 			
-			noteInput.value = '';
+			if (mode == ADD) {
+				noteInput.value = '';
+			} else {
+				prefix = 'Edit ';
+				noteInput.value = config.entry.info[currentType];
+			}
 			
-			var title = 'Add '+config.title;
+			var title = prefix+config.title;
 			note.dialog('option', 'title', title);
 			if (config.pos) {
 				note.dialog('option', 'position', [config.pos.x, config.pos.y]);
@@ -407,19 +431,37 @@ var Dialog = function(config) {
 		},
 		showDate: function(config) {
 			currentType = config.type;
+			mode = config.entry ? EDIT : ADD;
+			var prefix = 'Add ';
 			
-			toggleDate('date');
+			if (mode == ADD) {
+				toggleDate('date');
+				$('#type_date').attr('checked', true);
+				dateInput.value = '';
+				startDate.value = '';
+				endDate.value = '';
+			} else {
+				prefix = 'Edit ';
+				var info = config.entry.info;
+				if (info.date) {
+					toggleDate('date');
+					$('#type_date').attr('checked', true);
+					dateInput.value = info.date;
+					startDate.value = '';
+					endDate.value = '';
+				} else {
+					toggleDate('range');
+					$('#type_date').attr('checked', false);
+					dateInput.value = '';
+					startDate.value = info.startDate;
+					endDate.value = info.endDate;
+				}
+			}
 			
-			$('#type_date').attr('checked', true);
-			
-			dateInput.value = '';
 			$(dateInput).css({borderBottom: ''});
-			startDate.value = '';
 			$(startDate).css({borderBottom: ''});
-			endDate.value = '';
 			$(endDate).css({borderBottom: ''});
-			
-			var title = 'Add '+config.title;
+			var title = prefix+config.title;
 			date.dialog('option', 'title', title);
 			if (config.pos) {
 				date.dialog('option', 'position', [config.pos.x, config.pos.y]);

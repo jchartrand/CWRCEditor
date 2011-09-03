@@ -4,6 +4,13 @@ var SidePanel = function(config) {
 	
 	var sp = {};
 	
+	$(document.body).append(''+
+		'<div id="entitiesMenu" class="contextMenu" style="display: none;"><ul>'+
+		'<li id="editEntity"><ins style="background:url(img/tag_blue_edit.png) center center no-repeat;" />Edit Tag</li>'+
+		'<li id="removeEntity"><ins style="background:url(img/cross.png) center center no-repeat;" />Remove Tag</li>'+
+		'</ul></div>'
+	);
+	
 	sp.updateEntitesList = function(sort) {
 		if (sort == null) {
 			if ($('#sequence').prop('checked')) {
@@ -59,8 +66,48 @@ var SidePanel = function(config) {
 		}
 		
 		$('#entities > ul').html(entitiesString);
-		$('#entities > ul > li').click(function() {
+		$('#entities > ul > li').hover(function() {
+			if (!$(this).hasClass('selected')) {
+				var color = $(this).find('span.box').css('backgroundColor');
+				$(this).css('backgroundColor', color);
+			}
+		}, function() {
+			if (!$(this).hasClass('selected')) {
+				$(this).css('backgroundColor', '');
+			}
+		}).mousedown(function(event) {
 			w.highlightEntity(this.getAttribute('name'), null, true);
+		}).contextMenu('entitiesMenu', {
+			bindings: {
+				'editEntity': function(tag) {
+					w.editTag($(tag).attr('name'));
+				},
+				'removeEntity': function(tag) {
+					w.removeEntity($(tag).attr('name'));
+				}
+			},
+			shadow: false,
+			menuStyle: {
+			    backgroundColor: '#FFFFFF',
+			    border: '1px solid #D4D0C8',
+			    boxShadow: '1px 1px 2px #CCCCCC',
+			    padding: '0px'
+			},
+			itemStyle: {
+				fontFamily: 'Tahoma,Verdana,Arial,Helvetica',
+				fontSize: '11px',
+				color: '#000',
+				lineHeight: '20px',
+				padding: '0px',
+				cursor: 'pointer',
+				textDecoration: 'none',
+				border: 'none'
+			},
+			itemHoverStyle: {
+				color: '#000',
+				backgroundColor: '#DBECF3',
+				border: 'none'
+			}
 		});
 	};
 	

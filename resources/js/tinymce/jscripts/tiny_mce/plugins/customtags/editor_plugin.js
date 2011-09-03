@@ -174,7 +174,9 @@
 				width: 325,
 				autoOpen: false,
 				buttons: {
-					'Ok': langResult,
+					'Ok': function() {
+						langResult();
+					},
 					'Cancel': function() {
 						t.editor.selection.moveToBookmark(t.bm);
 						t.lang.dialog('close');
@@ -193,7 +195,9 @@
 				width: 435,
 				autoOpen: false,
 				buttons: {
-					'Ok': levelResult,
+					'Ok': function() {
+						levelResult();
+					},
 					'Cancel': function() {
 						t.editor.selection.moveToBookmark(t.bm);
 						t.level.dialog('close');
@@ -307,7 +311,7 @@
 			if (n == 'customtags') {
 				var t = this;
 				var url = t.url+'/../../../../../../img/';
-				t.menuButton = cm.createMenuButton('customTagsButton', {
+				t.menuButton = cm.createSplitButton('customTagsButton', {
 					title: 'Structural Tags',
 					image: url+'tag.png',
 					'class': 'entityButton'

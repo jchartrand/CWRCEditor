@@ -51,6 +51,7 @@
 				var c = cm.createButton('viewSourceButton', {
 					title: 'View Source',
 					image: url+'viewsource.gif',
+					'class': 'wideButton',
 					onclick: function() {
 						t.editor.execCommand('removeHighlights');
 						t.editor.execCommand('viewSource');

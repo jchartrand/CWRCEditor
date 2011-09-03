@@ -106,20 +106,50 @@ label {
 }
 
 #entities ul li .box {
-	width: 6px;
-	height: 18px;
+	width: 22px;
+	height: 22px;
 	margin-right: 2px;
 	display: inline-block;
+	background-position: 3px 3px;
+	background-repeat: no-repeat;
+}
+
+#entities ul li .person {
+	background-image: url('../img/user.png');
+}
+
+#entities ul li .place {
+	background-image: url('../img/world.png');
+}
+
+#entities ul li .date {
+	background-image: url('../img/calendar.png');
+}
+
+#entities ul li .event {
+	background-image: url('../img/cake.png');
+}
+
+#entities ul li .org {
+	background-image: url('../img/group.png');
+}
+
+#entities ul li .citation {
+	background-image: url('../img/vcard.png');
+}
+
+#entities ul li .note {
+	background-image: url('../img/note.png');
 }
 
 #entities ul li .title {
 	font-size: 11px;
-	vertical-align: 4px;
+	vertical-align: 6px;
 }
 
 #entities ul li .info {
 	display: none;
-	padding: 0 6px 6px 6px;
+	padding: 0px 3px 3px 3px;
 }
 
 #entities ul li .info ul {
@@ -129,7 +159,7 @@ label {
 	color: #000;
 	max-height: 160px;
 	overflow: auto;
-	border-radius: 3px;
+	border-radius: 2px;
 }
 
 #entities ul li .info ul li {
@@ -143,8 +173,7 @@ label {
 }
 
 #entities ul li {
-	height: 18px;
-	margin-bottom: 2px;
+	height: 22px;
 }
 
 #entities ul li.selected {
@@ -154,7 +183,6 @@ label {
 
 #entities ul li:hover {
 	cursor: pointer;
-	background-color: #eee;
 }
 
 #structure {
@@ -246,28 +274,61 @@ label {
 	background-color: #FF0000;
 }
 
+#entities .person {
+	background-color: #ff8080;
+}
+
 .date {
 	background-color: #FF7400;
+}
+
+#entities .date {
+	background-color: #ffb980;
 }
 
 .place {
 	background-color: #009999;
 }
 
+#entities .place {
+	background-color: #4c9999;
+}
+
 .event {
 	background-color: #00CC00;
+}
+
+#entities .event {
+	background-color: #66cc66;
 }
 
 .org {
 	background-color: #3914AF; 
 }
 
-.bibref {
+#entities .org {
+	background-color: #8172b0;
+}
+
+.citation {
 	background-color: #CD0074;
+}
+
+#entities .citation {
+	background-color: #cc66a0;
 }
 
 .note {
 	background-color: #0D56A6;
+}
+
+#entities .note {
+	background-color: #6c88a6;
+}
+
+#entities .selected .person, #entities .selected .date, #entities .selected .place, #entities .selected .event,
+#entities .selected .org, #entities .selected .citation, #entities .selected .note {
+	background-color: transparent;
 }
 
 /* tinymce style overrides */
@@ -298,6 +359,34 @@ label {
 	margin: 2px !important;
 }
 
+.mceToolbar .person {
+	border-bottom: 2px solid #FF0000 !important;
+}
+
+.mceToolbar .place {
+	border-bottom: 2px solid #009999 !important;
+}
+
+.mceToolbar .date {
+	border-bottom: 2px solid #FF7400 !important;
+}
+
+.mceToolbar .event {
+	border-bottom: 2px solid #00CC00 !important;
+}
+
+.mceToolbar .org {
+	border-bottom: 2px solid #3914AF !important;
+}
+
+.mceToolbar .citation {
+	border-bottom: 2px solid #CD0074 !important;
+}
+
+.mceToolbar .note {
+	border-bottom: 2px solid #0D56A6 !important;
+}
+
 /* tinymce overrides */
 div.mceDropDown {
 	box-shadow: 1px 1px 2px #ccc;
@@ -313,8 +402,16 @@ div.mceDropDown {
 	min-width: 100px !important;	
 }
 
-#vakata-contextmenu li ins {
+#vakata-contextmenu li ins, #jqContextMenu li ins {
 	margin: 2px 2px 0 2px !important;
+}
+
+#jqContextMenu li ins {
+	float: left;
+	height: 16px;
+	margin-right: 2px;
+	text-decoration: none;
+	width: 16px;
 }
 
 #vakata-contextmenu li a {

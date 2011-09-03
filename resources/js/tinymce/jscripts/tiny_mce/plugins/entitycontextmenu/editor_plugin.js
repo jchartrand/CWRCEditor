@@ -196,7 +196,7 @@
 				title: 'Tag Citation',
 				icon_src: url+'vcard.png',
 				onclick : function() {
-					ed.execCommand('addEntity', 'bibref');
+					ed.execCommand('addEntity', 'citation');
 				}
 			}).setDisabled(col);
 			m.add({
@@ -215,6 +215,13 @@
 			}).setDisabled(col);
 			col = (ed.currentEntity == null && ed.currentStruct == null);
 			m.addSeparator();
+			m.add({
+				title: 'Edit Tag',
+				icon_src: url+'tag_blue_edit.png',
+				onclick : function() {
+					ed.execCommand('editTag', null, t.curPos);
+				}
+			}).setDisabled(col);
 			m.add({
 				title: 'Remove Tag',
 				icon_src: url+'cross.png',
