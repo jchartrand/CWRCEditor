@@ -201,6 +201,7 @@ var FileManager = function(config) {
 				dataType: 'json',
 				data: docText,
 				success: function(data, status, xhr) {
+					w.editor.isNotDirty = 1; // force clean state
 					w.d.showMessage({
 						title: 'Document Saved',
 						msg: currentDoc+' was saved successfully.'

@@ -17,6 +17,11 @@
 		<script type="text/javascript" src="js/filemanager.js"></script>
 		<script type="text/javascript" src="js/sidepanel.js"></script>
 		<script type="text/javascript">
+			window.onbeforeunload = function() {
+				if (this.tinymce.get('editor').isDirty()) {
+					return 'You have unsaved changes.';
+				}
+			}
 			$(function() {
 				var writer = new Writer();
 				writer.init();
