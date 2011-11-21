@@ -116,7 +116,7 @@
 			
 			t._menu = m;
 
-			var url = t.url+'/../../../../../../img/';
+			var url = t.url+'/../../img/';
 			var tagMenu = m.addMenu({
 				title: 'Structural Tags',
 				icon_src: url+'tag.png'

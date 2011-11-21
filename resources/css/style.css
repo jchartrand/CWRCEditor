@@ -228,7 +228,7 @@ label {
 	display: block;
 }
 
-#popup {
+#tree_popup {
 	display: none;
 	position: absolute;
 	width: 150px;
@@ -238,7 +238,7 @@ label {
     padding: 0;
 }
 
-#popup ul {
+#tree_popup ul {
 	padding: 5px;
 	margin: 0;
 	list-style: none;

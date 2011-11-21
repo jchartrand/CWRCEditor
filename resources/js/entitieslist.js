@@ -1,8 +1,8 @@
-var SidePanel = function(config) {
+var EntitiesList = function(config) {
 	
 	var w = config.writer;
 	
-	var sp = {};
+	var entitiesList = {};
 	
 	$(document.body).append(''+
 		'<div id="entitiesMenu" class="contextMenu" style="display: none;"><ul>'+
@@ -11,7 +11,17 @@ var SidePanel = function(config) {
 		'</ul></div>'
 	);
 	
-	sp.updateEntitesList = function(sort) {
+	$('#sequence').button().click(function() {
+		w.entitiesList.update('sequence');
+		w.highlightEntity(w.editor.currentEntity);
+	});
+	$('#category').button().click(function() {
+		w.entitiesList.update('category');
+		w.highlightEntity(w.editor.currentEntity);
+	});
+	$('#sortBy').buttonset();
+	
+	entitiesList.update = function(sort) {
 		if (sort == null) {
 			if ($('#sequence').prop('checked')) {
 				sort = 'sequence';
@@ -111,86 +121,9 @@ var SidePanel = function(config) {
 		});
 	};
 	
-	sp.removeFromEntitiesList = function(id) {
+	entitiesList.remove = function(id) {
 		$('#entities li[name="'+id+'"]').remove();
 	};
 	
-	sp.toggleEntitiesList = function() {
-		if ($('#main').css('marginLeft') == '6px') {
-			$('#main').css('marginLeft', '250px');
-			$('#tabs').show();
-			$('#leftcol').width(250);
-			$('#separator').addClass('arrowLeft').removeClass('arrowRight');
-		} else {
-			$('#main').css('marginLeft', '6px');
-			$('#tabs').hide();
-			$('#leftcol').width(6);
-			$('#separator').addClass('arrowRight').removeClass('arrowLeft');
-		}
-	};
-	
-	sp.updateStructureTree = function(checkForNewTags) {
-		w.highlightStructureTag(); // remove previous highlight
-		
-		var body = w.editor.dom.select('body');
-//		$('#tree').jstree('_get_children').each(function(index, element) {
-//			$('#tree').jstree('delete_node', $(this));
-//		});
-		$('#tree').jstree('delete_node', '#root');
-		var root = $('#tree').jstree('create_node', $('#tree'), 'first', {
-			data: 'Tags',
-			attr: {id: 'root'},
-			state: 'open'
-		});
-		_doStructureTreeUpdate($(body).children(), root, checkForNewTags);
-	};
-	
-	var _doStructureTreeUpdate = function(children, nodeParent, checkForNewTags) {
-		children.each(function(index, el) {
-			var newChildren = $(this).children();
-			var newNodeParent = nodeParent;
-			if ($(this).is('struct') || $(this).is('p')) {
-				var id = $(this).attr('id');
-				var isLeaf = $(this).find('struct, p').length > 0 ? 'open' : null;
-				
-				if (checkForNewTags) {
-					// new paragraph check
-					if (id == '' || id == null && $(this).is('p')) {
-						id = tinymce.DOM.uniqueId('struct_');
-						$(this).attr('id', id).attr('class', 'paraTag').attr('type', 'para');
-						w.structs[id] = {
-							id: id,
-							lang: $(this).attr('lang'),
-							'class': 'paraTag',
-							type: 'para'
-						};
-					// duplicate struct check
-					} else {
-						var match = w.editor.$('struct[id='+id+']');
-						if (match.length == 2) {
-							var newStruct = match.last();
-							var newId = tinymce.DOM.uniqueId('struct_');
-							newStruct.attr('id', newId);
-							w.structs[newId] = {};
-							for (var key in w.structs[id]) {
-								w.structs[newId][key] = w.structs[id][key];
-							}
-							w.structs[newId].id = newId;
-						}
-					}
-				}
-				
-				var info = w.structs[id];
-				var title = w.titles[info.type];
-				newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
-					data: title,
-					attr: {name: id, 'class': $(this).attr('class')},
-					state: isLeaf
-				});
-			}
-			_doStructureTreeUpdate(newChildren, newNodeParent, checkForNewTags);
-		});
-	};
-	
-	return sp;
+	return entitiesList;
 };

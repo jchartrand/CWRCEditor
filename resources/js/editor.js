@@ -28,7 +28,8 @@ var Writer = function(config) {
 		VALID: 2,
 		
 		fm: null, // filemanager
-		sp: null, // sidepanel
+		entitiesList: null, // entities list
+		tree: null, // structure tree
 		d: null // dialog
 	};
 	
@@ -38,12 +39,12 @@ var Writer = function(config) {
 			switch (nodes.length) {
 				case 0:
 					delete w.entities[id];
-					w.sp.removeFromEntitiesList(id);
+					w.entitiesList.remove(id);
 					break;
 				case 1:
 					editor.dom.remove(nodes[0]);
 					delete w.entities[id];
-					removeFromEntitiesList(id);
+					w.entitiesList.remove(id);
 			}
 		}
 	};
@@ -59,7 +60,7 @@ var Writer = function(config) {
 		ed.addCommand('removeEntity', w.removeEntity);
 		ed.addCommand('addStructureTag', w.addStructureTag);
 		ed.addCommand('editStructureTag', w.editStructureTag);
-		ed.addCommand('updateStructureTree', w.sp.updateStructureTree);
+		ed.addCommand('updateStructureTree', w.tree.update);
 		ed.addCommand('removeHighlights', w.removeHighlights);
 		ed.addCommand('exportDocument', w.fm.exportDocument);
 		ed.addCommand('loadDocument', w.fm.loadDocument);
@@ -107,12 +108,12 @@ var Writer = function(config) {
 		_doResize();
 		
 		// populate with the initial paragraph
-		w.sp.updateStructureTree(true);
+		w.tree.update(true);
 	};
 	
 	var _onChangeHandler = function(ed) {
 		if (ed.isDirty()) {
-			w.sp.updateStructureTree(true);
+			w.tree.update(true);
 			_findDeletedEntities();
 		}
 	};
@@ -379,7 +380,7 @@ var Writer = function(config) {
 			w.removeEntity(id);
 		} else {
 			w.entities[id].info = info;
-			w.sp.updateEntitesList();
+			w.entitiesList.update();
 			w.highlightEntity(id);
 		}
 	};
@@ -432,7 +433,7 @@ var Writer = function(config) {
 		delete w.entities[id];
 		w.editor.dom.remove(w.editor.dom.select('entity[name="'+id+'"]'));
 		w.highlightEntity();
-		w.sp.removeFromEntitiesList(id);	
+		w.entitiesList.remove(id);
 	};
 	
 	w.getTitleFromContent = function(content) {
@@ -462,12 +463,18 @@ var Writer = function(config) {
 		$('#'+w.editor.id+'_ifr').height(newHeight - 49);
 	};
 	
-	var _showPopup = function(content) {
-		$('#popup').html(content).show();
-	};
-	
-	var _hidePopup = function() {
-		$('#popup').hide();
+	w.toggleSidepanel = function() {
+		if ($('#main').css('marginLeft') == '6px') {
+			$('#main').css('marginLeft', '250px');
+			$('#tabs').show();
+			$('#leftcol').width(250);
+			$('#separator').addClass('arrowLeft').removeClass('arrowRight');
+		} else {
+			$('#main').css('marginLeft', '6px');
+			$('#tabs').hide();
+			$('#leftcol').width(6);
+			$('#separator').addClass('arrowRight').removeClass('arrowLeft');
+		}
 	};
 	
 	w.addStructureTag = function(bookmark, attributes) {
@@ -500,7 +507,7 @@ var Writer = function(config) {
 			tag.attr(key, attributes[key]);
 		}
 		w.structs[id] = attributes;
-		w.sp.updateStructureTree();
+		w.tree.update();
 	};
 	
 	w.removeStructureTag = function(id) {
@@ -512,7 +519,7 @@ var Writer = function(config) {
 		var parent = w.editor.$('#'+id).parent()[0];
 		w.editor.$('#'+id).contents().unwrap();
 		parent.normalize();
-		w.sp.updateStructureTree();
+		w.tree.update();
 	};
 	
 	w.highlightStructureTag = function(id) {
@@ -540,113 +547,19 @@ var Writer = function(config) {
 		w.fm = new FileManager({
 			writer: w
 		});
-		w.sp = new SidePanel({
+		w.tree = new StructureTree({
+			writer: w
+		});
+		w.entitiesList = new EntitiesList({
 			writer: w
 		});
 		w.d = new Dialog({
 			writer: w
 		});
 		
-		$('#separator').click(w.sp.toggleEntitiesList);
+		$('#separator').click(w.toggleSidepanel);
 		$('#tabs').tabs();
-		$('#sequence').button().click(function() {
-			w.sp.updateEntitesList('sequence');
-			w.highlightEntity(w.editor.currentEntity);
-		});
-		$('#category').button().click(function() {
-			w.sp.updateEntitesList('category');
-			w.highlightEntity(w.editor.currentEntity);
-		});
-		$('#sortBy').buttonset();
-		$('#tree').jstree({
-			core: {},
-			themeroller: {},
-			ui: {
-				select_limit: 1
-			},
-			json_data: {
-				data: {
-					data: 'Tags',
-					attr: {id: 'root'},
-					state: 'open'
-				}
-			},
-			contextmenu: {
-				select_node: true,
-				show_at_node: false,
-				items: function(node) {
-					_hidePopup();
-					if ($(node).attr('id') == 'root') return {};
-					var items = {
-						'edit': {
-							label: 'Edit Tag',
-							icon: 'img/tag_blue_edit.png',
-							action: function(obj) {
-								var tag = w.editor.$('#'+obj.attr('name'));
-								var pos = {
-									x: parseInt($('#popup').css('left')),
-									y: parseInt($('#popup').css('top'))
-								};
-								w.editor.execCommand('editCustomTag', tag, pos);
-							}
-						},
-						'delete': {
-							label: 'Remove Tag',
-							icon: 'img/cross.png',
-							action: function(obj) {
-								w.removeStructureTag(obj.attr('name'));
-							}
-						}
-					};
-					if ($(node).hasClass('headTag') || $(node).hasClass('emphTag')) {
-						delete items.edit;
-					} else if ($(node).hasClass('paraTag')) {
-						delete items['delete'];
-					}
-					return items;
-				}
-			},
-			hotkeys: {
-				del: function(e) {
-					if (this.is_selected()) {
-						var node = this.get_selected();
-						var id = node.attr('name');
-						if (id) {
-							w.removeStructureTag(id);
-						}
-					}
-				},
-				f2: false
-			},
-			plugins: ['json_data', 'ui', 'themeroller', 'contextmenu', 'hotkeys']
-		});
-		$('#tree').mousemove(function(e) {
-			$('#popup').offset({left: e.pageX+15, top: e.pageY+5});
-		});
-		$('#tree').bind('select_node.jstree', function(event, data) {
-			var node = data.rslt.obj;
-			var id = node.attr('name');
-			w.highlightStructureTag(id);
-		});
-		$('#tree').bind('hover_node.jstree', function(event, data) {
-			if ($('#vakata-contextmenu').css('visibility') == 'visible') return;
-			
-			var node = data.rslt.obj;
-			
-			if (node.attr('id') == 'root') return;
-			
-			var id = node.attr('name');
-			var info = w.structs[id];
-			var content = '<ul>';
-			for (var key in info) {
-				content += '<li>'+key+': '+info[key]+'</li>';
-			}
-			content += '</ul>';
-			_showPopup(content);
-		});
-		$('#tree').bind('dehover_node.jstree', function(event, data) {
-			_hidePopup();
-		});
+		
 		$('#editor').tinymce({
 			script_url : 'js/tinymce/jscripts/tiny_mce/tiny_mce.js',
 			theme: 'advanced',
@@ -667,6 +580,15 @@ var Writer = function(config) {
 				
 				ed.onInit.add(_onInitHandler);
 				ed.onChange.add(_onChangeHandler);
+				
+				// add custom plugins and buttons
+				
+				var plugins = ['customtags','entitycontextmenu','viewsource'];
+				
+				for (var i = 0; i < plugins.length; i++) {
+					var name = plugins[i];
+					tinymce.PluginManager.load(name, '../../../tinymce_plugins/'+name+'.js');
+				}
 				
 				ed.addButton('addperson', {
 					title: 'Tag Person',
@@ -809,7 +731,7 @@ var Writer = function(config) {
 			extended_valid_elements: 'entity[class|name],struct[class|level|ref|lang|id|type],p[class|id|lang|type]',
 			custom_elements: '~entity,~struct',
 			
-			plugins: 'paste,entitycontextmenu,customtags,viewsource',
+			plugins: 'paste,-entitycontextmenu,-customtags,-viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
 			theme_advanced_buttons1: 'customtags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: '',

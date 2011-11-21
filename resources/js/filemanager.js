@@ -404,8 +404,8 @@ var FileManager = function(config) {
 		// set the id counter so we don't get duplicate ids
 		tinymce.DOM.counter = maxId+1;
 		
-		w.sp.updateEntitesList();
-		w.sp.updateStructureTree(true);
+		w.entitiesList.update();
+		w.tree.update(true);
 	};
 	
 	fm.editSource = function() {

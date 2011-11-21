@@ -47,7 +47,7 @@
 		createControl: function(n, cm) {
 			if (n == 'viewsource') {
 				var t = this;
-				var url = t.url+'/../../../../../../img/';
+				var url = t.url+'/../../img/';
 				var c = cm.createButton('viewSourceButton', {
 					title: 'View Source',
 					image: url+'viewsource.gif',
