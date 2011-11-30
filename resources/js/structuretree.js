@@ -25,17 +25,17 @@ var StructureTree = function(config) {
 			items: function(node) {
 				_hidePopup();
 				if ($(node).attr('id') == 'root') return {};
+				var info = w.structs[node.attr('name')];
 				var items = {
 					'edit': {
 						label: 'Edit Tag',
 						icon: 'img/tag_blue_edit.png',
 						action: function(obj) {
-							var tag = w.editor.$('#'+obj.attr('name'));
 							var pos = {
 								x: parseInt($('#tree_popup').css('left')),
 								y: parseInt($('#tree_popup').css('top'))
 							};
-							w.editor.execCommand('editCustomTag', tag, pos);
+							w.editor.execCommand('editTag', obj.attr('name'), pos);
 						}
 					},
 					'delete': {
@@ -46,9 +46,9 @@ var StructureTree = function(config) {
 						}
 					}
 				};
-				if ($(node).hasClass('headTag') || $(node).hasClass('emphTag')) {
+				if (info._editable == false) {
 					delete items.edit;
-				} else if ($(node).hasClass('paraTag')) {
+				} else if (info._tag == 'para') {
 					delete items['delete'];
 				}
 				return items;
@@ -124,12 +124,12 @@ var StructureTree = function(config) {
 					// new paragraph check
 					if (id == '' || id == null && $(this).is('p')) {
 						id = tinymce.DOM.uniqueId('struct_');
-						$(this).attr('id', id).attr('class', 'paraTag').attr('type', 'para');
+						$(this).attr('id', id).attr('class', 'paraTag').attr('_tag', 'para');
 						w.structs[id] = {
 							id: id,
 							lang: $(this).attr('lang'),
 							'class': 'paraTag',
-							type: 'para'
+							_tag: 'para'
 						};
 					// duplicate struct check
 					} else {
@@ -148,7 +148,7 @@ var StructureTree = function(config) {
 				}
 				
 				var info = w.structs[id];
-				var title = w.titles[info.type];
+				var title = w.titles[info._tag] || info._tag;
 				newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
 					data: title,
 					attr: {name: id, 'class': $(this).attr('class')},

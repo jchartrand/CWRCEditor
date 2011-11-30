@@ -4,6 +4,9 @@ var Writer = function(config) {
 		entities: {}, // entities store
 		structs: {}, // structs store
 
+		schema: {}, // schema for additional custom tags
+		schemaAttributes: {}, // all the attribute names from the schema (used in extended_valid_elements config setting)
+		
 		project: null, // the current project (cwrc or russell)
 		
 		// tag types and their titles
@@ -18,7 +21,7 @@ var Writer = function(config) {
 			para: 'Paragraph',
 			head: 'Heading',
 			emph: 'Emphasized',
-			title: 'Title',
+			title: 'Text/Title',
 			quote: 'Quotation'
 		},
 			
@@ -253,8 +256,34 @@ var Writer = function(config) {
 		if (sel.isCollapsed()) return w.NO_SELECTION;
 		if (sel.getContent() == '') return w.NO_SELECTION;
 		
-		// check for overlap potential
+		// check for numerous overlap possibilities
 		var range = sel.getRng(true);
+		range.commonAncestorContainer.normalize(); // normalize/collapse separate text nodes
+		
+		// fix for when start and/or end containers are element nodes (should always be text nodes)
+		if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
+			var end = range.endContainer;
+			if (end.nodeType != Node.TEXT_NODE || range.endOffset == 0) {
+				var findTextNode = function(currNode, reps) {
+					if (reps > 10) return null; // prevent infinite recursion
+					else {
+						var prevNode = currNode.previousSibling || currNode.parentNode.previousSibling.lastChild;
+						if (prevNode == null) return null;
+						if (prevNode.nodeType == Node.TEXT_NODE) return prevNode;
+						return findTextNode(prevNode, reps++);
+					}
+				};
+				end = findTextNode(range.endContainer, 0);
+				if (end == null) return w.NO_COMMON_PARENT;
+				range.setEnd(end, end.length);
+			}
+			range.setStart(end, 0);
+		}
+		if (range.endContainer.nodeType == Node.ELEMENT_NODE) {
+			// don't need to check nodeType here since we've already insured startContainer is text
+			range.setEnd(range.startContainer, range.startContainer.length);
+		}
+		
 		if (range.startContainer.parentNode != range.endContainer.parentNode) return w.NO_COMMON_PARENT;
 		
 		// extra check to make sure we're not overlapping with an entity
@@ -310,6 +339,8 @@ var Writer = function(config) {
 			var title = w.titles[type];
 			if (type == 'note' || type == 'citation') {
 				w.d.showNote({type: type, title: title, pos: w.editor.contextMenuPos});
+			} else if (type == 'textTitle') {
+				w.d.showTextTitle({type: type, title: title, pos: w.editor.contextMenuPos});
 			} else if (type == 'date') {
 				w.d.showDate({type: type, title: title, pos: w.editor.contextMenuPos});
 			} else {
@@ -387,25 +418,31 @@ var Writer = function(config) {
 	
 	// a general edit function for entities and structure tags
 	w.editTag = function(id, pos) {
-		var tag = null;
-		var entry = null;
+		var entity = null;
+		var struct = null;
 		if (id != null) {
-			if (w.entities[id]) entry = w.entities[id];
-			else if (w.structs[id]) tag = w.editor.$('#'+id);
+			if (w.entities[id]) entity = w.entities[id];
+			else if (w.structs[id]) struct = w.editor.$('#'+id);
 		} else {
-			if (w.editor.currentEntity != null) entry = w.entities[w.editor.currentEntity];
-			else if (w.editor.currentStruct != null) tag = w.editor.$('#'+w.editor.currentStruct);
+			if (w.editor.currentEntity != null) entity = w.entities[w.editor.currentEntity];
+			else if (w.editor.currentStruct != null) struct = w.editor.$('#'+w.editor.currentStruct);
 		}
-		if (tag) {
-			w.editor.execCommand('editCustomTag', tag, pos);
-		} else if (entry) {
-			var type = entry.props.type;
-			if (type == 'note' || type == 'citation') {
-				w.d.showNote({type: type, title: w.titles[type], pos: pos, entry: entry});
-			} else if (type == 'date') {
-				w.d.showDate({type: type, title: w.titles[type], pos: pos, entry: entry});
+		if (struct) {
+			if (w.editor.$(struct).attr('_schema')) {
+				w.editor.execCommand('editSchemaTag', struct, pos);
 			} else {
-				w.d.showSearch({type: type, title: w.titles[type], query: entry.props.content, pos: pos, entry: entry});
+				w.editor.execCommand('editCustomTag', struct, pos);
+			}
+		} else if (entity) {
+			var type = entity.props.type;
+			if (type == 'note' || type == 'citation') {
+				w.d.showNote({type: type, title: w.titles[type], pos: pos, entry: entity});
+			} else if (type == 'textTitle') {
+				w.d.showTextTitle({type: type, title: w.titles[type], pos: pos, entry: entity});
+			} else if (type == 'date') {
+				w.d.showDate({type: type, title: w.titles[type], pos: pos, entry: entity});
+			} else {
+				w.d.showSearch({type: type, title: w.titles[type], query: entity.props.content, pos: pos, entry: entity});
 			}
 		}
 	};
@@ -484,7 +521,7 @@ var Writer = function(config) {
 		
 		var tag, open_tag, close_tag;
 		tag = 'struct';
-		if (attributes.type == 'para') {
+		if (attributes._tag == 'para') {
 			tag = 'p';
 		}
 		
@@ -544,6 +581,22 @@ var Writer = function(config) {
 			}
 		});
 		
+		$.ajax({
+			url: 'js/schema.js',
+			success: function(data, status, xhr) {
+				w.schema = eval(xhr.responseText)[0];
+				var atts;
+				for (var key in w.schema) {
+					atts = w.schema[key].attributes;
+					for (var i = 0; i < atts.length; i++) {
+						w.schemaAttributes[atts[i].name] = true;
+					}
+				}
+				// need to get the schema attributes before we can initialize the editor
+				w._initEditor();
+			}
+		});
+		
 		w.fm = new FileManager({
 			writer: w
 		});
@@ -559,6 +612,13 @@ var Writer = function(config) {
 		
 		$('#separator').click(w.toggleSidepanel);
 		$('#tabs').tabs();
+	};
+	
+	w._initEditor = function() {
+		var schemaAttString = '';
+		for (var att in w.schemaAttributes) {
+			schemaAttString += '|'+att;
+		}
 		
 		$('#editor').tinymce({
 			script_url : 'js/tinymce/jscripts/tiny_mce/tiny_mce.js',
@@ -581,9 +641,14 @@ var Writer = function(config) {
 				ed.onInit.add(_onInitHandler);
 				ed.onChange.add(_onChangeHandler);
 				
+				// add schema file and method
+				ed.addCommand('getSchema', function(){
+					return w.schema;
+				});
+				
 				// add custom plugins and buttons
 				
-				var plugins = ['customtags','entitycontextmenu','viewsource'];
+				var plugins = ['customtags','schematags','entitycontextmenu','viewsource'];
 				
 				for (var i = 0; i < plugins.length; i++) {
 					var name = plugins[i];
@@ -649,9 +714,9 @@ var Writer = function(config) {
 				ed.addButton('addtitle', {
 					title: 'Tag Text/Title',
 					image: 'img/book.png',
-					'class': 'entityButton',
+					'class': 'entityButton textTitle',
 					onclick : function() {
-						ed.execCommand('addCustomTag', 'title');
+						ed.execCommand('addEntity', 'textTitle');
 					}
 				});
 				
@@ -728,12 +793,12 @@ var Writer = function(config) {
 				o.content = o.content.replace(/(.*?)<br\s?\/?>/gi,'<p>$1</p>').replace(/<pre>(.*?)<\/pre>/gi,'<p>$1</p>');
 			},
 			
-			extended_valid_elements: 'entity[class|name],struct[class|level|ref|lang|id|type],p[class|id|lang|type]',
+			extended_valid_elements: 'entity[class|name],struct[class|level|ref|lang|id|type|_tag|_schema'+schemaAttString+'],p[class|id|lang|type]',
 			custom_elements: '~entity,~struct',
 			
-			plugins: 'paste,-entitycontextmenu,-customtags,-viewsource',
+			plugins: 'paste,-entitycontextmenu,-customtags,-schematags,-viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
-			theme_advanced_buttons1: 'customtags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'customtags,schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: '',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',

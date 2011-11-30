@@ -142,6 +142,10 @@ label {
 	background-image: url('../img/note.png');
 }
 
+#entities ul li .textTitle {
+	background-image: url('../img/book.png');
+}
+
 #entities ul li .title {
 	font-size: 11px;
 	vertical-align: 6px;
@@ -262,8 +266,19 @@ label {
 	float: right;
 }
 
-#dialogEvents, #searchDialog, #noteDialog, #dateDialog {
-	display: none;
+.ui-dialog-content div {
+	margin-bottom: 10px;
+}
+
+#schemaDialog label {
+	width: 100px;
+	text-align: right;
+	display: inline-block;
+}
+
+#schemaDialog input, #schemaDialog select {
+	width: 150px;
+	border: 1px solid #ccc;
 }
 
 #datePicker {
@@ -326,8 +341,16 @@ label {
 	background-color: #6c88a6;
 }
 
+.textTitle {
+	background-color: #debb00;
+}
+
+#entities .textTitle {
+	background-color: #f2d747;
+}
+
 #entities .selected .person, #entities .selected .date, #entities .selected .place, #entities .selected .event,
-#entities .selected .org, #entities .selected .citation, #entities .selected .note {
+#entities .selected .org, #entities .selected .citation, #entities .selected .note, #entities .selected .textTitle {
 	background-color: transparent;
 }
 
@@ -338,6 +361,13 @@ label {
 
 .mceMenuItem .mceIcon img {
 	margin: 2px 0 0 2px;
+}
+
+/* used by schematags plugin */
+#menu_editor_editor_schemaTagsButton_menu_co {
+	height: 600px;
+	width: 140px;
+	overflow: auto;
 }
 
 /* used by the entity plugin */
@@ -385,6 +415,10 @@ label {
 
 .mceToolbar .note {
 	border-bottom: 2px solid #0D56A6 !important;
+}
+
+.mceToolbar .textTitle {
+	border-bottom: 2px solid #debb00 !important;
 }
 
 /* tinymce overrides */

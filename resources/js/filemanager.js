@@ -253,7 +253,7 @@ var FileManager = function(config) {
 	var _processNodes = function(parent, offsets) {
 		var currentOffset = 0;
 		parent.contents().each(function(index, element) {
-			if (this.nodeType == 3) {
+			if (this.nodeType == Node.TEXT_NODE) {
 				currentOffset += this.length;
 			} else if ($(this).is('struct, p')) {
 				_processNodes($(this), offsets);
@@ -346,7 +346,7 @@ var FileManager = function(config) {
 			// get all text nodes
 			o = offsets[id];
 			contents = w.editor.$('#'+o.parent).contents().filter(function() {
-				return this.nodeType == 3;
+				return this.nodeType == Node.TEXT_NODE;
 			});
 			
 			startOffset = o.offset;

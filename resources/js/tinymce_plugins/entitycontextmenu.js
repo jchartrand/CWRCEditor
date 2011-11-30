@@ -210,9 +210,10 @@
 				title: 'Tag Text/Title',
 				icon_src: url+'book.png',
 				onclick : function() {
-					ed.execCommand('addCustomTag', 'title', t.curPos);
+					ed.execCommand('addEntity', 'textTitle', t.curPos);
 				}
 			}).setDisabled(col);
+			// TODO disable edit tag for non-editable tags
 			col = (ed.currentEntity == null && ed.currentStruct == null);
 			m.addSeparator();
 			m.add({
