@@ -319,13 +319,13 @@ var Writer = function(config) {
 	w.showError = function(errorType) {
 		switch(errorType) {
 		case w.NO_SELECTION:
-			w.d.showMessage({
+			w.d.show('message', {
 				title: 'Error',
 				msg: 'Please select some text before adding an entity or tag.'
 			});
 			break;
 		case w.NO_COMMON_PARENT:
-			w.d.showMessage({
+			w.d.show('message', {
 				title: 'Error',
 				msg: 'Please ensure that the beginning and end of your selection have a common parent.<br/>For example, your selection cannot begin in one paragraph and end in another, or begin in bolded text and end outside of that text.'
 			});
@@ -336,17 +336,7 @@ var Writer = function(config) {
 		var result = w.isSelectionValid();
 		if (result == w.VALID) {
 			w.editor.currentEntity = _addEntityTag(type);
-			var title = w.titles[type];
-			if (type == 'note' || type == 'citation') {
-				w.d.showNote({type: type, title: title, pos: w.editor.contextMenuPos});
-			} else if (type == 'textTitle') {
-				w.d.showTextTitle({type: type, title: title, pos: w.editor.contextMenuPos});
-			} else if (type == 'date') {
-				w.d.showDate({type: type, title: title, pos: w.editor.contextMenuPos});
-			} else {
-				var query = w.entities[w.editor.currentEntity].props.content;
-				w.d.showSearch({type: type, title: title, query: query, pos: w.editor.contextMenuPos});
-			}
+			w.d.show(type, {type: type, title: w.titles[type], pos: w.editor.contextMenuPos});
 		} else {
 			w.showError(result);
 		}
@@ -435,15 +425,7 @@ var Writer = function(config) {
 			}
 		} else if (entity) {
 			var type = entity.props.type;
-			if (type == 'note' || type == 'citation') {
-				w.d.showNote({type: type, title: w.titles[type], pos: pos, entry: entity});
-			} else if (type == 'textTitle') {
-				w.d.showTextTitle({type: type, title: w.titles[type], pos: pos, entry: entity});
-			} else if (type == 'date') {
-				w.d.showDate({type: type, title: w.titles[type], pos: pos, entry: entity});
-			} else {
-				w.d.showSearch({type: type, title: w.titles[type], query: entity.props.content, pos: pos, entry: entity});
-			}
+			w.d.show(type, {type: type, title: w.titles[type], pos: pos, entry: entity});
 		}
 	};
 	
@@ -606,7 +588,7 @@ var Writer = function(config) {
 		w.entitiesList = new EntitiesList({
 			writer: w
 		});
-		w.d = new Dialog({
+		w.d = new DialogManager({
 			writer: w
 		});
 		
@@ -716,7 +698,7 @@ var Writer = function(config) {
 					image: 'img/book.png',
 					'class': 'entityButton textTitle',
 					onclick : function() {
-						ed.execCommand('addEntity', 'textTitle');
+						ed.execCommand('addEntity', 'title');
 					}
 				});
 				

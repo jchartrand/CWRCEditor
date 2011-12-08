@@ -281,6 +281,11 @@ label {
 	border: 1px solid #ccc;
 }
 
+#personName input {
+	width: 90px;
+	margin-right: 5px;
+}
+
 #datePicker {
 	border: 1px solid #ccc;
 }

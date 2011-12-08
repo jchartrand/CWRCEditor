@@ -57,13 +57,13 @@ var FileManager = function(config) {
 				var name = filenameInput.value;
 				
 				if (!_isNameValid(name)) {
-					w.d.showMessage({
+					w.d.show('message', {
 						title: 'Invalid Name',
 						msg: 'You may only enter upper or lowercase letters; no numbers, spaces, or punctuation.'
 					});
 					return;
 				} else if (name == 'info') {
-					w.d.showMessage({
+					w.d.show('message', {
 						title: 'Invalid Name',
 						msg: 'This name is reserved, please choose a different one.'
 					});
@@ -72,7 +72,7 @@ var FileManager = function(config) {
 				
 				if ($.inArray(name, docNames) != -1) {
 					// TODO add overwrite confirmation
-					w.d.showMessage({
+					w.d.show('message', {
 						title: 'Invalid Name',
 						msg: 'This name already exists, please choose a different one.'
 					});
@@ -202,13 +202,13 @@ var FileManager = function(config) {
 				data: docText,
 				success: function(data, status, xhr) {
 					w.editor.isNotDirty = 1; // force clean state
-					w.d.showMessage({
+					w.d.show('message', {
 						title: 'Document Saved',
 						msg: currentDoc+' was saved successfully.'
 					});
 				},
 				error: function() {
-					w.d.showMessage({
+					w.d.show('message', {
 						title: 'Error',
 						msg: 'An error occurred and '+currentDoc+' was not saved.'
 					});
@@ -281,7 +281,7 @@ var FileManager = function(config) {
 			success: _loadDocumentHandler,
 			error: function() {
 				currentDoc = null;
-				w.d.showMessage({
+				w.d.show('message', {
 					title: 'Error',
 					msg: 'An error occurred and '+docName+' was not loaded.'
 				});
