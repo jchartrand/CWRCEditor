@@ -445,6 +445,10 @@ div.mceDropDown {
 	margin: 2px 2px 0 2px !important;
 }
 
+#jqContextMenu li.separator {
+	border-top: 1px solid #DDDDDD !important;
+}
+
 #jqContextMenu li ins {
 	float: left;
 	height: 16px;

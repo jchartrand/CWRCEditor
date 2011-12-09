@@ -60,6 +60,8 @@ var Writer = function(config) {
 		ed.addCommand('addEntity', w.addEntity);
 		ed.addCommand('editTag', w.editTag);
 		ed.addCommand('removeTag', w.removeTag);
+		ed.addCommand('copyEntity', w.copyEntity);
+		ed.addCommand('pasteEntity', w.pasteEntity);
 		ed.addCommand('removeEntity', w.removeEntity);
 		ed.addCommand('addStructureTag', w.addStructureTag);
 		ed.addCommand('editStructureTag', w.editStructureTag);
@@ -406,26 +408,76 @@ var Writer = function(config) {
 		}
 	};
 	
+	var _getCurrentTag = function(id) {
+		var tag = {entity: null, struct: null};
+		if (id != null) {
+			if (w.entities[id]) tag.entity = w.entities[id];
+			else if (w.structs[id]) tag.struct = w.editor.$('#'+id);
+		} else {
+			if (w.editor.currentEntity != null) tag.entity = w.entities[w.editor.currentEntity];
+			else if (w.editor.currentStruct != null) tag.struct = w.editor.$('#'+w.editor.currentStruct);
+		}
+		return tag;
+	};
+	
 	// a general edit function for entities and structure tags
 	w.editTag = function(id, pos) {
-		var entity = null;
-		var struct = null;
-		if (id != null) {
-			if (w.entities[id]) entity = w.entities[id];
-			else if (w.structs[id]) struct = w.editor.$('#'+id);
-		} else {
-			if (w.editor.currentEntity != null) entity = w.entities[w.editor.currentEntity];
-			else if (w.editor.currentStruct != null) struct = w.editor.$('#'+w.editor.currentStruct);
-		}
-		if (struct) {
-			if (w.editor.$(struct).attr('_schema')) {
-				w.editor.execCommand('editSchemaTag', struct, pos);
+		var tag = _getCurrentTag(id);
+		if (tag.struct) {
+			if (w.editor.$(tag.struct).attr('_schema')) {
+				w.editor.execCommand('editSchemaTag', tag.struct, pos);
 			} else {
-				w.editor.execCommand('editCustomTag', struct, pos);
+				w.editor.execCommand('editCustomTag', tag.struct, pos);
 			}
-		} else if (entity) {
-			var type = entity.props.type;
-			w.d.show(type, {type: type, title: w.titles[type], pos: pos, entry: entity});
+		} else if (tag.entity) {
+			var type = tag.entity.props.type;
+			w.d.show(type, {type: type, title: w.titles[type], pos: pos, entry: tag.entity});
+		}
+	};
+	
+	w.copyEntity = function(id, pos) {
+		var tag = _getCurrentTag(id);
+		if (tag.entity) {
+			w.editor.entityCopy = tag.entity;
+		} else {
+			w.d.show('message', {
+				title: 'Error',
+				msg: 'Cannot copy structural tags.'
+			});
+		}
+	};
+	
+	w.pasteEntity = function(pos) {
+		if (w.editor.entityCopy == null) {
+			w.d.show('message', {
+				title: 'Error',
+				msg: 'No entity to copy!'
+			});
+		} else {
+			var newEntity = jQuery.extend(true, {}, w.editor.entityCopy);
+			newEntity.props.id = tinymce.DOM.uniqueId('ent_');
+			
+			var sel = w.editor.selection;
+			sel.collapse();
+			var rng = sel.getRng(true);
+			
+			var start = w.editor.dom.create('entity', {'class': 'entity '+newEntity.props.type+' start', 'name': newEntity.props.id});
+			var text = w.editor.getDoc().createTextNode(newEntity.props.content);
+			var end = w.editor.dom.create('entity', {'class': 'entity '+newEntity.props.type+' end', 'name': newEntity.props.id});
+			var span = w.editor.dom.create('span', {id: 'entityHighlight'});
+			w.editor.dom.add(span, start);
+			w.editor.dom.add(span, text);
+			w.editor.dom.add(span, end);
+
+			rng.insertNode(span);
+			
+			w.editor.dom.bind(start, 'click', _doMarkerClick);
+			w.editor.dom.bind(end, 'click', _doMarkerClick);
+			
+			w.entities[newEntity.props.id] = newEntity;
+			
+			w.entitiesList.update();
+			w.highlightEntity(newEntity.props.id);
 		}
 	};
 	
@@ -439,7 +491,7 @@ var Writer = function(config) {
 			}
 		} else {
 			if (w.editor.currentEntity != null) {
-				w.removeEntity(w.editor.currentEntity);		
+				w.removeEntity(w.editor.currentEntity);
 			} else if (w.editor.currentStruct != null) {
 				w.removeStructureTag(w.editor.currentStruct);
 			}
@@ -618,6 +670,7 @@ var Writer = function(config) {
 				// custom properties added to the editor
 				ed.currentEntity = null; // the id of the currently highlighted entity
 				ed.currentStruct = null; // the id of the currently selected structural tag
+				ed.entityCopy = null; // store a copy of an entity for pasting
 				ed.contextMenuPos = null; // the position of the context menu (used to position related dialog box)
 				
 				ed.onInit.add(_onInitHandler);

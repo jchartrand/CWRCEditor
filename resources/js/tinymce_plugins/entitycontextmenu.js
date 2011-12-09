@@ -213,9 +213,9 @@
 					ed.execCommand('addEntity', 'textTitle', t.curPos);
 				}
 			}).setDisabled(col);
+			m.addSeparator();
 			// TODO disable edit tag for non-editable tags
 			col = (ed.currentEntity == null && ed.currentStruct == null);
-			m.addSeparator();
 			m.add({
 				title: 'Edit Tag',
 				icon_src: url+'tag_blue_edit.png',
@@ -228,6 +228,23 @@
 				icon_src: url+'cross.png',
 				onclick : function() {
 					ed.execCommand('removeTag');
+				}
+			}).setDisabled(col);
+			m.addSeparator();
+			col = ed.currentEntity == null;
+			m.add({
+				title: 'Copy Entity',
+				icon_src: url+'tag_blue_copy.png',
+				onclick : function() {
+					ed.execCommand('copyEntity', null, t.curPos);
+				}
+			}).setDisabled(col);
+			col = ed.entityCopy == null;
+			m.add({
+				title: 'Paste Entity',
+				icon_src: url+'tag_blue_paste.png',
+				onclick : function() {
+					ed.execCommand('pasteEntity', null, t.curPos);
 				}
 			}).setDisabled(col);
 
