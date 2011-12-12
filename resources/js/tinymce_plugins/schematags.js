@@ -16,6 +16,41 @@
 			
 			t.bm = null;
 			
+			ed.addCommand('createSchemaTagsControl', function(config) {
+				if (t.schema == null) {
+					t.schema = t.editor.execCommands.getSchema.func();//t.editor.execCommand('getSchema');
+				}
+				var url = t.url+'/../../img/';
+				var menu = config.menu.addMenu({
+					id: config.id,
+					title: 'Schema Tags',
+					icon_src: url+'tag_blue.png'
+				});
+				for (var key in t.schema) {
+					if (t.schema[key].attributes.length > 1) {
+						menu.add({
+							title: key.replace('-element',''),
+							key: key,
+							icon_src: url + 'tag_blue_edit.png',
+							onclick : function() {
+								t.editor.execCommand('addSchemaTag', this.key, config.pos);
+							}
+						}).setDisabled(config.disabled);
+					} else {
+						menu.add({
+							title: key.replace('-element',''),
+							key: key,
+							icon_src: url + 'tag_blue.png',
+							onclick : function() {
+								t.editor.execCommand('addSchemaTag', this.key, config.pos);
+							}
+						}).setDisabled(config.disabled);
+					}
+				}
+				
+				return menu;
+			});
+			
 			ed.addCommand('addSchemaTag', function(key, pos) {
 				var valid = ed.execCommand('isSelectionValid', true);
 				if (valid != 2) {
@@ -176,55 +211,6 @@
 			}
 			
 			$('#schemaDialog').dialog('close');
-		},
-		createControl: function(n, cm) {
-			if (n == 'schematags') {
-				var t = this;
-				if (t.schema == null) {
-					t.schema = cm.editor.execCommands.getSchema.func();//cm.editor.execCommand('getSchema');
-				}
-				var url = t.url+'/../../img/';
-				t.menuButton = cm.createSplitButton('schemaTagsButton', {
-					title: 'Schema Tags',
-					image: url+'tag.png',
-					'class': 'entityButton'
-				});
-				t.menuButton.onRenderMenu.add(function(c, m) {
-//					var noAttsMenu = m.addMenu({
-//						title: 'Simple Tags',
-//						icon_src: url+'tag_blue.png'
-//					});
-//					var attsMenu = m.addMenu({
-//						title: 'Complex Tags',
-//						icon_src: url+'tag_blue_edit.png'
-//					});
-					for (var key in t.schema) {
-						if (t.schema[key].attributes.length > 1) {
-							m.add({
-								title: key.replace('-element',''),
-								key: key,
-								icon_src: url + 'tag_blue_edit.png',
-								onclick : function() {
-									t.editor.execCommand('addSchemaTag', this.key);
-								}
-							});
-						} else {
-							m.add({
-								title: key.replace('-element',''),
-								key: key,
-								icon_src: url + 'tag_blue.png',
-								onclick : function() {
-									t.editor.execCommand('addSchemaTag', this.key);
-								}
-							});
-						}
-					}
-				});
-				
-				return t.menuButton;
-			}
-	
-			return null;
 		}
 	});
 	

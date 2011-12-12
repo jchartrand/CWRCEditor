@@ -1,3 +1,6 @@
+/**
+ * This plugin handles both custom structural tags, and schema tags.
+ */
 (function(tinymce) {
 	tinymce.create('tinymce.plugins.CustomTags', {
 		init: function(ed, url) {
@@ -20,6 +23,38 @@
 			t.tag = null;
 			
 			t.bm = null;
+			
+			ed.addCommand('createCustomTagsControl', function(config) {
+				var url = t.url+'/../../img/';
+				config.menu.add({
+					title: 'Paragraph',
+					icon_src: url+'para.png',
+					onclick : function() {
+						ed.execCommand('addCustomTag', 'para', config.pos);
+					}
+				}).setDisabled(config.disabled);
+				config.menu.add({
+					title: 'Heading',
+					icon_src: url+'heading.png',
+					onclick : function() {
+						ed.execCommand('addCustomTag', 'head', config.pos);
+					}
+				}).setDisabled(config.disabled);
+				config.menu.add({
+					title: 'Emphasized',
+					icon_src: url+'text_italic.png',
+					onclick : function() {
+						ed.execCommand('addCustomTag', 'emph', config.pos);
+					}
+				}).setDisabled(config.disabled);
+				config.menu.add({
+					title: 'Quotation',
+					icon_src: url+'quote.png',
+					onclick : function() {
+						ed.execCommand('addCustomTag', 'quote', config.pos);
+					}
+				}).setDisabled(config.disabled);
+			});
 			
 			ed.addCommand('addCustomTag', function(val, pos) {
 				var valid = ed.execCommand('isSelectionValid', true);
@@ -44,7 +79,7 @@
 				$('select[name="lang"] > option[value="en"]', t.lang).attr('selected', true);
 				
 				t.mode = t.ADD;
-				t.showDialog(val, pos);
+				t.showCustomTagDialog(val, pos);
 			});
 			
 			ed.addCommand('editCustomTag', function(tag, pos) {
@@ -56,7 +91,7 @@
 				$('select[name="lang"] > option[value="'+lang+'"]', t.lang).attr('selected', true);
 				
 				t.mode = t.EDIT;
-				t.showDialog(val, pos);
+				t.showCustomTagDialog(val, pos);
 			});
 			
 			$(document.body).append(''+
@@ -127,7 +162,7 @@
 				t.lang.dialog('close');
 			};
 		},
-		showDialog: function(val, pos) {
+		showCustomTagDialog: function(val, pos) {
 			var t = this;
 			t.currentVal = val;
 			if (val == 'head') {
@@ -156,39 +191,14 @@
 				var t = this;
 				var url = t.url+'/../../img/';
 				t.menuButton = cm.createSplitButton('customTagsButton', {
-					title: 'Structural Tags',
+					title: 'Tags',
 					image: url+'tag.png',
 					'class': 'entityButton'
 				});
 				t.menuButton.onRenderMenu.add(function(c, m) {
-					m.add({
-						title: 'Paragraph',
-						icon_src: url+'para.png',
-						onclick : function() {
-							t.editor.execCommand('addCustomTag', 'para');
-						}
-					});
-					m.add({
-						title: 'Heading',
-						icon_src: url+'heading.png',
-						onclick : function() {
-							t.editor.execCommand('addCustomTag', 'head');
-						}
-					});
-					m.add({
-						title: 'Emphasized',
-						icon_src: url+'text_italic.png',
-						onclick : function() {
-							t.editor.execCommand('addCustomTag', 'emph');
-						}
-					});
-					m.add({
-						title: 'Quotation',
-						icon_src: url+'quote.png',
-						onclick : function() {
-							t.editor.execCommand('addCustomTag', 'quote');
-						}
-					});
+					t.editor.execCommand('createCustomTagsControl', {menu: m, disabled: false});
+					m.addSeparator();
+					t.editor.execCommand('createSchemaTagsControl', {id: 'schema_tag_menu', menu: m, disabled: false});
 				});
 				
 				return t.menuButton;

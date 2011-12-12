@@ -369,10 +369,13 @@ label {
 }
 
 /* used by schematags plugin */
-#menu_editor_editor_schemaTagsButton_menu_co {
-	height: 600px;
+#menu_schema_tag_menu_co, #menu_schema_context_menu_co {
+	max-height: 600px;
 	width: 140px;
 	overflow: auto;
+}
+#menu_schema_context_menu {
+	max-height: 600px;
 }
 
 /* used by the entity plugin */

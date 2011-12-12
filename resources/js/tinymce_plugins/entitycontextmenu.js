@@ -117,46 +117,6 @@
 			t._menu = m;
 
 			var url = t.url+'/../../img/';
-			var tagMenu = m.addMenu({
-				title: 'Structural Tags',
-				icon_src: url+'tag.png'
-			});
-			tagMenu.add({
-				title: 'Paragraph',
-				icon_src: url+'para.png',
-				onclick : function() {
-					ed.execCommand('addCustomTag', 'para', t.curPos);
-				}
-			}).setDisabled(col);
-			tagMenu.add({
-				title: 'Heading',
-				icon_src: url+'heading.png',
-				onclick : function() {
-					ed.execCommand('addCustomTag', 'head', t.curPos);
-				}
-			}).setDisabled(col);
-			tagMenu.add({
-				title: 'Emphasized',
-				icon_src: url+'text_italic.png',
-				onclick : function() {
-					ed.execCommand('addCustomTag', 'emph', t.curPos);
-				}
-			}).setDisabled(col);
-//			tagMenu.add({
-//				title: 'Title',
-//				icon_src: url+'title.png',
-//				onclick : function() {
-//					ed.execCommand('addCustomTag', 'title', t.curPos);
-//				}
-//			}).setDisabled(col);
-			tagMenu.add({
-				title: 'Quotation',
-				icon_src: url+'quote.png',
-				onclick : function() {
-					ed.execCommand('addCustomTag', 'quote', t.curPos);
-				}
-			}).setDisabled(col);
-			m.addSeparator();
 			m.add({
 				title: 'Tag Person',
 				icon_src: url+'user.png',
@@ -213,7 +173,17 @@
 					ed.execCommand('addEntity', 'textTitle', t.curPos);
 				}
 			}).setDisabled(col);
+			
 			m.addSeparator();
+			var tagMenu = m.addMenu({
+				title: 'Structural Tags',
+				icon_src: url+'tag.png'
+			});
+			ed.execCommand('createCustomTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
+			m.addSeparator();
+			ed.execCommand('createSchemaTagsControl', {id: 'schema_context_menu', menu: m, disabled: col, pos: t.curPos});
+			m.addSeparator();
+			
 			// TODO disable edit tag for non-editable tags
 			col = (ed.currentEntity == null && ed.currentStruct == null);
 			m.add({
