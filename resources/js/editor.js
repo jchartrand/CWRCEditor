@@ -1,4 +1,5 @@
 var Writer = function(config) {
+	config = config || {};
 	var w = {
 		editor: null, // reference to the tinyMCE instance we're creating, set in setup
 		entities: {}, // entities store
@@ -24,7 +25,14 @@ var Writer = function(config) {
 			title: 'Text/Title',
 			quote: 'Quotation'
 		},
-			
+		
+		// editor mode
+		mode: config.mode,
+		
+		// possible editor modes
+		XMLRDF: 0, // allows for overlapping elements, i.e. entities
+		XML: 1, // standard xml, no overlapping elements
+		
 		// possible results when trying to add entity
 		NO_SELECTION: 0,
 		NO_COMMON_PARENT: 1,
@@ -289,7 +297,7 @@ var Writer = function(config) {
 		if (range.startContainer.parentNode != range.endContainer.parentNode) return w.NO_COMMON_PARENT;
 		
 		// extra check to make sure we're not overlapping with an entity
-		if (isStructTag) {
+		if (isStructTag || w.mode == w.XML) {
 			var c;
 			var currentNode = range.startContainer;
 			var ents = {};
@@ -608,6 +616,12 @@ var Writer = function(config) {
 	};
 	
 	w.init = function() {
+		if (w.mode != null && w.mode == 'xml') {
+			w.mode = w.XML;
+		} else {
+			w.mode = w.XMLRDF;
+		}
+		
 		$.ajax({
 			url: 'http://cwrctc.artsrn.ualberta.ca/documents/info/projectname',
 			success: function(data, status, xhr) {

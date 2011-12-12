@@ -222,41 +222,68 @@ var FileManager = function(config) {
 		w.highlightEntity();
 		w.highlightStructureTag();
 		
-		var offsets = [];
 		var doc = w.editor.getDoc();
 		var originalDoc = $(doc.body).clone(false, true); // make a copy, don't clone body events, but clone child events
-		_processNodes($(doc.body), offsets);
-		$(doc.body).find('entity').remove();
-		var content = '\n<body>\n'+w.editor.getContent()+'\n</body>\n</html>';
-		var head = '<?xml version="1.0"?><html><head><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
-		for (var i = 0; i < offsets.length; i++) {
-			var o = offsets[i];
-			head += '\n<rdf:Description rdf:ID="'+o.id+'">';
-			var key;
-			for (key in o) {
-				head += '\n<w:'+key+' type="offset">'+o[key]+'</w:'+key+'>';
+		var head, content, exportText;
+		if (w.mode == w.XMLRDF) {
+			var offsets = [];
+			_getNodeOffsets($(doc.body), offsets);
+			$(doc.body).find('entity').remove();
+			head = '<?xml version="1.0"?><html><head><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
+			content = '\n<body>\n'+w.editor.getContent()+'\n</body>\n</html>';
+			for (var i = 0; i < offsets.length; i++) {
+				var o = offsets[i];
+				head += '\n<rdf:Description rdf:ID="'+o.id+'">';
+				var key;
+				for (key in o) {
+					head += '\n<w:'+key+' type="offset">'+o[key]+'</w:'+key+'>';
+				}
+				var entry = w.entities[o.id];
+				head += '\n<w:type type="props">'+entry.props.type+'</w:type>';
+				head += '\n<w:content type="props">'+entry.props.content+'</w:content>';
+				for (key in entry.info) {
+					head += '\n<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
+				}
+				head += '\n</rdf:Description>';
 			}
-			var entry = w.entities[o.id];
-			head += '\n<w:type type="props">'+entry.props.type+'</w:type>';
-			head += '\n<w:content type="props">'+entry.props.content+'</w:content>';
-			for (key in entry.info) {
-				head += '\n<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
+			head += '</rdf:RDF></head>';
+			exportText = head + content;
+		} else {
+			head = '<?xml version="1.0"?><html><head></head>';
+			for (var id in w.entities) {
+				var markers = w.editor.dom.select('entity[name="'+id+'"]');
+				var start = markers[0];
+				var end = markers[1];
+				
+				var nodes = [start];
+				var currentNode = start;
+				while (currentNode != end  && currentNode != null) {
+					currentNode = currentNode.nextSibling;
+					nodes.push(currentNode);
+				}
+				
+				var attributes = ' type="'+w.entities[id].props.type+'"';
+				for (var key in w.entities[id].info) {
+					attributes += ' '+key+'="'+w.entities[id].info[key]+'"';
+				}
+				
+				w.editor.$(nodes).wrapAll('<entity'+attributes+'/>');
+				w.editor.$(markers).remove();
 			}
-			head += '\n</rdf:Description>';
+			content = '\n<body>\n'+w.editor.getContent({format: 'raw'})+'\n</body>\n</html>';
+			exportText = head + content;
 		}
-		head += '</rdf:RDF></head>';
-		var exportText = head + content;
 		$(doc.body).replaceWith(originalDoc);
 		return exportText;
 	};
 	
-	var _processNodes = function(parent, offsets) {
+	var _getNodeOffsets = function(parent, offsets) {
 		var currentOffset = 0;
 		parent.contents().each(function(index, element) {
 			if (this.nodeType == Node.TEXT_NODE) {
 				currentOffset += this.length;
 			} else if ($(this).is('struct, p')) {
-				_processNodes($(this), offsets);
+				_getNodeOffsets($(this), offsets);
 			} else if ($(this).is('entity[class*=start]')) {
 				var id = $(this).attr('name');
 				offsets.push({
