@@ -41,7 +41,8 @@ var Writer = function(config) {
 		fm: null, // filemanager
 		entitiesList: null, // entities list
 		tree: null, // structure tree
-		d: null // dialog
+		d: null, // dialog
+		settings: null // settings dialog
 	};
 	
 	var _findDeletedEntities = function() {
@@ -645,18 +646,11 @@ var Writer = function(config) {
 			}
 		});
 		
-		w.fm = new FileManager({
-			writer: w
-		});
-		w.tree = new StructureTree({
-			writer: w
-		});
-		w.entitiesList = new EntitiesList({
-			writer: w
-		});
-		w.d = new DialogManager({
-			writer: w
-		});
+		w.fm = new FileManager({writer: w});
+		w.tree = new StructureTree({writer: w});
+		w.entitiesList = new EntitiesList({writer: w});
+		w.d = new DialogManager({writer: w});
+		w.settings = new SettingsDialog({writer: w});
 		
 		$('#separator').click(w.toggleSidepanel);
 		$('#tabs').tabs();

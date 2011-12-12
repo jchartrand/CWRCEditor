@@ -40,6 +40,15 @@ label {
 	border-bottom: 1px solid #ccc;
 }
 
+#header h1 {
+	float: left;
+}
+
+#settingsLink {
+	float: right;
+	cursor: pointer;
+}
+
 #main {
 	margin: 0 0 0 250px;
 }
