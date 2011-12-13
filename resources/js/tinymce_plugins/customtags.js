@@ -77,6 +77,14 @@
 				t.bm = t.editor.selection.getBookmark();
 				
 				$('select[name="lang"] > option[value="en"]', t.lang).attr('selected', true);
+				if (val == 'quote') {
+					var selection = t.editor.selection.getContent();
+					if (selection.length > 250) {
+						$('#quoteFormat input[value="quoteTagLong"]').prop('checked', true);
+					} else {
+						$('#quoteFormat input[value="quoteTagShort"]').prop('checked', true);
+					}
+				}
 				
 				t.mode = t.ADD;
 				t.showCustomTagDialog(val, pos);
@@ -89,6 +97,10 @@
 				
 				var lang = tag.attr('lang');
 				$('select[name="lang"] > option[value="'+lang+'"]', t.lang).attr('selected', true);
+				if (val == 'quote') {
+					var type = tag.attr('class');
+					$('#quoteFormat input[value="'+type+'"]').prop('checked', true);
+				}
 				
 				t.mode = t.EDIT;
 				t.showCustomTagDialog(val, pos);
@@ -96,10 +108,30 @@
 			
 			$(document.body).append(''+
 				'<div id="langDialog">'+
+				'<div>'+
 				'<label for="lang">Select language (optional)</label>'+
 				'<select name="lang"><option value=""></option><option value="af">Afrikaans</option><option value="sq">Albanian</option><option value="ar">Arabic</option><option value="be">Belarusian</option><option value="bg">Bulgarian</option><option value="ca">Catalan</option><option value="zh-CN">Chinese Simplified</option><option value="zh-TW">Chinese Traditional</option><option value="hr">Croatian</option><option value="cs">Czech</option><option value="da">Danish</option><option value="nl">Dutch</option><option value="en" selected="selected">English</option><option value="et">Estonian</option><option value="tl">Filipino</option><option value="fi">Finnish</option><option value="fr">French</option><option value="gl">Galician</option><option value="de">German</option><option value="el">Greek</option><option value="ht">Haitian Creole</option><option value="iw">Hebrew</option><option value="hi">Hindi</option><option value="hu">Hungarian</option><option value="is">Icelandic</option><option value="id">Indonesian</option><option value="ga">Irish</option><option value="it">Italian</option><option value="ja">Japanese</option><option value="lv">Latvian</option><option value="lt">Lithuanian</option><option value="mk">Macedonian</option><option value="ms">Malay</option><option value="mt">Maltese</option><option value="no">Norwegian</option><option value="fa">Persian</option><option value="pl">Polish</option><option value="pt">Portuguese</option><option value="ro">Romanian</option><option value="ru">Russian</option><option value="sr">Serbian</option><option value="sk">Slovak</option><option value="sl">Slovenian</option><option value="es">Spanish</option><option value="sw">Swahili</option><option value="sv">Swedish</option><option value="th">Thai</option><option value="tr">Turkish</option><option value="uk">Ukrainian</option><option value="vi">Vietnamese</option><option value="cy">Welsh</option><option value="yi">Yiddish</option></select>'+
+				'</div>'+
+				'<div id="overrideFormat" style="margin-top: 10px;">'+
+				'<label for="overrideCheckbox">Override standard formatting</label><input type="checkbox" name="override" id="overrideCheckbox" />'+
+				'<div id="quoteFormat" style="margin-top: 10px;">'+
+				'<input id="quoteTagLongRadio" type="radio" name="format" value="quoteTagLong" disabled="disabled" /><label for="quoteTagLongRadio">Indent</label><br/>'+
+				'<input id="quoteTagShortRadio" type="radio" name="format" value="quoteTagShort" disabled="disabled" /><label for="quoteTagShortRadio">Quotation marks/run in</label><br/>'+
+				'<input id="quoteTagRadio" type="radio" name="format" value="quoteTag" disabled="disabled" /><label for="quoteTagRadio">No formatting/run in</label><br/>'+
+				'</div>'+
+				'</div>'+
 				'</div>'
 			);
+			
+			$('#overrideFormat').hide();
+			
+			$('#overrideCheckbox').change(function() {
+				if ($('#quoteFormat input').is(':disabled')) {
+					$('#quoteFormat input').prop('disabled', false);
+				} else {
+					$('#quoteFormat input').prop('disabled', true);
+				}
+			});
 			
 			t.lang = $('#langDialog');
 			
@@ -142,11 +174,15 @@
 				if (t.currentVal == 'para') {
 					params['class'] = 'paraTag';
 				} else if (t.currentVal == 'quote') {
-					var selection = t.editor.selection.getContent();
-					if (selection.length > 250) {
-						params['class'] = 'quoteTagLong';
+					if ($('#overrideCheckbox').is(':checked')) {
+						params['class'] = $('#quoteFormat input:checked').val();;
 					} else {
-						params['class'] = 'quoteTagShort';
+						var selection = t.editor.selection.getContent();
+						if (selection.length > 250) {
+							params['class'] = 'quoteTagLong';
+						} else {
+							params['class'] = 'quoteTagShort';
+						}
 					}
 				}
 				
@@ -180,6 +216,14 @@
 				});
 				t.editor.execCommand('updateStructureTree', true);
 			} else if (val != '') {
+				if (val == 'quote') {
+					$('#overrideFormat').show();
+					t.lang.dialog('option', 'height', 225);
+				} else {
+					$('#overrideFormat').hide();
+					t.lang.dialog('option', 'height', 125);
+				}
+				
 				var title = t.titles[val];
 				t.lang.dialog('option', 'title', title);
 				if (pos) t.lang.dialog('option', 'position', [pos.x, pos.y]);
