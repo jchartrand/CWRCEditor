@@ -234,7 +234,7 @@
 			if (n == 'customtags') {
 				var t = this;
 				var url = t.url+'/../../img/';
-				t.menuButton = cm.createSplitButton('customTagsButton', {
+				t.menuButton = cm.createMenuButton('customTagsButton', {
 					title: 'Tags',
 					image: url+'tag.png',
 					'class': 'entityButton'
