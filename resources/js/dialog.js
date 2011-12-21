@@ -3,21 +3,41 @@ var DialogManager = function(config) {
 	
 	var currentType = null;
 	
-	var dialogs = {
-		message: new MessageDialog(config),
-		search: new SearchDialog(config),
-		note: new NoteDialog(config),
-		title: new TitleDialog(config),
-		date: new DateDialog(config),
-		addPerson: new AddPersonDialog(config)
+	var dialogs = null;
+	
+	var scripts = ['dialog_addevent.js', 'dialog_addorg.js', 'dialog_addperson.js', 'dialog_addplace.js',
+	               'dialog_date.js', 'dialog_message.js', 'dialog_note.js', 'dialog_search.js', 'dialog_title.js'];
+	var loadCount = 0;
+	for (var i = 0; i < scripts.length; i++) {
+		var url = 'js/dialogs/'+scripts[i];
+		$.getScript(url, function(data, status) {
+			loadCount++;
+			if (loadCount == scripts.length) {
+				init();
+			}
+		});
+	}
+	
+	var init = function() {
+		dialogs = {
+			message: new MessageDialog(config),
+			search: new SearchDialog(config),
+			note: new NoteDialog(config),
+			title: new TitleDialog(config),
+			date: new DateDialog(config),
+			addperson: new AddPersonDialog(config),
+			addplace: new AddPlaceDialog(config),
+			addevent: new AddEventDialog(config),
+			addorg: new AddOrganizationDialog(config)
+		};
+		
+		dialogs.person = dialogs.search;
+		dialogs.place = dialogs.search;
+		dialogs.event = dialogs.search;
+		dialogs.org = dialogs.search;
+		
+		dialogs.citation = dialogs.note;
 	};
-	
-	dialogs.person = dialogs.search;
-	dialogs.place = dialogs.search;
-	dialogs.event = dialogs.search;
-	dialogs.org = dialogs.search;
-	
-	dialogs.citation = dialogs.note;
 	
 	return {
 		getCurrentType: function() {

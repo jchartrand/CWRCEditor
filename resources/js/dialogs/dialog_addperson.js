@@ -35,7 +35,7 @@ var AddPersonDialog = function(config) {
 		open: function(event, ui) {
 			$('#addPersonDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		title: 'Add New Person',
+		title: 'Create New Person',
 		height: 350,
 		width: 465,
 		autoOpen: false,
@@ -86,5 +86,5 @@ var AddPersonDialog = function(config) {
 		hide: function() {
 			addPerson.dialog('close');
 		}
-	}
+	};
 };

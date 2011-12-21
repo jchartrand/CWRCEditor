@@ -39,7 +39,7 @@ var TitleDialog = function(config) {
 		width: 435,
 		autoOpen: false,
 		buttons: {
-			'Ok': function() {
+			'Tag Text/Title': function() {
 				titleResult();
 			},
 			'Cancel': function() {
@@ -85,7 +85,7 @@ var TitleDialog = function(config) {
 	return {
 		show: function(config) {
 			mode = config.entry ? EDIT : ADD;
-			var prefix = 'Add ';
+			var prefix = 'Tag ';
 			
 			if (mode == ADD) {
 				$('input[value="m"]', title).attr('checked', true);

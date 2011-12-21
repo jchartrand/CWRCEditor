@@ -24,7 +24,7 @@ var NoteDialog = function(config) {
 		width: 300,
 		autoOpen: false,
 		buttons: {
-			'Ok': function() {
+			'Tag Note': function() {
 				noteResult();
 			},
 			'Cancel': function() {

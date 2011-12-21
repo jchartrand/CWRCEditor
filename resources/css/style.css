@@ -507,3 +507,20 @@ div.mceDropDown {
 	background-image: url('../img/quote.png') !important;
 	background-position: 0px 0px !important;
 }
+
+/* jquery ui overrides */
+.splitButtons .ui-dialog-buttonpane {
+	padding: 0.3em 1em 0.5em 1em !important;
+}
+
+.splitButtons .ui-dialog-buttonset {
+	float: none !important;
+}
+
+.splitButtons .ui-dialog-buttonset button {
+	float: right;
+}
+
+.splitButtons .ui-dialog-buttonset button.left {
+	float: left;
+}

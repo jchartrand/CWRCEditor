@@ -664,6 +664,9 @@ var Writer = function(config) {
 		
 		$('#editor').tinymce({
 			script_url : 'js/tinymce/jscripts/tiny_mce/tiny_mce.js',
+//		tinyMCE.init({
+//			mode: 'exact',
+//			elements: 'editor',
 			theme: 'advanced',
 			
 			content_css: 'css/editor.css',

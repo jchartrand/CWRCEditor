@@ -11,9 +11,6 @@ var SearchDialog = function(config) {
 	'<div id="searchDialog">'+
 	    '<label for="query">Search</label>'+
 	    '<input type="text" name="query" />'+
-	    '<div id="addPersonButton" style="float: right; width: 90px;">'+
-	    '<button>Add New Person</button>'+
-	    '</div>'+
 	    '<div id="results"><ul class="searchResults"></ul></div>'+
 	'</div>');
 	
@@ -21,31 +18,20 @@ var SearchDialog = function(config) {
 	search.dialog({
 		modal: true,
 		resizable: false,
+		dialogClass: 'splitButtons',
 		closeOnEscape: false,
 		open: function(event, ui) {
 			$('#searchDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
 		height: 450,
 		width: 325,
-		autoOpen: false,
-		buttons: {
-			'Ok': function() {
-				searchResult();
-			},
-			'Cancel': function() {
-				searchResult(true);
-			}
-		}
+		autoOpen: false
 	});
 	var searchInput = $('#searchDialog input')[0];
 	$(searchInput).bind('keyup', function() {
 		doQuery();
 	});
 	var resultsDiv = $('#results');
-	
-	$('#addPersonButton button').button().click(function() {
-		w.d.show('addPerson', {});
-	});
 	
 	var doQuery = function(event) {
 		resultsDiv.css({borderColor: '#fff'});
@@ -151,20 +137,18 @@ var SearchDialog = function(config) {
 		currentType = null;
 	};
 	
+	var createNew = function() {
+		w.d.show('add'+currentType, {});
+	};
+	
 	return {
 		show: function(config) {
 			currentType = config.type;
 			mode = config.entry ? EDIT : ADD;
-			var prefix = 'Add ';
+			var prefix = 'Tag ';
 			
 			if (mode == EDIT) {
 				prefix = 'Edit ';
-			}
-			
-			if (currentType != 'person') {
-				$('#addPersonButton').hide();
-			} else {
-				$('#addPersonButton').show();
 			}
 			
 			resultsDiv.css({borderColor: '#fff'});
@@ -176,6 +160,23 @@ var SearchDialog = function(config) {
 			
 			var title = prefix+config.title;
 			search.dialog('option', 'title', title);
+			search.dialog('option', 'buttons', [{
+				text: 'Create New',
+				'class': 'left',
+				click: function() {
+					createNew();
+				}
+			},{
+				text: 'Cancel',
+				click: function() {
+					searchResult(true);
+				}
+			},{
+				text: 'Tag '+config.title,
+				click: function() {
+					searchResult();
+				}
+			}]);
 			if (config.pos) {
 				search.dialog('option', 'position', [config.pos.x, config.pos.y]);
 			} else {

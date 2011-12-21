@@ -28,23 +28,25 @@
 				});
 				for (var key in t.schema) {
 					if (t.schema[key].attributes.length > 1) {
-						menu.add({
+						var menuitem = menu.add({
 							title: key.replace('-element',''),
 							key: key,
 							icon_src: url + 'tag_blue_edit.png',
 							onclick : function() {
 								t.editor.execCommand('addSchemaTag', this.key, config.pos);
 							}
-						}).setDisabled(config.disabled);
+						});
+						menuitem.setDisabled(config.disabled);
 					} else {
-						menu.add({
+						var menuitem = menu.add({
 							title: key.replace('-element',''),
 							key: key,
 							icon_src: url + 'tag_blue.png',
 							onclick : function() {
 								t.editor.execCommand('addSchemaTag', this.key, config.pos);
 							}
-						}).setDisabled(config.disabled);
+						});
+						menuitem.setDisabled(config.disabled);
 					}
 				}
 				
@@ -72,18 +74,18 @@
 				t.bm = t.editor.selection.getBookmark();
 				
 				var entry = t.schema[key];
-				if (entry.attributes.length == 1 && entry.attributes[0].name == 'id') {
-					t.editor.execCommand('addStructureTag', t.bm, {
-						'class': key,
-						_tag: entry.elementName,
-						_schema: true,
-						_editable: false
-					});
-					t.editor.execCommand('updateStructureTree', true);
-				} else {
+//				if (entry.attributes.length == 1 && entry.attributes[0].name == 'id') {
+//					t.editor.execCommand('addStructureTag', t.bm, {
+//						'class': key,
+//						_tag: entry.elementName,
+//						_schema: true,
+//						_editable: false
+//					});
+//					t.editor.execCommand('updateStructureTree', true);
+//				} else {
 					t.mode = t.ADD;
 					t.showDialog(key, pos);
-				}
+//				}
 			});
 			
 			ed.addCommand('editSchemaTag', function(tag, pos) {
@@ -94,11 +96,15 @@
 				t.showDialog(val, pos);
 			});
 			
-			$(document.body).append('<div id="schemaDialog"></div>');
+			$(document.body).append(''+
+				'<div id="schemaDialog"><div class="content"></div></div>'+
+				'<div id="schemaHelpDialog"></div>'
+			);
 			
 			$('#schemaDialog').dialog({
 				modal: true,
 				resizable: false,
+				dialogClass: 'splitButtons',
 				closeOnEscape: false,
 				open: function(event, ui) {
 					$('#schemaDialog').parent().find('.ui-dialog-titlebar-close').hide();
@@ -106,15 +112,34 @@
 				height: 310,
 				width: 435,
 				autoOpen: false,
-				buttons: {
-					'Ok': function() {
-						t.result();
-					},
-					'Cancel': function() {
-						t.editor.selection.moveToBookmark(t.bm);
-						$('#schemaDialog').dialog('close');
+				buttons: [
+					{
+						text: 'Help',
+						'class': 'left',
+						click: function() {
+							t.showHelpDialog();
+						}
+					},{
+						text: 'Ok',
+						click: function() {
+							t.result();
+						}
+					},{
+						text: 'Cancel',
+						click: function() {
+							t.editor.selection.moveToBookmark(t.bm);
+							$('#schemaDialog').dialog('close');
+						}
 					}
-				}
+				]
+			});
+			
+			$('#schemaHelpDialog').dialog({
+				modal: false,
+				resizable: false,
+				autoOpen: false,
+				height: 200,
+				width: 300
 			});
 		},
 		showDialog: function(key, pos) {
@@ -125,7 +150,7 @@
 			var formString = '<form>';
 			var attribute;
 			
-			$('#schemaDialog').empty();
+			$('#schemaDialog div.content').empty();
 			
 			// build form from schema entry
 			for (var i = 0; i < entry.attributes.length; i++) {
@@ -154,7 +179,7 @@
 			}
 			formString += '</form>';
 			
-			$('#schemaDialog').append(formString);
+			$('#schemaDialog div.content').append(formString);
 			
 			$('#schemaDialog input').keyup(function(event) {
 				if (event.keyCode == '13') {
@@ -167,6 +192,29 @@
 			$('#schemaDialog').dialog('option', 'title', title);
 			if (pos) $('#schemaDialog').dialog('option', 'position', [pos.x, pos.y]);
 			$('#schemaDialog').dialog('open');
+		},
+		showHelpDialog: function() {
+			var key = this.currentKey.split('-element')[0];
+			$.ajax({
+				url: 'https://apps.testing.cwrc.ca/documentation/glossary_item_xml.php?KEY_VALUE_STR='+key,
+				success: function(data, status, xhr) {
+					if (data.GLOSSITEM) {
+						$('#schemaHelpDialog').dialog('option', 'title', key+' Help');
+						for (var glossKey in data.GLOSSITEM) {
+							if (glossKey != 'GLOSSITEMTYPE' && glossKey != 'HEADING') {
+								var entry = data.GLOSSITEM[glossKey];
+								$('#schemaHelpDialog').append('<div><h2>'+entry.HEADING+'</h2><p>'+entry.P+'</p></div>');
+							}
+						}
+						$('#schemaHelpDialog').dialog('open');
+					}
+				},
+				error: function(xhr, status, error) {
+					$('#schemaHelpDialog').dialog('option', 'title', 'Help Error');
+					$('#schemaHelpDialog p').html(status);
+					$('#schemaHelpDialog').dialog('open');
+				}
+			});
 		},
 		result: function() {
 			var t = this;
