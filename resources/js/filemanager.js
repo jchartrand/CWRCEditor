@@ -132,7 +132,7 @@ var FileManager = function(config) {
 	
 	var _getDocuments = function(callback) {
 		$.ajax({
-			url: 'http://cwrctc.artsrn.ualberta.ca/documents',
+			url: 'http://apps.testing.cwrc.ca/editor/documents',
 			type: 'GET',
 			dataType: 'json',
 			success: [function(data, status, xhr) {
@@ -196,7 +196,7 @@ var FileManager = function(config) {
 		} else {
 			var docText = _exportDocument();
 			$.ajax({
-				url: 'http://cwrctc.artsrn.ualberta.ca/documents/'+currentDoc,
+				url: 'http://apps.testing.cwrc.ca/editor/documents/'+currentDoc,
 				type: 'PUT',
 				dataType: 'json',
 				data: docText,
@@ -303,7 +303,7 @@ var FileManager = function(config) {
 		w.structs = {};
 		
 		$.ajax({
-			url: 'http://cwrctc.artsrn.ualberta.ca/documents/'+docName,
+			url: 'http://apps.testing.cwrc.ca/editor/documents/'+docName,
 			type: 'GET',
 			success: _loadDocumentHandler,
 			error: function() {

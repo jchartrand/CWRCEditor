@@ -42,7 +42,7 @@ var SearchDialog = function(config) {
 		
 		if (currentType == 'person') {
 			$.ajax({
-				url: 'http://cwrctc.artsrn.ualberta.ca/solr-'+w.project+'/people/select/',
+				url: 'http://apps.testing.cwrc.ca/editor/solr-'+w.project+'/people/select/',
 				data: {
 					q: query,
 					wt: 'json'

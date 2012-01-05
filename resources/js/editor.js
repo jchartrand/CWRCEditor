@@ -624,7 +624,7 @@ var Writer = function(config) {
 		}
 		
 		$.ajax({
-			url: 'http://cwrctc.artsrn.ualberta.ca/documents/info/projectname',
+			url: 'http://apps.testing.cwrc.ca/editor/documents/info/projectname',
 			success: function(data, status, xhr) {
 				w.project = data;
 			}
