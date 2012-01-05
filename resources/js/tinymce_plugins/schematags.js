@@ -137,7 +137,7 @@
 			
 			$('#schemaHelpDialog').dialog({
 				modal: false,
-				resizable: true,
+				resizable: false,
 				autoOpen: false,
 				height: 300,
 				width: 300
@@ -223,7 +223,7 @@
 						$('#schemaHelpDialog').dialog('open');
 					} else {
 						$('#schemaHelpDialog').dialog('option', 'title', 'Help Error');
-						$('#schemaHelpDialog p').append('<p>There\'s no help available for '+key+'.</p>');
+						$('#schemaHelpDialog').append('<p>There\'s no help available for '+key+'.</p>');
 						$('#schemaHelpDialog').dialog('open');
 					}
 				},
