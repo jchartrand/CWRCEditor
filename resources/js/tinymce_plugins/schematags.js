@@ -129,6 +129,7 @@
 						click: function() {
 							t.editor.selection.moveToBookmark(t.bm);
 							$('#schemaDialog').dialog('close');
+							$('#schemaHelpDialog').dialog('close');
 						}
 					}
 				]
@@ -136,9 +137,9 @@
 			
 			$('#schemaHelpDialog').dialog({
 				modal: false,
-				resizable: false,
+				resizable: true,
 				autoOpen: false,
-				height: 200,
+				height: 300,
 				width: 300
 			});
 		},
@@ -201,6 +202,7 @@
 					if (typeof data == 'string') {
 						data = $.parseJSON(data);
 					}
+					$('#schemaHelpDialog').empty();
 					if (data.GLOSSITEM) {
 						$('#schemaHelpDialog').dialog('option', 'title', key+' Help');
 						for (var glossKey in data.GLOSSITEM) {
@@ -209,6 +211,19 @@
 								$('#schemaHelpDialog').append('<div><h2>'+entry.HEADING+'</h2><p>'+entry.P+'</p></div>');
 							}
 						}
+						var dialogOffset = $('#schemaDialog').offset();
+						var x = dialogOffset.left + $('#schemaDialog').width() + 30;
+						if (x > $(document).width()) {
+							x = dialogOffset.left - 315;
+						}
+						var pos = [];
+						pos[0] = x;
+						pos[1] = dialogOffset.top - 31;
+						$('#schemaHelpDialog').dialog('option', 'position', pos);
+						$('#schemaHelpDialog').dialog('open');
+					} else {
+						$('#schemaHelpDialog').dialog('option', 'title', 'Help Error');
+						$('#schemaHelpDialog p').append('<p>There\'s no help available for '+key+'.</p>');
 						$('#schemaHelpDialog').dialog('open');
 					}
 				},
