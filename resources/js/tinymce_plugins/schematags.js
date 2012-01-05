@@ -198,6 +198,9 @@
 			$.ajax({
 				url: 'https://apps.testing.cwrc.ca/documentation/glossary_item_xml.php?KEY_VALUE_STR='+key,
 				success: function(data, status, xhr) {
+					if (typeof data == 'string') {
+						data = $.parseJSON(data);
+					}
 					if (data.GLOSSITEM) {
 						$('#schemaHelpDialog').dialog('option', 'title', key+' Help');
 						for (var glossKey in data.GLOSSITEM) {
