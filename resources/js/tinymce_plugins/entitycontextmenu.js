@@ -176,12 +176,13 @@
 			
 			m.addSeparator();
 			var tagMenu = m.addMenu({
+				id: 'structTagsContextMenu',
 				title: 'Structural Tags',
 				icon_src: url+'tag.png'
 			});
 			ed.execCommand('createCustomTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
-			m.addSeparator();
-			ed.execCommand('createSchemaTagsControl', {id: 'schema_context_menu', menu: m, disabled: col, pos: t.curPos});
+			tagMenu.addSeparator();
+			ed.execCommand('createSchemaTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
 			m.addSeparator();
 			
 			// TODO disable edit tag for non-editable tags

@@ -21,11 +21,8 @@
 					t.schema = t.editor.execCommands.getSchema.func();//t.editor.execCommand('getSchema');
 				}
 				var url = t.url+'/../../img/';
-				var menu = config.menu.addMenu({
-					id: config.id,
-					title: 'Schema Tags',
-					icon_src: url+'tag_blue.png'
-				});
+				var menu = config.menu;
+				
 				for (var key in t.schema) {
 					if (t.schema[key].attributes.length > 1) {
 						var menuitem = menu.add({

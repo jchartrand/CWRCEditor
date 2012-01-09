@@ -242,7 +242,7 @@
 				t.menuButton.onRenderMenu.add(function(c, m) {
 					t.editor.execCommand('createCustomTagsControl', {menu: m, disabled: false});
 					m.addSeparator();
-					t.editor.execCommand('createSchemaTagsControl', {id: 'schema_tag_menu', menu: m, disabled: false});
+					t.editor.execCommand('createSchemaTagsControl', {menu: m, disabled: false});
 				});
 				
 				return t.menuButton;
