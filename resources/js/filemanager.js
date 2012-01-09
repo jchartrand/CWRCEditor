@@ -306,11 +306,11 @@ var FileManager = function(config) {
 			url: 'http://apps.testing.cwrc.ca/editor/documents/'+docName,
 			type: 'GET',
 			success: _loadDocumentHandler,
-			error: function() {
+			error: function(xhr, status, error) {
 				currentDoc = null;
 				w.d.show('message', {
 					title: 'Error',
-					msg: 'An error occurred and '+docName+' was not loaded.'
+					msg: 'An error ('+status+') occurred and '+docName+' was not loaded.'
 				});
 			},
 			dataType: 'xml'
@@ -323,6 +323,25 @@ var FileManager = function(config) {
 		var maxId = 0; // track what the largest id num is
 		
 		var rdfs = $(doc).find('rdf\\:RDF');
+		
+		var docMode;
+		if (rdfs.length > 0) {
+			docMode = w.XMLRDF;
+		} else {
+			docMode = w.XML;
+		}
+		
+		if (w.mode != docMode) {
+			var editorModeStr = w.mode == w.XML ? 'XML only' : 'XML & RDF';
+			var docModeStr = docMode == w.XML ? 'XML only' : 'XML & RDF';
+			w.d.show('message', {
+				title: 'Warning',
+				msg: 'The Editor Mode ('+editorModeStr+') has been changed to match the Document Mode ('+docModeStr+').'
+			});
+			
+			w.mode = docMode;
+		}
+		
 		rdfs.children().each(function(i1, el1) {
 			var id = $(this).find('w\\:id').text();
 			
@@ -417,14 +436,17 @@ var FileManager = function(config) {
 		w.editor.$(w.editor.getBody()).find('p, struct').each(function(index, element) {
 			var id = this.getAttribute('id');
 			
-			var idNum = parseInt(id.split('_')[1]);
-			if (idNum > maxId) maxId = idNum;
-			
-			w.structs[id] = {};
-			for (var i = 0; i < this.attributes.length; i++) {
-				var key = this.attributes[i].nodeName;
-				var value = this.attributes[i].nodeValue;
-				w.structs[id][key] = value;
+			// if id is null, an empty paragraph snuck in. it'll be dealt with when the structure tree gets updated.
+			if (id != null) {
+				var idNum = parseInt(id.split('_')[1]);
+				if (idNum > maxId) maxId = idNum;
+				
+				w.structs[id] = {};
+				for (var i = 0; i < this.attributes.length; i++) {
+					var key = this.attributes[i].nodeName;
+					var value = this.attributes[i].nodeValue;
+					w.structs[id][key] = value;
+				}
 			}
 		});
 		

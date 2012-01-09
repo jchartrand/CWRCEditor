@@ -32,11 +32,18 @@ var SettingsDialog = function(config) {
 	'<option value="Verdana" style="font-family: Verdana; font-size: 12px;">Verdana</option>'+
 	'</select>'+
 	'</div>'+
+	'<div style="margin-top: 10px;">'+
+	'<label>Editor Mode</label><select name="editormode">'+
+	'<option value="0">XML & RDF (overlapping entities)</option>'+
+	'<option value="1">XML (no overlap)</option>'+
+	'</select>'+
+	'</div>'+
 	'</div>');
 	
 	$('#settingsLink').click(function() {
 		$('select[name="fontsize"] > option[value="'+settings.fontSize+'"]', $('#settingsDialog')).attr('selected', true);
 		$('select[name="fonttype"] > option[value="'+settings.fontFamily+'"]', $('#settingsDialog')).attr('selected', true);
+		$('select[name="editormode"] > option[value="'+w.mode+'"]', $('#settingsDialog')).attr('selected', true);
 		$('#settingsDialog').dialog('open');
 	});
 	
@@ -60,6 +67,24 @@ var SettingsDialog = function(config) {
 	});
 	
 	var applySettings = function() {
+		var editorMode = parseInt($('select[name="editormode"]', $('#settingsDialog')).val());
+		if (editorMode != w.mode) {
+			var doModeChange = true;
+			if (w.mode == w.XMLRDF && editorMode == w.XML) {
+				var overlaps = _doEntitiesOverlap();
+				if (overlaps) {
+					doModeChange = false;
+					w.d.show('message', {
+						title: 'Error',
+						msg: 'You have overlapping entities and are trying to change to XML mode (which doesn\'t permit overlaps).  Please remove the overlapping entities and try again.'
+					});
+				}
+			}
+			if (doModeChange) {
+				w.mode = editorMode;
+			}
+		}
+		
 		settings.fontSize = $('select[name="fontsize"]', $('#settingsDialog')).val();
 		settings.fontFamily = $('select[name="fonttype"]', $('#settingsDialog')).val();
 		var styles = {
@@ -67,6 +92,25 @@ var SettingsDialog = function(config) {
 			fontFamily: settings.fontFamily
 		};
 		w.editor.dom.setStyles(w.editor.dom.getRoot(), styles);
+	};
+	
+	var _doEntitiesOverlap = function() {
+		// remove highlights
+		w.highlightEntity();
+		
+		for (var id in w.entities) {
+			var markers = w.editor.dom.select('entity[name="'+id+'"]');
+			var start = markers[0];
+			var end = markers[1];
+			var currentNode = start;
+			while (currentNode != end  && currentNode != null) {
+				currentNode = currentNode.nextSibling;
+				if (currentNode.nodeName.toLowerCase() == 'entity' && currentNode != end) {
+					return true;
+				}
+			}
+		}
+		return false;
 	};
 	
 	return {
