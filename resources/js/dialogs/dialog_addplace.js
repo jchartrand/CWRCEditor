@@ -28,7 +28,7 @@ var AddPlaceDialog = function(config) {
 		width: 400,
 		autoOpen: false,
 		buttons: {
-			'Ok': function() {
+			'Submit for Review': function() {
 				alert('New records can\'t be added yet. The popup is here only to solicit feedback.');
 				d.dialog('close');
 			},

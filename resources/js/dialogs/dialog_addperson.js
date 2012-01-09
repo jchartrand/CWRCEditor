@@ -40,7 +40,7 @@ var AddPersonDialog = function(config) {
 		width: 465,
 		autoOpen: false,
 		buttons: {
-			'Ok': function() {
+			'Submit for Review': function() {
 				alert('New records can\'t be added yet. The popup is here only to solicit feedback.');
 				addPerson.dialog('close');
 			},
