@@ -151,11 +151,11 @@ label {
 	background-image: url('../img/note.png');
 }
 
-#entities ul li .textTitle {
+#entities ul li .title {
 	background-image: url('../img/book.png');
 }
 
-#entities ul li .title {
+#entities ul li .entityTitle {
 	font-size: 11px;
 	vertical-align: 6px;
 }
@@ -354,16 +354,16 @@ label {
 	background-color: #6c88a6;
 }
 
-.textTitle {
+.title {
 	background-color: #debb00;
 }
 
-#entities .textTitle {
+#entities .title {
 	background-color: #f2d747;
 }
 
 #entities .selected .person, #entities .selected .date, #entities .selected .place, #entities .selected .event,
-#entities .selected .org, #entities .selected .citation, #entities .selected .note, #entities .selected .textTitle {
+#entities .selected .org, #entities .selected .citation, #entities .selected .note, #entities .selected .title {
 	background-color: transparent;
 }
 

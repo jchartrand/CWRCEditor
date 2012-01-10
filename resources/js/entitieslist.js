@@ -56,7 +56,7 @@ var EntitiesList = function(config) {
 					}
 					infoString += '</ul>';
 					entitiesString += '<li class="" name="'+entry.props.id+'">'+
-						'<span class="'+entry.props.type+' box"/><span class="title">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
+						'<span class="'+entry.props.type+' box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
 					'</li>';
 				}
 			}
@@ -71,7 +71,7 @@ var EntitiesList = function(config) {
 				}
 				infoString += '</ul>';
 				entitiesString += '<li class="" name="'+entry.props.id+'">'+
-					'<span class="'+entry.props.type+' box"/><span class="title">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
+					'<span class="'+entry.props.type+' box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
 				'</li>';
 			}
 		}
