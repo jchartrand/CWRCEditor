@@ -26,8 +26,20 @@
 				}
 			}
 			$(function() {
-				var writer = new Writer();
-				writer.init();
+				writer = null;
+				$.ajax({
+					url: 'http://apps.testing.cwrc.ca/editor/documents/info/projectname',
+					success: function(data, status, xhr) {
+						writer = new Writer({
+							project: data
+						});
+						writer.init();
+					},
+					error: function() {
+						writer = new Writer();
+						writer.init();
+					}
+				});
 			});
 		</script>
 	</head>

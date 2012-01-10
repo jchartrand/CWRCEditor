@@ -8,7 +8,7 @@ var Writer = function(config) {
 		schema: {}, // schema for additional custom tags
 		schemaAttributes: {}, // all the attribute names from the schema (used in extended_valid_elements config setting)
 		
-		project: null, // the current project (cwrc or russell)
+		project: config.project, // the current project (cwrc or russell)
 		
 		// tag types and their titles
 		titles: {
@@ -624,16 +624,24 @@ var Writer = function(config) {
 		}
 		
 		$.ajax({
-			url: 'http://apps.testing.cwrc.ca/editor/documents/info/projectname',
-			success: function(data, status, xhr) {
-				w.project = data;
-			}
-		});
-		
-		$.ajax({
 			url: 'js/schema.js',
 			success: function(data, status, xhr) {
-				w.schema = eval(xhr.responseText)[0];
+				var schema = eval(xhr.responseText)[0];
+				
+				var sortedSchema = {}, key, a = [];
+
+			    for (key in schema) {
+			        if (schema.hasOwnProperty(key)) {
+			                a.push(key);
+			        }
+			    }
+			    a.sort();
+
+			    for (key = 0; key < a.length; key++) {
+			    	sortedSchema[a[key]] = schema[a[key]];
+			    }
+			    w.schema = sortedSchema;
+			    
 				var atts;
 				for (var key in w.schema) {
 					atts = w.schema[key].attributes;

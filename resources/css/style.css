@@ -377,12 +377,12 @@ label {
 }
 
 /* used by schematags plugin */
-#menu_schema_tag_menu_co, #menu_schema_context_menu_co {
+#menu_editor_editor_customTagsButton_menu_co, #menu_structTagsContextMenu_co {
 	max-height: 600px;
 	width: 140px;
 	overflow: auto;
 }
-#menu_schema_context_menu {
+#menu_structTagsContextMenu {
 	max-height: 600px;
 }
 

@@ -202,12 +202,24 @@
 					$('#schemaHelpDialog').empty();
 					if (data.GLOSSITEM) {
 						$('#schemaHelpDialog').dialog('option', 'title', key+' Help');
+						
+						var entryString = '';
 						for (var glossKey in data.GLOSSITEM) {
 							if (glossKey != 'GLOSSITEMTYPE' && glossKey != 'HEADING') {
 								var entry = data.GLOSSITEM[glossKey];
-								$('#schemaHelpDialog').append('<div><h2>'+entry.HEADING+'</h2><p>'+entry.P+'</p></div>');
+								entryString += '<div><h2>'+entry.HEADING+'</h2>';
+								for (var entryKey in entry) {
+									if (entryKey != 'HEADING' && entryKey != 'DOCUMENTTYPE') {
+										var subEntry = entry[entryKey];
+										if (subEntry.P) subEntry = subEntry.P;
+										subEntry = subEntry.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+										entryString += '<p>'+subEntry+'</p>';
+									}
+								}
 							}
 						}
+						$('#schemaHelpDialog').append(entryString);
+						
 						var dialogOffset = $('#schemaDialog').offset();
 						var x = dialogOffset.left + $('#schemaDialog').width() + 30;
 						if (x > $(document).width()) {
