@@ -123,49 +123,117 @@ label {
 	background-repeat: no-repeat;
 }
 
-#entities ul li .person {
+#entities .person .box {
 	background-image: url('../img/user.png');
 }
 
-#entities ul li .place {
+#entities .person .box, #entities .person.over {
+	background-color: #ff8080;
+}
+
+#entities .person.selected, #entities .person.selected .box {
+	background-color: #FF0000;
+}
+
+#entities .place .box {
 	background-image: url('../img/world.png');
 }
 
-#entities ul li .date {
+#entities .place .box, #entities .place.over {
+	background-color: #4c9999;
+}
+
+#entities .place.selected, #entities .place.selected .box {
+	background-color: #009999;
+}
+
+#entities .date .box {
 	background-image: url('../img/calendar.png');
 }
 
-#entities ul li .event {
+#entities .date .box, #entities .date.over {
+	background-color: #ffb980;
+}
+
+#entities .date.selected, #entities .date.selected .box {
+	background-color: #FF7400;
+}
+
+#entities .event .box {
 	background-image: url('../img/cake.png');
 }
 
-#entities ul li .org {
+#entities .event .box, #entities .event.over {
+	background-color: #66cc66;
+}
+
+#entities .event.selected, #entities .event.selected .box {
+	background-color: #00CC00;
+}
+
+#entities .org .box {
 	background-image: url('../img/group.png');
 }
 
-#entities ul li .citation {
+#entities .org .box, #entities .org.over {
+	background-color: #8172b0;
+}
+
+#entities .org.selected, #entities .org.selected .box {
+	background-color: #3914AF; 
+}
+
+#entities .citation .box {
 	background-image: url('../img/vcard.png');
 }
 
-#entities ul li .note {
+#entities .citation .box, #entities .citation.over {
+	background-color: #cc66a0;
+}
+
+#entities .citation.selected, #entities .citation.selected .box {
+	background-color: #CD0074;
+}
+
+#entities .note .box {
 	background-image: url('../img/note.png');
 }
 
-#entities ul li .title {
+#entities .note .box, #entities .note.over {
+	background-color: #6c88a6;
+}
+
+#entities .note.selected, #entities .note.selected .box {
+	background-color: #0D56A6;
+}
+
+#entities .title .box {
 	background-image: url('../img/book.png');
 }
 
-#entities ul li .entityTitle {
+#entities .title .box, #entities .title.over {
+	background-color: #f2d747;
+}
+
+#entities .title.selected, #entities .title.selected .box {
+	background-color: #debb00;
+}
+
+#entities .entityTitle {
 	font-size: 11px;
 	vertical-align: 6px;
 }
 
-#entities ul li .info {
+#entities .selected .entityTitle {
+	color: #fff;
+}
+
+#entities .info {
 	display: none;
 	padding: 0px 3px 3px 3px;
 }
 
-#entities ul li .info ul {
+#entities .info ul {
 	list-style: none;
 	background-color: #fff;
 	padding: 2px;
@@ -175,14 +243,9 @@ label {
 	border-radius: 2px;
 }
 
-#entities ul li .info ul li {
+#entities .info li {
 	height: auto;
 	font-size: 11px;
-}
-
-#entities ul li .info ul li:hover {
-	cursor: auto;
-	background-color: #fff;
 }
 
 #entities ul li {
@@ -190,7 +253,6 @@ label {
 }
 
 #entities ul li.selected {
-	color: #ffffff;
 	height: auto;
 }
 
@@ -296,75 +358,6 @@ label {
 
 #datePicker {
 	border: 1px solid #ccc;
-}
-
-.person {
-	background-color: #FF0000;
-}
-
-#entities .person {
-	background-color: #ff8080;
-}
-
-.date {
-	background-color: #FF7400;
-}
-
-#entities .date {
-	background-color: #ffb980;
-}
-
-.place {
-	background-color: #009999;
-}
-
-#entities .place {
-	background-color: #4c9999;
-}
-
-.event {
-	background-color: #00CC00;
-}
-
-#entities .event {
-	background-color: #66cc66;
-}
-
-.org {
-	background-color: #3914AF; 
-}
-
-#entities .org {
-	background-color: #8172b0;
-}
-
-.citation {
-	background-color: #CD0074;
-}
-
-#entities .citation {
-	background-color: #cc66a0;
-}
-
-.note {
-	background-color: #0D56A6;
-}
-
-#entities .note {
-	background-color: #6c88a6;
-}
-
-.title {
-	background-color: #debb00;
-}
-
-#entities .title {
-	background-color: #f2d747;
-}
-
-#entities .selected .person, #entities .selected .date, #entities .selected .place, #entities .selected .event,
-#entities .selected .org, #entities .selected .citation, #entities .selected .note, #entities .selected .title {
-	background-color: transparent;
 }
 
 /* tinymce style overrides */

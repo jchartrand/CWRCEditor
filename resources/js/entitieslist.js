@@ -55,8 +55,8 @@ var EntitiesList = function(config) {
 						infoString += '<li><strong>'+infoKey+'</strong>: '+entry.info[infoKey]+'</li>';
 					}
 					infoString += '</ul>';
-					entitiesString += '<li class="" name="'+entry.props.id+'">'+
-						'<span class="'+entry.props.type+' box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
+					entitiesString += '<li class="'+entry.props.type+'" name="'+entry.props.id+'">'+
+						'<span class="box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
 					'</li>';
 				}
 			}
@@ -70,8 +70,8 @@ var EntitiesList = function(config) {
 					infoString += '<li><strong>'+infoKey+'</strong>: '+entry.info[infoKey]+'</li>'; 
 				}
 				infoString += '</ul>';
-				entitiesString += '<li class="" name="'+entry.props.id+'">'+
-					'<span class="'+entry.props.type+' box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
+				entitiesString += '<li class="'+entry.props.type+'" name="'+entry.props.id+'">'+
+					'<span class="box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
 				'</li>';
 			}
 		}
@@ -79,14 +79,14 @@ var EntitiesList = function(config) {
 		$('#entities > ul').html(entitiesString);
 		$('#entities > ul > li').hover(function() {
 			if (!$(this).hasClass('selected')) {
-				var color = $(this).find('span.box').css('backgroundColor');
-				$(this).css('backgroundColor', color);
+				$(this).addClass('over');
 			}
 		}, function() {
 			if (!$(this).hasClass('selected')) {
-				$(this).css('backgroundColor', '');
+				$(this).removeClass('over');
 			}
 		}).mousedown(function(event) {
+			$(this).removeClass('over');
 			w.highlightEntity(this.getAttribute('name'), null, true);
 		}).contextMenu('entitiesMenu', {
 			bindings: {

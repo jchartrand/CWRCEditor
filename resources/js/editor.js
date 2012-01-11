@@ -104,19 +104,7 @@ var Writer = function(config) {
 			// need to do this here instead of in onchangehandler because that one doesn't update often enough
 			if (evt.keyCode == 8 || evt.keyCode == 46) {
 				_findDeletedEntities();
-//				for (key in structs) {
-//					var struct = editor.dom.get('#'+key);
-//					if (!struct) {
-//						updateStructureTree();
-//						break;
-//					}
-//				}
 			}
-//			
-//			// enter key check
-//			if (evt.keyCode == 13) {
-//				updateStructureTree();
-//			}
 		});
 		
 		_doResize();
@@ -231,7 +219,6 @@ var Writer = function(config) {
 			var markers = w.editor.dom.select('entity[name="'+id+'"]');
 			var start = markers[0];
 			var end = markers[1];
-			var typeColor = w.editor.$(start).css('border-left-color');
 			
 			var nodes = [start];
 			var currentNode = start;
@@ -240,12 +227,7 @@ var Writer = function(config) {
 				nodes.push(currentNode);
 			}
 			
-			w.editor.$(nodes).wrapAll('<span id="entityHighlight" />');
-			w.editor.$('#entityHighlight').css({
-				'background-color': typeColor,
-                'border-radius': '5px',
-                'color': '#fff'
-			});
+			w.editor.$(nodes).wrapAll('<span id="entityHighlight" class="'+type+'"/>');
 			
 			// maintain the original caret position
 			if (bm) {
@@ -257,7 +239,7 @@ var Writer = function(config) {
 				w.editor.$(w.editor.dom.doc.body).scrollTop(val);
 			}
 			
-			$('#entities > ul > li[name="'+id+'"]').addClass('selected').css('background-color', typeColor).find('div[class="info"]').show();
+			$('#entities > ul > li[name="'+id+'"]').addClass('selected').find('div[class="info"]').show();
 		}
 	};
 	
