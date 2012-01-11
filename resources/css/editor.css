@@ -22,7 +22,46 @@ body {
 	border-top-right-radius: 4px;
 }
 
+.noBorder {
+	border: none !important;
+	width: 0px !important;
+}
+
 #entityHighlight {
+	color: #fff;
+	border-radius: 5px;
+}
+
+#entityHighlight.person {
+	background-color: #FF0000;
+}
+
+#entityHighlight.date {
+	background-color: #FF7400;
+}
+
+#entityHighlight.place {
+	background-color: #009999;
+}
+
+#entityHighlight.event {
+	background-color: #00CC00;
+}
+
+#entityHighlight.org {
+	background-color: #3914AF; 
+}
+
+#entityHighlight.citation {
+	background-color: #CD0074;
+}
+
+#entityHighlight.note {
+	background-color: #0D56A6;
+}
+
+#entityHighlight.title {
+	background-color: #debb00;
 }
 
 .person {
