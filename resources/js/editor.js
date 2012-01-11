@@ -107,6 +107,14 @@ var Writer = function(config) {
 			}
 		});
 		
+		$(ed.dom.doc).keydown(function(e) {
+			// undo listener
+			if (e.keyCode == 90 && e.ctrlKey) {
+				_findDeletedEntities();
+				w.tree.update(true);
+			}
+		});
+		
 		_doResize();
 		
 		// populate with the initial paragraph
