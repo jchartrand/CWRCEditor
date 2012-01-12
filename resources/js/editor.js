@@ -10,6 +10,8 @@ var Writer = function(config) {
 		
 		project: config.project, // the current project (cwrc or russell)
 		
+		baseUrl: 'http://apps.testing.cwrc.ca/',
+		
 		// tag types and their titles
 		titles: {
 			person: 'Person',
@@ -674,7 +676,9 @@ var Writer = function(config) {
 			contextmenu_never_use_native: true,
 			
 			setup: function(ed) {
+				// link the writer and editor
 				w.editor = ed;
+				ed.writer = w;
 				
 				// custom properties added to the editor
 				ed.currentEntity = null; // the id of the currently highlighted entity
