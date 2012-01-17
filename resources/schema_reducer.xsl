@@ -26,15 +26,9 @@
 	./rng:element/@name!='SCHOLARNOTE' and
 	./rng:element/@name!='RESEARCHNOTE' and
 	./rng:element/@name!='CHONPROSE' and
-	./rng:element/@name!='P' and
-	./rng:element/@name!='HEADING' and
-	./rng:element/@name!='EMPH' and
 	./rng:element/@name!='FOREIGN' and
-	./rng:element/@name!='QUOTE' and
 	./rng:element/@name!='LB'
 	]">
-	<!-- Add next line to conditions to remove definitions with sub elements -->
-	<!-- count(.//rng:ref[contains(@name, 'element')]) = 0 -->
 	<xsl:copy>
 	<xsl:apply-templates select="@*" mode="define"/>
 	<xsl:apply-templates mode="define"/>
@@ -43,7 +37,7 @@
 
 <xsl:template match="*|text()|@*" mode="define">
 <xsl:choose>
-<xsl:when test="local-name(.) = 'ref'"> <!-- and not(contains(./@name, 'inclusion'))"> -->
+<xsl:when test="local-name(.) = 'ref' and (contains(./@name, 'attribute') or contains(./@name, 'inclusion'))">
 <xsl:variable name="refName" select="./@name"/>
 <xsl:comment>Inserted <xsl:value-of select="$refName"/></xsl:comment>
 <xsl:copy-of select="//rng:define[@name=$refName]/*"/>

@@ -207,14 +207,14 @@
 					_editable: false,
 					'class': 'headTag'
 				});
-				t.editor.execCommand('updateStructureTree', true);
+				t.editor.execCommand('updateStructureTree');
 			} else if (val == 'emph') {
 				t.editor.execCommand('addStructureTag', t.bm, {
 					_tag: 'emph',
 					_editable: false,
 					'class': 'emphTag'
 				});
-				t.editor.execCommand('updateStructureTree', true);
+				t.editor.execCommand('updateStructureTree');
 			} else if (val != '') {
 				if (val == 'quote') {
 					$('#overrideFormat').show();

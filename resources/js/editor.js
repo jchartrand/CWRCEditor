@@ -6,7 +6,7 @@ var Writer = function(config) {
 		structs: {}, // structs store
 
 		schema: {}, // schema for additional custom tags
-		schemaAttributes: {}, // all the attribute names from the schema (used in extended_valid_elements config setting)
+		formattedSchema: '', // all the element & attribute names from the schema (used in extended_valid_elements config setting)
 		
 		project: config.project, // the current project (cwrc or russell)
 		
@@ -21,11 +21,7 @@ var Writer = function(config) {
 			org: 'Organization',
 			citation: 'Citation',
 			note: 'Note',
-			para: 'Paragraph',
-			head: 'Heading',
-			emph: 'Emphasized',
-			title: 'Text/Title',
-			quote: 'Quotation'
+			title: 'Text/Title'
 		},
 		
 		// editor mode
@@ -47,7 +43,7 @@ var Writer = function(config) {
 		settings: null // settings dialog
 	};
 	
-	var _findDeletedEntities = function() {
+	var _findDeletedTags = function() {
 		for (var id in w.entities) {
 			var nodes = w.editor.dom.select('entity[name="'+id+'"]');
 			switch (nodes.length) {
@@ -59,6 +55,12 @@ var Writer = function(config) {
 					editor.dom.remove(nodes[0]);
 					delete w.entities[id];
 					w.entitiesList.remove(id);
+			}
+		}
+		for (var id in w.structs) {
+			var nodes = w.editor.dom.select('#'+id);
+			if (nodes.length == 0) {
+				delete w.structs[id];
 			}
 		}
 	};
@@ -105,28 +107,28 @@ var Writer = function(config) {
 			// delete keys check
 			// need to do this here instead of in onchangehandler because that one doesn't update often enough
 			if (evt.keyCode == 8 || evt.keyCode == 46) {
-				_findDeletedEntities();
+				_findDeletedTags();
 			}
 		});
 		
 		$(ed.dom.doc).keydown(function(e) {
-			// undo listener
-			if (e.keyCode == 90 && e.ctrlKey) {
-				_findDeletedEntities();
-				w.tree.update(true);
+			// redo/undo listener
+			if ((e.keyCode == 89 || e.keyCode == 90) && e.ctrlKey) {
+				_findDeletedTags();
+				w.tree.update();
 			}
 		});
 		
 		_doResize();
 		
 		// populate with the initial paragraph
-		w.tree.update(true);
+		w.tree.update();
 	};
 	
 	var _onChangeHandler = function(ed) {
 		if (ed.isDirty()) {
-			w.tree.update(true);
-			_findDeletedEntities();
+			_findDeletedTags();
+			w.tree.update();
 		}
 	};
 	
@@ -554,23 +556,18 @@ var Writer = function(config) {
 		attributes.id = id;
 		w.structs[id] = attributes;
 		
-		var tag, open_tag, close_tag;
-		tag = 'struct';
-		if (attributes._tag == 'para') {
-			tag = 'p';
-		}
-		
 		w.editor.selection.moveToBookmark(bookmark);
 		var selection = w.editor.selection.getContent();
 		
-		open_tag = '<'+tag;
+		var open_tag = '<'+attributes._tag;
 		for (var key in attributes) {
 			open_tag += ' '+key+'="'+attributes[key]+'"';
 		}
 		open_tag += '>';
-		close_tag = '</'+tag+'>';
+		var close_tag = '</'+attributes._tag+'>';
 		var content = open_tag + selection + close_tag;
 		w.editor.execCommand('mceReplaceContent', false, content);
+		w.tree.update();
 	};
 	
 	w.editStructureTag = function(tag, attributes) {
@@ -623,8 +620,9 @@ var Writer = function(config) {
 				var sortedSchema = {}, key, a = [];
 
 			    for (key in schema) {
+//			    	schema[key].displayName = schema[key].displayName.replace('-element', '');
 			        if (schema.hasOwnProperty(key)) {
-			                a.push(key);
+			            a.push(key);
 			        }
 			    }
 			    a.sort();
@@ -633,15 +631,8 @@ var Writer = function(config) {
 			    	sortedSchema[a[key]] = schema[a[key]];
 			    }
 			    w.schema = sortedSchema;
-			    
-				var atts;
-				for (var key in w.schema) {
-					atts = w.schema[key].attributes;
-					for (var i = 0; i < atts.length; i++) {
-						w.schemaAttributes[atts[i].name] = true;
-					}
-				}
-				// need to get the schema attributes before we can initialize the editor
+				
+			    // need to get the schema before we can initialize the editor
 				w._initEditor();
 			}
 		});
@@ -657,9 +648,15 @@ var Writer = function(config) {
 	};
 	
 	w._initEditor = function() {
-		var schemaAttString = '';
-		for (var att in w.schemaAttributes) {
-			schemaAttString += '|'+att;
+		var schemaEntry, atts;
+		for (var key in w.schema) {
+			schemaEntry = w.schema[key];
+			w.formattedSchema += ','+key+'[id|_tag|_display|_editable|_schema';
+			atts = schemaEntry.attributes;
+			for (var i = 0; i < atts.length; i++) {
+				if (atts[i].name != 'id') w.formattedSchema += '|'+atts[i].name;
+			}
+			w.formattedSchema += ']';
 		}
 		
 		$('#editor').tinymce({
@@ -669,7 +666,7 @@ var Writer = function(config) {
 //			elements: 'editor',
 			theme: 'advanced',
 			
-			content_css: 'css/editor.css',
+			content_css: 'css/editor.css, css/orlando.css',
 			
 			width: '100%',
 			
@@ -831,7 +828,7 @@ var Writer = function(config) {
 			doctype: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
 			element_format: 'xhtml',
 			
-//			forced_root_block : 'div',
+//			forced_root_block : false,
 //			force_br_newlines: false,
 //			force_p_newlines: false,
 			
@@ -841,12 +838,13 @@ var Writer = function(config) {
 				o.content = o.content.replace(/(.*?)<br\s?\/?>/gi,'<p>$1</p>').replace(/<pre>(.*?)<\/pre>/gi,'<p>$1</p>');
 			},
 			
-			extended_valid_elements: 'entity[class|name],struct[class|level|ref|lang|id|type|_tag|_schema'+schemaAttString+'],p[class|id|lang|type]',
+			extended_valid_elements: 'entity[class|name],p[class|id|lang|type]'+w.formattedSchema,
+			// struct[class|level|ref|lang|id|type|_tag|_schema'+schemaAttString+']
 			custom_elements: '~entity,~struct',
 			
-			plugins: 'paste,-entitycontextmenu,-customtags,-schematags,-viewsource',
+			plugins: 'paste,-entitycontextmenu,-schematags,-viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
-			theme_advanced_buttons1: 'customtags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: '',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',

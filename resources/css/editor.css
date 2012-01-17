@@ -96,16 +96,6 @@ body {
 	border-color: #debb00;
 }
 
-.paraTag {
-	/*display: block;
-	margin-top: 12px;
-	margin-bottom: 12px;*/
-}
-
-.paraTag:before {
-	/*content: "¶";*/
-}
-
 .titleTagQuotes:before, .quoteTagShort:before {
 	content: open-quote;
 }

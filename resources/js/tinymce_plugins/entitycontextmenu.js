@@ -170,8 +170,6 @@
 				title: 'Structural Tags',
 				icon_src: url+'tag.png'
 			});
-			ed.execCommand('createCustomTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
-			tagMenu.addSeparator();
 			ed.execCommand('createSchemaTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
 			m.addSeparator();
 			

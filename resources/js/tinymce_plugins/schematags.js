@@ -23,28 +23,37 @@
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
 				
+//				var filterKey;
+//				menu.onShowMenu.add(function(m) {
+//					var sel = t.editor.selection;
+//					var range = sel.getRng(true);
+//					var currNode = range.commonAncestorContainer;
+//					while (currNode.nodeType != Node.ELEMENT_NODE) {
+//						currNode = currNode.parentNode;
+//					}
+//					filterKey = currNode.getAttribute('_tag');
+//					var validKeys = t.getFilteredSchema(filterKey);
+//					var item;
+//					for (var itemId in m.items) {
+//						item = m.items[itemId];
+//						item.setDisabled(!validKeys[item.settings.key]);
+//					}
+//				});
+				
 				for (var key in t.schema) {
+					var icon = url + 'tag_blue.png';
 					if (t.schema[key].attributes.length > 1) {
-						var menuitem = menu.add({
-							title: key.replace('-element',''),
-							key: key,
-							icon_src: url + 'tag_blue_edit.png',
-							onclick : function() {
-								t.editor.execCommand('addSchemaTag', this.key, config.pos);
-							}
-						});
-						menuitem.setDisabled(config.disabled);
-					} else {
-						var menuitem = menu.add({
-							title: key.replace('-element',''),
-							key: key,
-							icon_src: url + 'tag_blue.png',
-							onclick : function() {
-								t.editor.execCommand('addSchemaTag', this.key, config.pos);
-							}
-						});
-						menuitem.setDisabled(config.disabled);
+						icon = url + 'tag_blue_edit.png';
 					}
+					var menuitem = menu.add({
+						title: t.schema[key].displayName,
+						key: key,
+						icon_src: icon,
+						onclick : function() {
+							t.editor.execCommand('addSchemaTag', this.key, config.pos);
+						}
+					});
+					menuitem.setDisabled(config.disabled);
 				}
 				
 				return menu;
@@ -70,27 +79,16 @@
 				
 				t.bm = t.editor.selection.getBookmark();
 				
-				var entry = t.schema[key];
-//				if (entry.attributes.length == 1 && entry.attributes[0].name == 'id') {
-//					t.editor.execCommand('addStructureTag', t.bm, {
-//						'class': key,
-//						_tag: entry.elementName,
-//						_schema: true,
-//						_editable: false
-//					});
-//					t.editor.execCommand('updateStructureTree', true);
-//				} else {
-					t.mode = t.ADD;
-					t.showDialog(key, pos);
-//				}
+				t.mode = t.ADD;
+				t.showDialog(key, pos);
 			});
 			
 			ed.addCommand('editSchemaTag', function(tag, pos) {
-				var val = tag.attr('class'); 
-				t.currentKey = val;
+				var key = tag.attr('_tag'); 
+				t.currentKey = key;
 				t.tag = tag;
 				t.mode = t.EDIT;
-				t.showDialog(val, pos);
+				t.showDialog(key, pos);
 			});
 			
 			$(document.body).append(''+
@@ -140,6 +138,33 @@
 				width: 300
 			});
 		},
+		getFilteredSchema: function(filterKey) {
+			var t = this;
+			var validKeys = {};
+			
+			var getSubElements = function(key, validKeys) {
+				var entry = t.schema[key];
+				if (entry) {
+					var addedNew = false;
+					var e;
+					for (var i = 0; i < entry.elements.length; i++) {
+						e = entry.elements[i].name;
+						if (validKeys[e] == null) {
+							validKeys[e] = true;
+							addedNew = true;
+							getSubElements(e, validKeys);
+						}
+					}
+					if (!addedNew) {
+						return;
+					}
+				}
+			};
+			
+			getSubElements(filterKey, validKeys);
+			
+			return validKeys;
+		},
 		showDialog: function(key, pos) {
 			var t = this;
 			t.currentKey = key;
@@ -186,13 +211,12 @@
 				}
 			});
 			
-			var title = key.replace('-element', '');
-			$('#schemaDialog').dialog('option', 'title', title);
+			$('#schemaDialog').dialog('option', 'title', entry.displayName);
 			if (pos) $('#schemaDialog').dialog('option', 'position', [pos.x, pos.y]);
 			$('#schemaDialog').dialog('open');
 		},
 		showHelpDialog: function() {
-			var key = this.currentKey.split('-element')[0];
+			var key = this.schema[this.currentKey].displayName;
 			$.ajax({
 				url: this.editor.writer.baseUrl+'documentation/glossary_item_xml.php?KEY_VALUE_STR='+key,
 				success: function(data, status, xhr) {
@@ -271,8 +295,8 @@
 				return;
 			}
 			
-			params['class'] = t.currentKey;
-			params._tag = entry.elementName;
+			params._display = entry.displayName;
+			params._tag = t.currentKey;
 			params._schema = true;
 			params._editable = true;
 			
@@ -286,6 +310,24 @@
 			}
 			
 			$('#schemaDialog').dialog('close');
+		},
+		createControl: function(n, cm) {
+			if (n == 'schematags') {
+				var t = this;
+				var url = t.url+'/../../img/';
+				t.menuButton = cm.createMenuButton('schemaTagsButton', {
+					title: 'Tags',
+					image: url+'tag.png',
+					'class': 'entityButton'
+				});
+				t.menuButton.onRenderMenu.add(function(c, m) {
+					t.editor.execCommand('createSchemaTagsControl', {menu: m, disabled: false});
+				});
+				
+				return t.menuButton;
+			}
+	
+			return null;
 		}
 	});
 	

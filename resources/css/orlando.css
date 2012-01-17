@@ -1,0 +1,248 @@
+EVENTS {
+    font-family: "Times New Roman", Times, serif;
+}
+
+ORLANDOHEADER {
+    display: block;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: small;
+}
+
+FILEDESC {
+    content: url(../images/theorlandoproject.gif);
+    background-color: #990000;
+    color: #FFF;
+    font-weight: bold;
+}
+
+DOCTITLE {
+    font-variant: small-caps;
+    font-size: x-large;
+    font-weight: normal;
+}
+
+FILEDESC, DOCAUTHOR, DOCEDITOR, DOCEXTENT, PUBLICATIONSTMT, TITLESTMT, PUBPLACE {
+    display: list-item;
+}
+
+RESPONSIBILITY {
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: small;
+    background-color: #F0EDFC;
+    display: list-item;
+}
+
+EMPH {
+    font-style: italic;
+}
+
+FOREIGN {
+    font-style: italic;
+}
+
+TITLE[TITLETYPE = "MONOGRAPHIC"], TITLE[TITLETYPE = "JOURNAL"] {
+    font-style: italic;
+    font-weight: bold;
+    color: #336699;
+}
+
+TITLE[TITLETYPE = "SERIES"] {
+    font-style: normal;
+    font-weight: bold;
+    color: #336699;
+}
+
+TITLE[TITLETYPE = "ANALYTIC"], TITLE[TITLETYPE = "UNPUBLISHED"] {
+    font-style: normal;
+    font-weight: bold;
+    color: #336699;
+}
+
+TITLE[TITLETYPE = "ANALYTIC"]:before, TITLE[TITLETYPE = "UNPUBLISHED"]:before {
+    content: open-quote;
+}
+
+TITLE[TITLETYPE = "ANALYTIC"]:after, TITLE[TITLETYPE = "UNPUBLISHED"]:after {
+    content: close-quote;
+}
+
+ADDRLINE {
+    display: list-item;
+}
+
+IDNO {
+    display: list-item;
+}
+
+AVAILABILITY {
+    display: inline;
+}
+
+P {
+    display: block;
+}
+
+RESEARCHNOTE {
+    background-color: #FBEFEF;
+    color: #663366;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: smaller;
+    display: list-item;
+}
+
+HEADING {
+    display: list-item;
+    font-weight: bold;
+    font-size: x-large;
+    color: #039;
+}
+
+CHRONSTRUCT {
+    display: list-item;
+}
+
+CHRONSTRUCT DATE {
+    font-weight: bold;
+}
+
+/*
+CHRONSTRUCT[CHRONCOLUMN = "BRITISHWOMENWRITERS"] {
+    content: url(../images/pen1.gif);
+}
+
+
+ CHRONSTRUCT[CHRONCOLUMN1="BRITISHWOMENWRITERS1"]{
+ content:url(../images/pen1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN2="BRITISHWOMENWRITERS2"]{
+ content:url(../images/pen1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN3="BRITISHWOMENWRITERS3"]{
+ content:url(../images/pen1.gif);
+ }
+ /
+ CHRONSTRUCT[CHRONCOLUMN="NATIONALINTERNATIONAL"] {
+ content: url(../images/earth1.gif);
+ }
+ /
+ CHRONSTRUCT[CHRONCOLUMN1="NATIONALINTERNATIONAL1"]{
+ content:url(../images/earth1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN2="NATIONALINTERNATIONAL2"]{
+ content:url(../images/earth1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN3="NATIONALINTERNATIONAL3"]{
+ content:url(../images/earth1.gif);
+ }
+ /
+ CHRONSTRUCT[CHRONCOLUMN="SOCIALCLIMATE"] {
+ content: url(../images/people1.gif);
+ }
+ /
+ CHRONSTRUCT[CHRONCOLUMN1="SOCIALCLIMATE1"]{
+ content:url(../images/people1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN2="SOCIALCLIMATE2"]{
+ content:url(../images/people1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN3="SOCIALCLIMATE3"]{
+ content:url(../images/people1.gif);
+ }
+ /
+ CHRONSTRUCT[CHRONCOLUMN="WRITINGCLIMATE"] {
+ content: url(../images/book1.gif);
+ }
+ /
+ CHRONSTRUCT[CHRONCOLUMN1="WRITINGCLIMATE1"]{
+ content:url(../images/book1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN2="WRITINGCLIMATE2"]{
+ content:url(../images/book1.gif);
+ }
+ CHRONSTRUCT[CHRONCOLUMN3="WRITINGCLIMATE3"]{
+ content:url(../images/book1.gif);
+ }
+ */
+SHORTPROSE {
+    padding-left: 4em;
+}
+
+BIBCIT {
+    content: url(../images/bibcit.gif);
+}
+
+BIBCIT:before {
+    content: "(";
+}
+
+BIBCIT:after {
+    content: ")";
+}
+
+BIBCITS {
+    background-color: #FFC;
+}
+
+SCHOLARNOTE P {
+    content: url(../images/note.gif);
+    background-color: #E0E0F8;
+}
+
+NAME {
+    font-weight: bold;
+    color: #336699;
+}
+
+ORGNAME {
+    font-weight: bold;
+    color: #336699;
+}
+
+SETTLEMENT {
+    font-weight: bold;
+    color: #336699;
+}
+
+REGION {
+    font-weight: bold;
+    color: #336699;
+}
+
+GEOG {
+    font-weight: bold;
+    color: #336699;
+}
+
+AREA {
+    font-weight: bold;
+    color: #336699;
+}
+
+TOPIC {
+    font-weight: bold;
+    color: #336699;
+}
+
+QUOTE:before {
+    content: open-quote;
+}
+
+QUOTE:after {
+    content: close-quote;
+}
+
+QUOTE[DIRECT = "N"]:before {
+    content: "'";
+}
+
+QUOTE[DIRECT = "N"]:after {
+    content: "'";
+}
+
+SOCALLED:before {
+    content: "'";
+}
+
+SOCALLED:after {
+    content: "'";
+}
