@@ -33,12 +33,14 @@ var EntitiesList = function(config) {
 		
 		$('#entities > ul').empty(); // remove previous nodes and event handlers
 		
-		var id, entry, i, infoKey, infoString;
+		var id, entry, i;
 		var entitiesString = '';
 		
+		var entityTags = w.editor.$('entity[class~=start]');		
 		if (sort == 'category') {
 			var categories = {};
 			for (id in w.entities) {
+				entityTags = entityTags.not('[name='+id+']');
 				entry = w.entities[id];
 				if (categories[entry.props.type] == null) {
 					categories[entry.props.type] = [];
@@ -50,31 +52,24 @@ var EntitiesList = function(config) {
 				category = categories[id];
 				for (i = 0; i < category.length; i++) {
 					entry = category[i];
-					infoString = '<ul>';
-					for (infoKey in entry.info) {
-						infoString += '<li><strong>'+infoKey+'</strong>: '+entry.info[infoKey]+'</li>';
-					}
-					infoString += '</ul>';
-					entitiesString += '<li class="'+entry.props.type+'" name="'+entry.props.id+'">'+
-						'<span class="box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
-					'</li>';
+					entitiesString += _buildEntity(entry);
 				}
 			}
 		} else if (sort == 'sequence') {
-			var nodes = w.editor.dom.select('entity[class*="start"]');
-			for (i = 0; i < nodes.length; i++) {
-				id = nodes[i].getAttribute('name');
+			entityTags.each(function(index, el) {
+				id = $(this).attr('name');
 				entry = w.entities[id];
-				infoString = '<ul>';
-				for (infoKey in entry.info) {
-					infoString += '<li><strong>'+infoKey+'</strong>: '+entry.info[infoKey]+'</li>'; 
+				if (entry) {
+					entityTags = entityTags.not('[name='+id+']');
+					entitiesString += _buildEntity(entry);
 				}
-				infoString += '</ul>';
-				entitiesString += '<li class="'+entry.props.type+'" name="'+entry.props.id+'">'+
-					'<span class="box"/><span class="entityTitle">'+entry.props.title+'</span><div class="info">'+infoString+'</div>'+
-				'</li>';
-			}
+			});
 		}
+		
+		// remove entity tags that got added back in by undo/redo
+		entityTags.each(function(index, el) {
+			w.editor.$('entity[name='+$(this).attr('name')+']').remove();
+		});
 		
 		$('#entities > ul').html(entitiesString);
 		$('#entities > ul > li').hover(function() {
@@ -123,6 +118,17 @@ var EntitiesList = function(config) {
 				border: 'none'
 			}
 		});
+	};
+	
+	var _buildEntity = function(entity) {
+		var infoString = '<ul>';
+		for (var infoKey in entity.info) {
+			infoString += '<li><strong>'+infoKey+'</strong>: '+entity.info[infoKey]+'</li>';
+		}
+		infoString += '</ul>';
+		return '<li class="'+entity.props.type+'" name="'+entity.props.id+'">'+
+			'<span class="box"/><span class="entityTitle">'+entity.props.title+'</span><div class="info">'+infoString+'</div>'+
+		'</li>';
 	};
 	
 	entitiesList.remove = function(id) {

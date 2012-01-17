@@ -52,7 +52,7 @@ var Writer = function(config) {
 					w.entitiesList.remove(id);
 					break;
 				case 1:
-					editor.dom.remove(nodes[0]);
+					w.editor.dom.remove(nodes[0]);
 					delete w.entities[id];
 					w.entitiesList.remove(id);
 			}
@@ -115,6 +115,7 @@ var Writer = function(config) {
 			// redo/undo listener
 			if ((e.keyCode == 89 || e.keyCode == 90) && e.ctrlKey) {
 				_findDeletedTags();
+				w.entitiesList.update();
 				w.tree.update();
 			}
 		});
