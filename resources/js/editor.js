@@ -66,7 +66,7 @@ var Writer = function(config) {
 	};
 	
 	var _onInitHandler = function(ed) {
-		ed.setContent('<p>Paste or type your text here.</p>');
+		ed.setContent('<div0>Paste or type your text here.</div0>');
 		
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
@@ -389,13 +389,13 @@ var Writer = function(config) {
 		var sel = w.editor.selection;
 		var bm = sel.getBookmark();
 		
-		var start = w.editor.dom.create('entity', {'class': 'entity '+type+' start', 'name': id});
+		var start = w.editor.dom.create('entity', {'_entity': true, 'class': 'entity '+type+' start', 'name': id});
 		range.insertNode(start);
 		w.editor.dom.bind(start, 'click', _doMarkerClick);
 		
 		w.editor.selection.moveToBookmark(bm);
 		
-		var end = w.editor.dom.create('entity', {'class': 'entity '+type+' end', 'name': id});
+		var end = w.editor.dom.create('entity', {'_entity': true, 'class': 'entity '+type+' end', 'name': id});
 		sel.collapse(false);
 		range = sel.getRng(true);
 		range.insertNode(end);
@@ -652,7 +652,7 @@ var Writer = function(config) {
 		var schemaEntry, atts;
 		for (var key in w.schema) {
 			schemaEntry = w.schema[key];
-			w.formattedSchema += ','+key+'[id|_tag|_display|_editable|_schema';
+			w.formattedSchema += ','+key+'[id|_tag|_display|_editable';
 			atts = schemaEntry.attributes;
 			for (var i = 0; i < atts.length; i++) {
 				if (atts[i].name != 'id') w.formattedSchema += '|'+atts[i].name;
@@ -829,9 +829,9 @@ var Writer = function(config) {
 			doctype: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
 			element_format: 'xhtml',
 			
-//			forced_root_block : false,
+			forced_root_block : 'div0',
 //			force_br_newlines: false,
-//			force_p_newlines: false,
+			force_p_newlines: false,
 			
 			paste_remove_styles: true,
 			paste_preprocess: function(pl, o) {
@@ -839,9 +839,8 @@ var Writer = function(config) {
 				o.content = o.content.replace(/(.*?)<br\s?\/?>/gi,'<p>$1</p>').replace(/<pre>(.*?)<\/pre>/gi,'<p>$1</p>');
 			},
 			
-			extended_valid_elements: 'entity[class|name],p[class|id|lang|type]'+w.formattedSchema,
-			// struct[class|level|ref|lang|id|type|_tag|_schema'+schemaAttString+']
-			custom_elements: '~entity,~struct',
+			extended_valid_elements: 'entity[class|name|_entity]'+w.formattedSchema,
+			custom_elements: '~entity',
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
@@ -850,7 +849,7 @@ var Writer = function(config) {
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
 			theme_advanced_toolbar_align: 'left',
-	        theme_advanced_statusbar_location: 'bottom'
+	        theme_advanced_statusbar_location: 'top'
 		});
 		
 		$(window).resize(_doResize);

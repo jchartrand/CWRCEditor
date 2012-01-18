@@ -23,6 +23,7 @@
 	./rng:element/@name!='PLACE' and
 	./rng:element/@name!='TITLE' and
 	./rng:element/@name!='BIBCIT' and
+	./rng:element/@name!='BIBCITS' and
 	./rng:element/@name!='SCHOLARNOTE' and
 	./rng:element/@name!='RESEARCHNOTE' and
 	./rng:element/@name!='CHONPROSE' and

@@ -3263,26 +3263,6 @@
 	"elements": []
 },
 	
-	"bibcits": {
-	"displayName": "bibCits",
-	"attributes": [{
-		
-		"name": "id",
-		"displayName": "ID",
-		"required": false,
-		"dataType": "ID"
-	}],
-	"elements": [{
-		
-		
-		"name": "bibcit"
-	},{
-		
-		
-		"name": "researchnote"
-	}]
-},
-	
 	"sic": {
 	"displayName": "sic",
 	"attributes": [{

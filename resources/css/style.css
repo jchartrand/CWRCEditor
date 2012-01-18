@@ -370,17 +370,24 @@ label {
 }
 
 /* used by schematags plugin */
+#menu_editor_editor_schemaTagsButton_menu, #menu_structTagsContextMenu {
+	height: auto !important;
+}
+
 #menu_editor_editor_schemaTagsButton_menu_co, #menu_structTagsContextMenu_co {
 	max-height: 600px;
-	width: 140px;
+	max-width: 200px;
 	overflow: auto;
-}
-#menu_structTagsContextMenu {
-	max-height: 600px;
 }
 
 #menu_editor_editor_schemaTagsButton_menu_co .mceMenuItemDisabled, #menu_structTagsContextMenu_co .mceMenuItemDisabled {
 	visibility: collapse;
+}
+
+#menu_editor_editor_schemaTagsButton_menu_co .mceMenuItemDisabled *, #menu_structTagsContextMenu_co .mceMenuItemDisabled * {
+	height: 0;
+	margin: 0;
+	padding: 0;
 }
 
 /* used by the entity plugin */

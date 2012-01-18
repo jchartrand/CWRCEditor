@@ -1,4 +1,8 @@
 (function(tinymce) {
+
+	// add block elements
+	tinymce.html.Schema.blockElementsMap['DIV0'] = {};
+	
 	tinymce.create('tinymce.plugins.SchemaTags', {
 		init: function(ed, url) {
 			var t = this;
@@ -17,28 +21,25 @@
 			t.bm = null;
 			
 			ed.addCommand('createSchemaTagsControl', function(config) {
-				if (t.schema == null) {
-					t.schema = t.editor.execCommands.getSchema.func();//t.editor.execCommand('getSchema');
-				}
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
 				
-//				var filterKey;
-//				menu.onShowMenu.add(function(m) {
-//					var sel = t.editor.selection;
-//					var range = sel.getRng(true);
-//					var currNode = range.commonAncestorContainer;
-//					while (currNode.nodeType != Node.ELEMENT_NODE) {
-//						currNode = currNode.parentNode;
-//					}
-//					filterKey = currNode.getAttribute('_tag');
-//					var validKeys = t.getFilteredSchema(filterKey);
-//					var item;
-//					for (var itemId in m.items) {
-//						item = m.items[itemId];
-//						item.setDisabled(!validKeys[item.settings.key]);
-//					}
-//				});
+				var filterKey;
+				menu.onShowMenu.add(function(m) {
+					var sel = t.editor.selection;
+					var range = sel.getRng(true);
+					var currNode = range.commonAncestorContainer;
+					while (currNode.nodeType != Node.ELEMENT_NODE) {
+						currNode = currNode.parentNode;
+					}
+					filterKey = currNode.getAttribute('_tag');
+					var validKeys = t.getFilteredSchema(filterKey);
+					var item;
+					for (var itemId in m.items) {
+						item = m.items[itemId];
+						item.setDisabled(!validKeys[item.settings.key]);
+					}
+				});
 				
 				for (var key in t.schema) {
 					var icon = url + 'tag_blue.png';
@@ -145,19 +146,19 @@
 			var getSubElements = function(key, validKeys) {
 				var entry = t.schema[key];
 				if (entry) {
-					var addedNew = false;
+//					var addedNew = false;
 					var e;
 					for (var i = 0; i < entry.elements.length; i++) {
 						e = entry.elements[i].name;
 						if (validKeys[e] == null) {
 							validKeys[e] = true;
-							addedNew = true;
-							getSubElements(e, validKeys);
+//							addedNew = true;
+//							getSubElements(e, validKeys);
 						}
 					}
-					if (!addedNew) {
-						return;
-					}
+//					if (!addedNew) {
+//						return;
+//					}
 				}
 			};
 			
@@ -314,6 +315,9 @@
 		createControl: function(n, cm) {
 			if (n == 'schematags') {
 				var t = this;
+				
+				t.schema = t.editor.execCommands.getSchema.func();//t.editor.execCommand('getSchema');
+				
 				var url = t.url+'/../../img/';
 				t.menuButton = cm.createMenuButton('schemaTagsButton', {
 					title: 'Tags',
