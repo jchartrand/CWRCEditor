@@ -39,7 +39,7 @@ var SettingsDialog = function(config) {
 	'<input type="checkbox" id="showbrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
-	'<label for="showschemabrackets">Show Schema Brackets</label>'+
+	'<label for="showschemabrackets">Show Tag Brackets</label>'+
 	'<input type="checkbox" id="showschemabrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
