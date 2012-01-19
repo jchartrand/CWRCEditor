@@ -652,7 +652,7 @@ var Writer = function(config) {
 		var schemaEntry, atts;
 		for (var key in w.schema) {
 			schemaEntry = w.schema[key];
-			w.formattedSchema += ','+key+'[id|_tag|_display|_editable';
+			w.formattedSchema += ','+key+'[id|_tag|_display|_schema|_editable';
 			atts = schemaEntry.attributes;
 			for (var i = 0; i < atts.length; i++) {
 				if (atts[i].name != 'id') w.formattedSchema += '|'+atts[i].name;

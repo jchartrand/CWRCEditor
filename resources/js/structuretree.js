@@ -128,7 +128,7 @@ var StructureTree = function(config) {
 					var tag = $(this)[0].nodeName.toLowerCase();
 					var entry = w.schema[tag];
 					var display = entry.displayName;
-					$(this).attr('id', id).attr('_tag', tag).attr('_display', display);
+					$(this).attr('id', id).attr('_tag', tag).attr('_display', display).attr('_schema', true);
 					w.structs[id] = {
 						id: id,
 						_display: display,

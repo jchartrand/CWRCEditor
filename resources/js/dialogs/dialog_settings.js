@@ -4,7 +4,8 @@ var SettingsDialog = function(config) {
 	var settings = {
 		fontSize: '11pt',
 		fontFamily: 'Book Antiqua',
-		showBrackets: true
+		showBrackets: true,
+		showSchemaBrackets: false
 	};
 	
 	$('#header').append(''+
@@ -38,6 +39,10 @@ var SettingsDialog = function(config) {
 	'<input type="checkbox" id="showbrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
+	'<label for="showschemabrackets">Show Schema Brackets</label>'+
+	'<input type="checkbox" id="showschemabrackets" />'+
+	'</div>'+
+	'<div style="margin-top: 10px;">'+
 	'<label>Editor Mode</label><select name="editormode">'+
 	'<option value="0">XML & RDF (overlapping entities)</option>'+
 	'<option value="1">XML (no overlap)</option>'+
@@ -49,6 +54,7 @@ var SettingsDialog = function(config) {
 		$('select[name="fontsize"] > option[value="'+settings.fontSize+'"]', $('#settingsDialog')).attr('selected', true);
 		$('select[name="fonttype"] > option[value="'+settings.fontFamily+'"]', $('#settingsDialog')).attr('selected', true);
 		$('#showbrackets').prop('checked', settings.showBrackets);
+		$('#showschemabrackets').prop('checked', settings.showSchemaBrackets);
 		$('select[name="editormode"] > option[value="'+w.mode+'"]', $('#settingsDialog')).attr('selected', true);
 		$('#settingsDialog').dialog('open');
 	});
@@ -98,6 +104,11 @@ var SettingsDialog = function(config) {
 			w.editor.$('entity').toggleClass('noBorder');
 		}
 		settings.showBrackets = $('#showbrackets').prop('checked');
+		
+		if (settings.showSchemaBrackets != $('#showschemabrackets').prop('checked')) {
+			w.editor.$('body').toggleClass('showSchemaBrackets');
+		}
+		settings.showSchemaBrackets = $('#showschemabrackets').prop('checked');
 		
 		var styles = {
 			fontSize: settings.fontSize,
