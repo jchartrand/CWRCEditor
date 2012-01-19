@@ -273,6 +273,10 @@ label {
 	border: 1px solid #fff;
 }
 
+#entitiesConverter {
+	display: none;
+}
+
 .searchResults {
 	margin: 0;
 	padding: 0;

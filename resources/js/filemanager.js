@@ -15,6 +15,7 @@ var FileManager = function(config) {
 			'<input type="text" name="filename"/>'+
 			'<p>Please enter letters only.</p>'+
 		'</div>'+
+		'<div id="entitiesConverter"></div>'+
 		'<div id="editSourceDialog">'+
 			'<textarea style="width: 100%; height: 98%;"></textarea>'+
 		'</div>'+
@@ -224,13 +225,16 @@ var FileManager = function(config) {
 		
 		var doc = w.editor.getDoc();
 		var originalDoc = $(doc.body).clone(false, true); // make a copy, don't clone body events, but clone child events
+		
+		_entitiesToUnicode(doc.body);
+		
 		var head, content, exportText;
 		if (w.mode == w.XMLRDF) {
 			var offsets = [];
 			_getNodeOffsets($(doc.body), offsets);
 			$(doc.body).find('entity').remove();
 			head = '<?xml version="1.0"?><html><head><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
-			content = '\n<body>\n'+w.editor.getContent()+'\n</body>\n</html>';
+			content = '\n<body>\n'+w.editor.getContent({format: 'raw'})+'\n</body>\n</html>';
 			for (var i = 0; i < offsets.length; i++) {
 				var o = offsets[i];
 				head += '\n<rdf:Description rdf:ID="'+o.id+'">';
@@ -275,6 +279,20 @@ var FileManager = function(config) {
 		}
 		$(doc.body).replaceWith(originalDoc);
 		return exportText;
+	};
+	
+	var _entitiesToUnicode = function(parentNode) {
+		var contents = $(parentNode).contents();
+		contents.each(function(index, el) {
+			if (el.nodeType == Node.TEXT_NODE) {
+				if (el.nodeValue.match(/&.+?;/gim)) {
+					$('#entitiesConverter')[0].innerHTML = el.nodeValue;
+					el.nodeValue = $('#entitiesConverter')[0].innerText || $('#entitiesConverter')[0].firstChild.nodeValue;
+				}
+			} else if (el.nodeType == Node.ELEMENT_NODE) {
+				_entitiesToUnicode(el);
+			}
+		});
 	};
 	
 	var _getNodeOffsets = function(parent, offsets) {
