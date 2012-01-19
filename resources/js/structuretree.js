@@ -118,7 +118,7 @@ var StructureTree = function(config) {
 		children.each(function(index, el) {
 			var newChildren = $(this).children();
 			var newNodeParent = nodeParent;
-			if ($(this).attr('_entity') == null && !$(this).is('br')) {
+			if ($(this).attr('_entity') == null && !$(this).is('br') && !$(this).attr('data-mce-type')) {
 				var id = $(this).attr('id');
 				var isLeaf = $(this).find('*').not('br').not('[_entity]').length > 0 ? 'open' : null;
 				

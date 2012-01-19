@@ -24,15 +24,8 @@
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
 				
-				var filterKey;
 				menu.onShowMenu.add(function(m) {
-					var sel = t.editor.selection;
-					var range = sel.getRng(true);
-					var currNode = range.commonAncestorContainer;
-					while (currNode.nodeType != Node.ELEMENT_NODE) {
-						currNode = currNode.parentNode;
-					}
-					filterKey = currNode.getAttribute('_tag');
+					var filterKey = ed.currentNode.nodeName.toLowerCase();
 					var validKeys = t.getFilteredSchema(filterKey);
 					var item;
 					for (var itemId in m.items) {

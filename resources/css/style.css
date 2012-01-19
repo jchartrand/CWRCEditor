@@ -413,6 +413,17 @@ label {
 	margin: 2px !important;
 }
 
+.currentTagButton {
+	height: 20px !important;
+	width: auto !important;
+	margin: 2px !important;
+}
+
+.currentTagButton .mceIcon {
+	font-weight: bold;
+	font-size: 12px;
+}
+
 .mceToolbar .person {
 	border-bottom: 2px solid #FF0000 !important;
 }

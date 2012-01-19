@@ -101,7 +101,7 @@ var Writer = function(config) {
 				var entity = w.entities[ed.currentEntity];
 				entity.content = content;
 				entity.title = w.getTitleFromContent(content);
-				$('#entities li[name="'+ed.currentEntity+'"] > span[class="title"]').html(entity.title);
+				$('#entities li[name="'+ed.currentEntity+'"] > span[class="entityTitle"]').html(entity.title);
 			}
 			
 			// delete keys check
@@ -133,6 +133,10 @@ var Writer = function(config) {
 		}
 	};
 	
+	var _onNodeChangeHandler = function(ed, cm, e) {
+		ed.currentNode = e;
+	};
+	
 	var _doHighlightCheck = function(ed, evt) {
 		w.highlightStructureTag();
 		
@@ -144,22 +148,18 @@ var Writer = function(config) {
 		if (entityEnd == null || entityStart == null) {
 			w.highlightEntity();
 			var parentNode = ed.$(ed.selection.getNode());
-			if (parentNode.is('struct') || parentNode.is('p')) {
+			if (parentNode.attr('_schema')) {
 				var id = parentNode.attr('id');
 				w.editor.currentStruct = id;
-//				w.highlightStructureTag(id);
 			}
 			return;
 		}
 		
-		var startKey = entityStart.getAttribute('name');
-		var endKey = entityEnd.getAttribute('name');
-		
-		// priority goes to startKey if they aren't the same
-		if (startKey == ed.currentEntity) return;
+		var id = entityStart.getAttribute('name');
+		if (id == ed.currentEntity) return;
 		
 		var bm = ed.selection.getBookmark();
-		w.highlightEntity(startKey, bm);
+		w.highlightEntity(id, bm);
 	};
 	
 	/**
@@ -259,8 +259,10 @@ var Writer = function(config) {
 	// checks the user selection and potential entity markers
 	w.isSelectionValid = function(isStructTag) {
 		var sel = w.editor.selection;
-		if (sel.isCollapsed()) return w.NO_SELECTION;
-		if (sel.getContent() == '') return w.NO_SELECTION;
+		if (!isStructTag) {
+			if (sel.isCollapsed()) return w.NO_SELECTION;
+			if (sel.getContent() == '') return w.NO_SELECTION;
+		}
 		
 		// check for numerous overlap possibilities
 		var range = sel.getRng(true);
@@ -506,7 +508,7 @@ var Writer = function(config) {
 		id = id || w.editor.currentEntity;
 		
 		delete w.entities[id];
-		w.editor.dom.remove(w.editor.dom.select('entity[name="'+id+'"]'));
+		w.editor.$('entity[name="'+id+'"]').remove();
 		w.highlightEntity();
 		w.entitiesList.remove(id);
 	};
@@ -528,14 +530,14 @@ var Writer = function(config) {
 			range.setStartBefore(marker);
 			range.setEndBefore(marker);
 		}
-		editor.selection.setRng(range);
-		highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark());
+		w.editor.selection.setRng(range);
+		w.highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark());
 	};
 	
 	var _doResize = function() {
 		var newHeight = $(window).height() - 30;
 		$('#leftcol > div').height(newHeight);
-		$('#'+w.editor.id+'_ifr').height(newHeight - 49);
+		$('#'+w.editor.id+'_ifr').height(newHeight - 75);
 	};
 	
 	w.toggleSidepanel = function() {
@@ -569,6 +571,11 @@ var Writer = function(config) {
 		var content = open_tag + selection + close_tag;
 		w.editor.execCommand('mceReplaceContent', false, content);
 		w.tree.update();
+		
+		if (selection == '') {
+			var range = w.editor.selection.getRng(true);
+			range.selectNodeContents(w.editor.$('#'+id)[0]);
+		}
 	};
 	
 	w.editStructureTag = function(tag, attributes) {
@@ -587,7 +594,12 @@ var Writer = function(config) {
 		
 		delete w.structs[id];
 		var parent = w.editor.$('#'+id).parent()[0];
-		w.editor.$('#'+id).contents().unwrap();
+		var contents = w.editor.$('#'+id).contents();
+		if (contents.length > 0) {
+			contents.unwrap();
+		} else {
+			w.editor.$('#'+id).remove();
+		}
 		parent.normalize();
 		w.tree.update();
 	};
@@ -681,11 +693,13 @@ var Writer = function(config) {
 				// custom properties added to the editor
 				ed.currentEntity = null; // the id of the currently highlighted entity
 				ed.currentStruct = null; // the id of the currently selected structural tag
+				ed.currentNode = null; // the node that the cursor is currently in
 				ed.entityCopy = null; // store a copy of an entity for pasting
 				ed.contextMenuPos = null; // the position of the context menu (used to position related dialog box)
 				
 				ed.onInit.add(_onInitHandler);
 				ed.onChange.add(_onChangeHandler);
+				ed.onNodeChange.add(_onNodeChangeHandler);
 				
 				// add schema file and method
 				ed.addCommand('getSchema', function(){
@@ -694,7 +708,7 @@ var Writer = function(config) {
 				
 				// add custom plugins and buttons
 				
-				var plugins = ['customtags','schematags','entitycontextmenu','viewsource'];
+				var plugins = ['customtags','schematags','currenttag','entitycontextmenu','viewsource'];
 				
 				for (var i = 0; i < plugins.length; i++) {
 					var name = plugins[i];
@@ -842,14 +856,14 @@ var Writer = function(config) {
 			extended_valid_elements: 'entity[class|name|_entity]'+w.formattedSchema,
 			custom_elements: '~entity',
 			
-			plugins: 'paste,-entitycontextmenu,-schematags,-viewsource',
+			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
 			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
-			theme_advanced_buttons2: '',
+			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
 			theme_advanced_toolbar_align: 'left',
-	        theme_advanced_statusbar_location: 'top'
+	        theme_advanced_statusbar_location: 'bottom'
 		});
 		
 		$(window).resize(_doResize);
