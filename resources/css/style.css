@@ -379,9 +379,9 @@ label {
 }
 
 #menu_editor_editor_schemaTagsButton_menu_co, #menu_structTagsContextMenu_co {
-	max-height: 600px;
+	/*max-height: 600px;
 	max-width: 200px;
-	overflow: auto;
+	overflow: auto;*/
 }
 
 #menu_editor_editor_schemaTagsButton_menu_co .mceMenuItemDisabled, #menu_structTagsContextMenu_co .mceMenuItemDisabled {
