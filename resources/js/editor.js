@@ -266,7 +266,8 @@ var Writer = function(config) {
 		
 		// check for numerous overlap possibilities
 		var range = sel.getRng(true);
-		range.commonAncestorContainer.normalize(); // normalize/collapse separate text nodes
+		// next line commented out as it messes up the selection in IE
+//		range.commonAncestorContainer.normalize(); // normalize/collapse separate text nodes
 		
 		// fix for when start and/or end containers are element nodes (should always be text nodes)
 		if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
@@ -508,7 +509,10 @@ var Writer = function(config) {
 		id = id || w.editor.currentEntity;
 		
 		delete w.entities[id];
-		w.editor.$('entity[name="'+id+'"]').remove();
+		var node = w.editor.$('entity[name="'+id+'"]');
+		var parent = node[0].parentNode;
+		node.remove();
+		parent.normalize();
 		w.highlightEntity();
 		w.entitiesList.remove(id);
 	};
@@ -593,12 +597,13 @@ var Writer = function(config) {
 		if (w.editor.$('#'+id).is('p')) return;
 		
 		delete w.structs[id];
-		var parent = w.editor.$('#'+id).parent()[0];
-		var contents = w.editor.$('#'+id).contents();
+		var node = w.editor.$('#'+id);
+		var parent = node.parent()[0];
+		var contents = node.contents();
 		if (contents.length > 0) {
 			contents.unwrap();
 		} else {
-			w.editor.$('#'+id).remove();
+			node.remove();
 		}
 		parent.normalize();
 		w.tree.update();
