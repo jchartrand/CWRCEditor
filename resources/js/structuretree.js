@@ -118,9 +118,9 @@ var StructureTree = function(config) {
 		children.each(function(index, el) {
 			var newChildren = $(this).children();
 			var newNodeParent = nodeParent;
-			if ($(this).attr('_entity') == null && !$(this).is('br') && !$(this).attr('data-mce-type')) {
+			if ($(this).attr('_entity') == null && !$(this).is('br') && !$(this).is('span')) {
 				var id = $(this).attr('id');
-				var isLeaf = $(this).find('*').not('br').not('[_entity]').length > 0 ? 'open' : null;
+				var isLeaf = $(this).find('*').not('br').not('span').not('[_entity]').length > 0 ? 'open' : null;
 				
 				// new struct check
 				if (id == '' || id == null) {
