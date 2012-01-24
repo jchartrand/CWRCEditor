@@ -28,9 +28,19 @@
 					var filterKey = ed.currentNode.nodeName.toLowerCase();
 					var validKeys = t.getFilteredSchema(filterKey);
 					var item;
+					var count = 0, disCount = 0;
 					for (var itemId in m.items) {
+						count++;
 						item = m.items[itemId];
-						item.setDisabled(!validKeys[item.settings.key]);
+						if (validKeys[item.settings.key]) {
+							item.setDisabled(false);
+						} else {
+							item.setDisabled(true);
+							disCount++;
+						}
+					}
+					if (count == disCount) {
+						m.items['no_tags'].setDisabled(false);
 					}
 				});
 				
@@ -49,6 +59,13 @@
 					});
 					menuitem.setDisabled(config.disabled);
 				}
+				var menuitem = menu.add({
+					title: 'No tags available for current parent tag.',
+					id: 'no_tags',
+					icon_src: url + 'cross.png',
+					onclick : function() {}
+				});
+				menuitem.setDisabled(true);
 				
 				return menu;
 			});
