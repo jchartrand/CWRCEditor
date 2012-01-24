@@ -196,6 +196,7 @@ SCHOLARNOTE P {
 
 SCHOLARNOTE P:before {
     content: url(../img/orlando/note.gif);
+}
 
 NAME {
     font-weight: bold;
