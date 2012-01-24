@@ -6,9 +6,9 @@ var EntitiesList = function(config) {
 	
 	$(document.body).append(''+
 		'<div id="entitiesMenu" class="contextMenu" style="display: none;"><ul>'+
-		'<li id="editEntity"><ins style="background:url(img/tag_blue_edit.png) center center no-repeat;" />Edit Tag</li>'+
-		'<li id="removeEntity"><ins style="background:url(img/cross.png) center center no-repeat;" />Remove Tag</li>'+
-		'<li class="separator" id="copyEntity"><ins style="background:url(img/tag_blue_copy.png) center center no-repeat;" />Copy Tag</li>'+
+		'<li id="editEntity"><ins style="background:url(img/tag_blue_edit.png) center center no-repeat;" />Edit Entity</li>'+
+		'<li id="removeEntity"><ins style="background:url(img/cross.png) center center no-repeat;" />Remove Entity</li>'+
+		'<li class="separator" id="copyEntity"><ins style="background:url(img/tag_blue_copy.png) center center no-repeat;" />Copy Entity</li>'+
 		'</ul></div>'
 	);
 	
