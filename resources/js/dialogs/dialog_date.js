@@ -115,7 +115,7 @@ var DateDialog = function(config) {
 	var dateResult = function(cancelled) {
 		var data = {};
 		if (!cancelled) {
-			var type = $('#dateDialog input[name="dateType"]:checked', date).val();
+			var type = $('#type_date:checked').val();
 			if (type == 'date') {
 				var dateString = dateInput.value;
 				if (dateString.match(/^\d{4}-\d{2}-\d{2}$/) || dateString.match(/^\d{4}$/)) {
