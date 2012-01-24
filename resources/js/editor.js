@@ -108,6 +108,7 @@ var Writer = function(config) {
 			// need to do this here instead of in onchangehandler because that one doesn't update often enough
 			if (evt.keyCode == 8 || evt.keyCode == 46) {
 				_findDeletedTags();
+				w.tree.update();
 			}
 		});
 		
@@ -468,9 +469,9 @@ var Writer = function(config) {
 			sel.collapse();
 			var rng = sel.getRng(true);
 			
-			var start = w.editor.dom.create('entity', {'class': 'entity '+newEntity.props.type+' start', 'name': newEntity.props.id});
+			var start = w.editor.dom.create('entity', {'class': 'entity '+newEntity.props.type+' start', 'name': newEntity.props.id, '_entity': true});
 			var text = w.editor.getDoc().createTextNode(newEntity.props.content);
-			var end = w.editor.dom.create('entity', {'class': 'entity '+newEntity.props.type+' end', 'name': newEntity.props.id});
+			var end = w.editor.dom.create('entity', {'class': 'entity '+newEntity.props.type+' end', 'name': newEntity.props.id, '_entity': true});
 			var span = w.editor.dom.create('span', {id: 'entityHighlight'});
 			w.editor.dom.add(span, start);
 			w.editor.dom.add(span, text);
