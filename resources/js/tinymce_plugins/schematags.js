@@ -2,6 +2,7 @@
 
 	// add block elements
 	tinymce.html.Schema.blockElementsMap['DIV0'] = {};
+	tinymce.html.Schema.blockElementsMap['DIV1'] = {};
 	
 	tinymce.create('tinymce.plugins.SchemaTags', {
 		init: function(ed, url) {

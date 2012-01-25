@@ -66,7 +66,7 @@ var Writer = function(config) {
 	};
 	
 	var _onInitHandler = function(ed) {
-		ed.setContent('<div0>Paste or type your text here.</div0>');
+		ed.setContent('<div0><div1>Paste or type your text here.</div1></div0>');
 		
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
@@ -808,7 +808,7 @@ var Writer = function(config) {
 					title: 'Save',
 					image: 'img/save.png',
 					onclick: function() {
-						w.fm.saveDocument();
+						w.fm.validate(true);
 					}
 				});
 				
@@ -838,6 +838,15 @@ var Writer = function(config) {
 					}
 				});
 				
+				ed.addButton('validate', {
+					title: 'Validate',
+					image: 'img/validate.png',
+					'class': 'entityButton',
+					onclick: function() {
+						w.fm.validate();
+					}
+				});
+				
 //				ed.addButton('toggleeditor', {
 //					title: 'Show Advanced Mode',
 //					image: 'img/html.png',
@@ -849,9 +858,9 @@ var Writer = function(config) {
 			doctype: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
 			element_format: 'xhtml',
 			
-			forced_root_block : 'div0',
+			forced_root_block : 'div1',
 //			force_br_newlines: false,
-			force_p_newlines: false,
+			force_p_newlines: true,
 			
 			paste_remove_styles: true,
 			paste_preprocess: function(pl, o) {
@@ -864,7 +873,7 @@ var Writer = function(config) {
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
 			theme_advanced_blockformats: 'p,h1,blockquote',
-			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',

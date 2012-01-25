@@ -80,7 +80,7 @@ var FileManager = function(config) {
 					return;
 				} else {
 					currentDoc = name;
-					fm.saveDocument();
+					fm.validate(true);
 					saver.dialog('close');
 				}
 			},
@@ -189,6 +189,72 @@ var FileManager = function(config) {
 	
 	var _isNameValid = function(name) {
 		return name.match(/[^A-Za-z]+/) == null;
+	};
+	
+	fm.validate = function(isSave) {
+		var docText = _exportDocument();
+		$.ajax({
+			url: w.baseUrl+'services/validator/validate.html',
+			type: 'POST',
+			dataType: 'XML',
+			data: {
+				sch: 'http://dev.onlineresearchcanada.ca/orlando-bio-tight/schemas/biography-test_10-07-16-CAPS.rng',
+				type: 'RNG_XML',
+				content: docText
+			},
+			success: function(data, status, xhr) {
+				_validationHandler(data, isSave);
+			},
+			error: function() {
+				w.d.show('message', {
+					title: 'Error',
+					msg: 'An error occurred while trying to validate '+currentDoc+'.'
+				});
+			}
+		});
+	};
+	
+	var _validationHandler = function(data, isSave) {
+		if ($('status', data).text() != 'pass') {
+			var errors = '<ul>';
+			$('error', data).each(function(index, el) {
+				errors += '<li>'+$(this).find('message').text()+'</li>';
+			});
+			errors += '</ul>';
+			if (isSave) {
+				w.d.confirm({
+					title: 'Document Invalid',
+					msg: currentDoc+' is not valid. <b>Save anyways?</b><br/>'+errors,
+					callback: function(yes) {
+						if (yes) {
+							fm.saveDocument();
+						}
+					}
+				});
+			} else {
+				w.d.show('message', {
+					title: 'Document Invalid',
+					msg: currentDoc+' is not valid.<br/>'+errors
+				});
+			}
+		} else {
+			if (isSave) {
+				fm.saveDocument();
+			} else {
+				var warnings = '';
+				if ($('warning', data).length > 0) {
+					warnings += '<ul>';
+					$('warning', data).each(function(index, el) {
+						warnings += '<li>'+$(this).find('message').text()+'</li>';
+					});
+					warnings += '</ul>';
+				}
+				w.d.show('message', {
+					title: 'Document Valid',
+					msg: currentDoc+' is valid.<br/>'+warnings
+				});
+			}
+		}
 	};
 	
 	fm.saveDocument = function() {

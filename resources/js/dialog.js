@@ -49,6 +49,10 @@ var DialogManager = function(config) {
 				dialogs[type].show(config);
 			}
 		},
+		confirm: function(config) {
+			currentType = 'message';
+			dialogs.message.confirm(config);
+		},
 		hideAll: function() {
 			for (var key in dialogs) {
 				dialogs[key].hide();
