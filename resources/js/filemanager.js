@@ -198,7 +198,7 @@ var FileManager = function(config) {
 			type: 'POST',
 			dataType: 'XML',
 			data: {
-				sch: 'http://dev.onlineresearchcanada.ca/orlando-bio-tight/schemas/biography-test_10-07-16-CAPS.rng',
+				sch: 'http://cwrc.ca/schema/'+w.validationSchema,
 				type: 'RNG_XML',
 				content: docText
 			},

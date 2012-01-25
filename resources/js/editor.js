@@ -27,6 +27,9 @@ var Writer = function(config) {
 		// editor mode
 		mode: config.mode,
 		
+		// schema for validation (common or events)
+		validationSchema: 'common',
+		
 		// possible editor modes
 		XMLRDF: 0, // allows for overlapping elements, i.e. entities
 		XML: 1, // standard xml, no overlapping elements

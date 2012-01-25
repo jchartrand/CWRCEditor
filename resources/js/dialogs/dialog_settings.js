@@ -48,6 +48,12 @@ var SettingsDialog = function(config) {
 	'<option value="1">XML (no overlap)</option>'+
 	'</select>'+
 	'</div>'+
+	'<div style="margin-top: 10px;">'+
+	'<label>Schema</label><select name="schema">'+
+	'<option value="common">Common Schema</option>'+
+	'<option value="events">Events Schema</option>'+
+	'</select>'+
+	'</div>'+
 	'</div>');
 	
 	$('#settingsLink').click(function() {
@@ -56,6 +62,7 @@ var SettingsDialog = function(config) {
 		$('#showbrackets').prop('checked', settings.showBrackets);
 		$('#showschemabrackets').prop('checked', settings.showSchemaBrackets);
 		$('select[name="editormode"] > option[value="'+w.mode+'"]', $('#settingsDialog')).attr('selected', true);
+		$('select[name="schema"] > option[value="'+w.validationSchema+'"]', $('#settingsDialog')).attr('selected', true);
 		$('#settingsDialog').dialog('open');
 	});
 	
@@ -64,7 +71,7 @@ var SettingsDialog = function(config) {
 		modal: true,
 		resizable: false,
 		closeOnEscape: true,
-		height: 250,
+		height: 270,
 		width: 325,
 		autoOpen: false,
 		buttons: {
@@ -109,6 +116,8 @@ var SettingsDialog = function(config) {
 			w.editor.$('body').toggleClass('showSchemaBrackets');
 		}
 		settings.showSchemaBrackets = $('#showschemabrackets').prop('checked');
+		
+		w.validationSchema = $('select[name="schema"]', $('#settingsDialog')).val();
 		
 		var styles = {
 			fontSize: settings.fontSize,
