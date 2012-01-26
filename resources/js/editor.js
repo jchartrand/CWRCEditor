@@ -124,9 +124,19 @@ var Writer = function(config) {
 			}
 		});
 		
+		// create css to display schema tags
+		$('head', ed.dom.doc).append('<style id="schemaTags" type="text/css" />');
+		var schemaTags = '', tag;
+		for (var key in w.schema) {
+			tag = w.schema[key].displayName;
+			schemaTags += '.showSchemaBrackets '+key+':before { color: #aaa; font-weight: normal; font-style: normal; content: "<'+tag+'>"; }';
+			schemaTags += '.showSchemaBrackets '+key+':after { color: #aaa; font-weight: normal; font-style: normal; content: "</'+tag+'>"; }';
+		}
+		$('#schemaTags', ed.dom.doc).text(schemaTags);
+		
 		_doResize();
 		
-		// populate with the initial paragraph
+		// populate with initial content
 		w.tree.update();
 	};
 	

@@ -124,11 +124,3 @@ body {
 .emphTag {
 	font-style: italic;
 }
-
-.showSchemaBrackets [_schema="true"]:before {
-	content: "<";
-}
-
-.showSchemaBrackets [_schema="true"]:after {
-	content: ">";
-}
