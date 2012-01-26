@@ -287,7 +287,6 @@ var FileManager = function(config) {
 	var _exportDocument = function() {
 		// remove highlights
 		w.highlightEntity();
-		w.highlightStructureTag();
 		
 		var doc = w.editor.getDoc();
 		var originalDoc = $(doc.body).clone(false, true); // make a copy, don't clone body events, but clone child events

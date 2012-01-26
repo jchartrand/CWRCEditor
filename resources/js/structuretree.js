@@ -74,7 +74,7 @@ var StructureTree = function(config) {
 	$('#tree').bind('select_node.jstree', function(event, data) {
 		var node = data.rslt.obj;
 		var id = node.attr('name');
-		w.highlightStructureTag(id);
+		w.selectStructureTag(id);
 	});
 	$('#tree').bind('hover_node.jstree', function(event, data) {
 		if ($('#vakata-contextmenu').css('visibility') == 'visible') return;
@@ -99,8 +99,6 @@ var StructureTree = function(config) {
 	});
 
 	tree.update = function() {
-		w.highlightStructureTag(); // remove previous highlight
-		
 		var body = w.editor.dom.select('body');
 	//	$('#tree').jstree('_get_children').each(function(index, element) {
 	//		$('#tree').jstree('delete_node', $(this));

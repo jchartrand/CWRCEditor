@@ -129,8 +129,8 @@ var Writer = function(config) {
 		var schemaTags = '', tag;
 		for (var key in w.schema) {
 			tag = w.schema[key].displayName;
-			schemaTags += '.showSchemaBrackets '+key+':before { color: #aaa; font-weight: normal; font-style: normal; content: "<'+tag+'>"; }';
-			schemaTags += '.showSchemaBrackets '+key+':after { color: #aaa; font-weight: normal; font-style: normal; content: "</'+tag+'>"; }';
+			schemaTags += '.showSchemaBrackets '+key+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+			schemaTags += '.showSchemaBrackets '+key+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
 		}
 		$('#schemaTags', ed.dom.doc).text(schemaTags);
 		
@@ -152,8 +152,6 @@ var Writer = function(config) {
 	};
 	
 	var _doHighlightCheck = function(ed, evt) {
-		w.highlightStructureTag();
-		
 		var range = ed.selection.getRng(true);
 		
 		var entityStart = _findEntityBoundary('start', range.startContainer, null, [range.startContainer.parentNode]);
@@ -283,28 +281,37 @@ var Writer = function(config) {
 		// next line commented out as it messes up the selection in IE
 //		range.commonAncestorContainer.normalize(); // normalize/collapse separate text nodes
 		
-		// fix for when start and/or end containers are element nodes (should always be text nodes)
-		if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
-			var end = range.endContainer;
-			if (end.nodeType != Node.TEXT_NODE || range.endOffset == 0) {
-				var findTextNode = function(currNode, reps) {
-					if (reps > 10) return null; // prevent infinite recursion
-					else {
-						var prevNode = currNode.previousSibling || currNode.parentNode.previousSibling.lastChild;
-						if (prevNode == null) return null;
-						if (prevNode.nodeType == Node.TEXT_NODE) return prevNode;
-						return findTextNode(prevNode, reps++);
-					}
-				};
-				end = findTextNode(range.endContainer, 0);
-				if (end == null) return w.NO_COMMON_PARENT;
-				range.setEnd(end, end.length);
-			}
-			range.setStart(end, 0);
+		// fix for select all and root node select
+		if (range.commonAncestorContainer.nodeName.toLowerCase() == 'body') {
+			var root = w.editor.$('body > *')[0];
+			range.setStartBefore(root.firstChild);
+			range.setEndAfter(root.lastChild);
 		}
-		if (range.endContainer.nodeType == Node.ELEMENT_NODE) {
-			// don't need to check nodeType here since we've already insured startContainer is text
-			range.setEnd(range.startContainer, range.startContainer.length);
+		
+		// fix for when start and/or end containers are element nodes (should always be text nodes for entities)
+		if (!isStructTag) {
+			if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
+				var end = range.endContainer;
+				if (end.nodeType != Node.TEXT_NODE || range.endOffset == 0) {
+					var findTextNode = function(currNode, reps) {
+						if (reps > 10) return null; // prevent infinite recursion
+						else {
+							var prevNode = currNode.previousSibling || currNode.parentNode.previousSibling.lastChild;
+							if (prevNode == null) return null;
+							if (prevNode.nodeType == Node.TEXT_NODE) return prevNode;
+							return findTextNode(prevNode, reps++);
+						}
+					};
+					end = findTextNode(range.endContainer, 0);
+					if (end == null) return w.NO_COMMON_PARENT;
+					range.setEnd(end, end.length);
+				}
+				range.setStart(end, 0);
+			}
+			if (range.endContainer.nodeType == Node.ELEMENT_NODE) {
+				// don't need to check nodeType here since we've already ensured startContainer is text
+				range.setEnd(range.startContainer, range.startContainer.length);
+			}
 		}
 		
 		if (range.startContainer.parentNode != range.endContainer.parentNode) return w.NO_COMMON_PARENT;
@@ -623,18 +630,13 @@ var Writer = function(config) {
 		w.tree.update();
 	};
 	
-	w.highlightStructureTag = function(id) {
-		w.editor.currentStruct = null;
-		w.editor.dom.setAttribs(w.editor.dom.select('*[name="selected"]'), {name: '', style: ''});
-		if (id) {
-			w.editor.currentStruct = id;
-			w.editor.dom.setAttribs(w.editor.dom.select('#'+id), {name: 'selected', style: 'background-color: #eee'});
-		}
+	w.selectStructureTag = function(id) {
+		w.editor.currentStruct = id;
+		w.editor.selection.select(w.editor.dom.select('#'+id)[0]);
 	};
 	
 	w.removeHighlights = function() {
 		w.highlightEntity();
-		w.highlightStructureTag();
 	};
 	
 	w.init = function() {
