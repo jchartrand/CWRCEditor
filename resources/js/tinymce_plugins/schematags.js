@@ -1,8 +1,4 @@
 (function(tinymce) {
-
-	// add block elements
-	tinymce.html.Schema.blockElementsMap['DIV0'] = {};
-	tinymce.html.Schema.blockElementsMap['DIV1'] = {};
 	
 	tinymce.create('tinymce.plugins.SchemaTags', {
 		init: function(ed, url) {
@@ -26,8 +22,8 @@
 				var menu = config.menu;
 				
 				menu.onShowMenu.add(function(m) {
-					var filterKey = ed.currentNode.nodeName.toLowerCase();
-					var validKeys = t.getFilteredSchema(filterKey);
+					var filterKey = ed.currentNode.getAttribute('_tag');
+					var validKeys = t.editor.execCommand('getFilteredSchema', filterKey);
 					var item;
 					var count = 0, disCount = 0;
 					for (var itemId in m.items) {
@@ -149,33 +145,6 @@
 				height: 300,
 				width: 300
 			});
-		},
-		getFilteredSchema: function(filterKey) {
-			var t = this;
-			var validKeys = {};
-			
-			var getSubElements = function(key, validKeys) {
-				var entry = t.schema[key];
-				if (entry) {
-//					var addedNew = false;
-					var e;
-					for (var i = 0; i < entry.elements.length; i++) {
-						e = entry.elements[i].name;
-						if (validKeys[e] == null) {
-							validKeys[e] = true;
-//							addedNew = true;
-//							getSubElements(e, validKeys);
-						}
-					}
-//					if (!addedNew) {
-//						return;
-//					}
-				}
-			};
-			
-			getSubElements(filterKey, validKeys);
-			
-			return validKeys;
 		},
 		showDialog: function(key, pos) {
 			var t = this;
@@ -309,7 +278,7 @@
 			
 			params._display = entry.displayName;
 			params._tag = t.currentKey;
-			params._schema = true;
+			params._struct = true;
 			params._editable = true;
 			
 			switch (t.mode) {

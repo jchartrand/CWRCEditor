@@ -13,7 +13,7 @@
 			
 			ed.addCommand('closeCurrentTag', function() {
 				var node = t.editor.currentNode;
-				if (node.getAttribute('_schema')) {
+				if (node.getAttribute('_struct')) {
 					if ($(node).text() == '') {
 						var id = node.getAttribute('id');
 						t.editor.execCommand('removeTag', id);

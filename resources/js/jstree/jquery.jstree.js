@@ -3621,6 +3621,10 @@
 		$.vakata.context.cnt
 			.delegate("a","click", function (e) { e.preventDefault(); })
 			.delegate("a","mouseup", function (e) {
+				// modification
+				if ($(e.target).parents('li.submenu').length > 0) {
+					$.vakata.context.par = $(e.target);
+				}
 				if(!$(this).parent().hasClass("jstree-contextmenu-disabled") && $.vakata.context.exec($(this).attr("rel"))) {
 					$.vakata.context.hide();
 				}

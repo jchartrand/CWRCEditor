@@ -1,12 +1,14 @@
-var SettingsDialog = function(config) {
-	var w = config.writer;
+var SettingsDialog = function(writer, config) {
+	var w = writer;
 	
 	var settings = {
 		fontSize: '11pt',
 		fontFamily: 'Book Antiqua',
-		showBrackets: true,
-		showSchemaBrackets: false
+		showEntityBrackets: false,
+		showStructBrackets: false
 	};
+	
+	jQuery.extend(settings, config);
 	
 	$('#header').append(''+
 		'<div id="settingsLink"><h2>Settings</h2></div>');
@@ -35,12 +37,12 @@ var SettingsDialog = function(config) {
 	'</select>'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
-	'<label for="showbrackets">Show Entity Brackets</label>'+
-	'<input type="checkbox" id="showbrackets" />'+
+	'<label for="showentitybrackets">Show Entity Brackets</label>'+
+	'<input type="checkbox" id="showentitybrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
-	'<label for="showschemabrackets">Show Tag Brackets</label>'+
-	'<input type="checkbox" id="showschemabrackets" />'+
+	'<label for="showstructbrackets">Show Tag Brackets</label>'+
+	'<input type="checkbox" id="showstructbrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
 	'<label>Editor Mode</label><select name="editormode">'+
@@ -59,8 +61,8 @@ var SettingsDialog = function(config) {
 	$('#settingsLink').click(function() {
 		$('select[name="fontsize"] > option[value="'+settings.fontSize+'"]', $('#settingsDialog')).attr('selected', true);
 		$('select[name="fonttype"] > option[value="'+settings.fontFamily+'"]', $('#settingsDialog')).attr('selected', true);
-		$('#showbrackets').prop('checked', settings.showBrackets);
-		$('#showschemabrackets').prop('checked', settings.showSchemaBrackets);
+		$('#showentitybrackets').prop('checked', settings.showEntityBrackets);
+		$('#showstructbrackets').prop('checked', settings.showStructBrackets);
 		$('select[name="editormode"] > option[value="'+w.mode+'"]', $('#settingsDialog')).attr('selected', true);
 		$('select[name="schema"] > option[value="'+w.validationSchema+'"]', $('#settingsDialog')).attr('selected', true);
 		$('#settingsDialog').dialog('open');
@@ -107,15 +109,15 @@ var SettingsDialog = function(config) {
 		settings.fontSize = $('select[name="fontsize"]', $('#settingsDialog')).val();
 		settings.fontFamily = $('select[name="fonttype"]', $('#settingsDialog')).val();
 		
-		if (settings.showBrackets != $('#showbrackets').prop('checked')) {
-			w.editor.$('entity').toggleClass('noBorder');
+		if (settings.showEntityBrackets != $('#showentitybrackets').prop('checked')) {
+			w.editor.$('body').toggleClass('showEntityBrackets');
 		}
-		settings.showBrackets = $('#showbrackets').prop('checked');
+		settings.showEntityBrackets = $('#showEntityBrackets').prop('checked');
 		
-		if (settings.showSchemaBrackets != $('#showschemabrackets').prop('checked')) {
-			w.editor.$('body').toggleClass('showSchemaBrackets');
+		if (settings.showStructBrackets != $('#showstructbrackets').prop('checked')) {
+			w.editor.$('body').toggleClass('showStructBrackets');
 		}
-		settings.showSchemaBrackets = $('#showschemabrackets').prop('checked');
+		settings.showStructBrackets = $('#showstructbrackets').prop('checked');
 		
 		w.validationSchema = $('select[name="schema"]', $('#settingsDialog')).val();
 		
@@ -147,7 +149,7 @@ var SettingsDialog = function(config) {
 	
 	return {
 		getSettings: function() {
-			return this.settings;
+			return settings;
 		}
 	};
 };

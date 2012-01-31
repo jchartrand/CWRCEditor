@@ -462,7 +462,7 @@ div.mceDropDown {
 }
 
 /* jstree overrides */
-#vakata-contextmenu {
+#vakata-contextmenu, #vakata-contextmenu ul li ul {
 	border: 1px solid #D4D0C8 !important;
 	background-color: #fff !important;
 	box-shadow: 1px 1px 2px #ccc;
@@ -473,6 +473,14 @@ div.mceDropDown {
 
 #vakata-contextmenu li ins, #jqContextMenu li ins {
 	margin: 2px 2px 0 2px !important;
+}
+
+#vakata-contextmenu .submenu a span {
+	background-image: url("../img/menu_arrow.gif");
+    color: #fff;
+    display: block;
+    float: right;
+    width: 20px;
 }
 
 #jqContextMenu li.separator {
@@ -491,7 +499,7 @@ div.mceDropDown {
 	font-family: Tahoma,Verdana,Arial,Helvetica !important;
 	font-size: 11px !important;
 	color: #000 !important;
-	line-height: 20px !important;
+	line-height: 22px !important;
 	padding: 0 !important;
 	margin: 0 !important;
 }
@@ -499,6 +507,14 @@ div.mceDropDown {
 #vakata-contextmenu li a:hover, #vakata-contextmenu li.vakata-hover > a {
 	color: #000 !important;
 	background-color: #DBECF3 !important;	
+}
+
+.jstree #root > ins, .jstree #root > a {
+	display: none;
+}
+
+.jstree #root > ul {
+	margin-left: -18px;
 }
 
 .jstree .paraTag a .ui-icon {

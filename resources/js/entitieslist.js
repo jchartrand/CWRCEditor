@@ -36,7 +36,7 @@ var EntitiesList = function(config) {
 		var id, entry, i;
 		var entitiesString = '';
 		
-		var entityTags = w.editor.$('entity[class~=start]');		
+		var entityTags = w.editor.$('span[class~=start]');
 		if (sort == 'category') {
 			var categories = {};
 			for (id in w.entities) {
@@ -68,7 +68,7 @@ var EntitiesList = function(config) {
 		
 		// remove entity tags that got added back in by undo/redo
 		entityTags.each(function(index, el) {
-			w.editor.$('entity[name='+$(this).attr('name')+']').remove();
+			w.editor.$('span[name='+$(this).attr('name')+']').remove();
 		});
 		
 		$('#entities > ul').html(entitiesString);

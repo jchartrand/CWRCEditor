@@ -4,27 +4,22 @@ body {
 	color: #333;
 }
 
-.entity {
+.showEntityBrackets .entity {
 	display: inline-block;
 	height: 11px;
 	width: 2px;
 }
 
-.start {
+.showEntityBrackets .start {
 	border-left: 2px solid;
 	border-bottom-left-radius: 4px;
 	border-top-left-radius: 4px;
 }
 
-.end {
+.showEntityBrackets .end {
 	border-right: 2px solid;
 	border-bottom-right-radius: 4px;
 	border-top-right-radius: 4px;
-}
-
-.noBorder {
-	border: none !important;
-	width: 0px !important;
 }
 
 #entityHighlight {
@@ -64,35 +59,35 @@ body {
 	background-color: #debb00;
 }
 
-.person {
+.showEntityBrackets .person {
 	border-color: #FF0000;
 }
 
-.date {
+.showEntityBrackets .date {
 	border-color: #FF7400;
 }
 
-.place {
+.showEntityBrackets .place {
 	border-color: #009999;
 }
 
-.event {
+.showEntityBrackets .event {
 	border-color: #00CC00;
 }
 
-.org {
+.showEntityBrackets .org {
 	border-color: #3914AF; 
 }
 
-.citation {
+.showEntityBrackets .citation {
 	border-color: #CD0074;
 }
 
-.note {
+.showEntityBrackets .note {
 	border-color: #0D56A6;
 }
 
-.title {
+.showEntityBrackets .title {
 	border-color: #debb00;
 }
 

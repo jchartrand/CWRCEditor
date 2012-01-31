@@ -26,7 +26,38 @@ var StructureTree = function(config) {
 				_hidePopup();
 				if ($(node).attr('id') == 'root') return {};
 				var info = w.structs[node.attr('name')];
+
+				var validKeys = w.editor.execCommand('getFilteredSchema', info._tag);
+				var inserts = {};
+				for (var key in validKeys) {
+					if (w.schema[key]) {
+						var icon = 'img/tag_blue.png';
+						if (w.schema[key].attributes.length > 1) {
+							icon = 'img/tag_blue_edit.png';
+						}
+						inserts[key] = {
+							label: w.schema[key].displayName,
+							icon: icon,
+							action: function(obj) {
+								var key = obj.text().toLowerCase();
+								var pos = {
+									x: parseInt($('#tree_popup').css('left')),
+									y: parseInt($('#tree_popup').css('top'))
+								};
+								w.editor.selection.collapse();
+								w.editor.execCommand('addSchemaTag', key, pos);
+							}
+						};
+					}
+				}
+
 				var items = {
+					'insert': {
+						label: 'Insert Tag',
+						icon: 'img/tag_blue_add.png',
+						_class: 'submenu',
+						submenu: inserts
+					},
 					'edit': {
 						label: 'Edit Tag',
 						icon: 'img/tag_blue_edit.png',
@@ -74,7 +105,7 @@ var StructureTree = function(config) {
 	$('#tree').bind('select_node.jstree', function(event, data) {
 		var node = data.rslt.obj;
 		var id = node.attr('name');
-		w.selectStructureTag(id);
+		if (id) w.selectStructureTag(id);
 	});
 	$('#tree').bind('hover_node.jstree', function(event, data) {
 		if ($('#vakata-contextmenu').css('visibility') == 'visible') return;
@@ -116,22 +147,25 @@ var StructureTree = function(config) {
 		children.each(function(index, el) {
 			var newChildren = $(this).children();
 			var newNodeParent = nodeParent;
-			if ($(this).attr('_entity') == null && !$(this).is('br') && !$(this).is('span')) {
+			if ($(this).attr('_struct') || $(this).is(w.root)) {
 				var id = $(this).attr('id');
-				var isLeaf = $(this).find('*').not('br').not('span').not('[_entity]').length > 0 ? 'open' : null;
+				var isLeaf = $(this).find('[_struct]').length > 0 ? 'open' : null;
 				
 				// new struct check
 				if (id == '' || id == null) {
 					id = tinymce.DOM.uniqueId('struct_');
-					var tag = $(this)[0].nodeName.toLowerCase();
+					var tag = $(this).attr('_tag');
+					if (tag == null && $(this).is(w.root)) tag = w.root;
 					var entry = w.schema[tag];
-					var display = entry.displayName;
-					$(this).attr('id', id).attr('_tag', tag).attr('_display', display).attr('_schema', true);
-					w.structs[id] = {
-						id: id,
-						_display: display,
-						_tag: tag
-					};
+					if (entry) {
+						var display = entry.displayName;
+						$(this).attr('id', id).attr('_tag', tag).attr('_display', display).attr('_struct', true);
+						w.structs[id] = {
+							id: id,
+							_display: display,
+							_tag: tag
+						};
+					}
 				// redo/undo re-added a struct check
 				} else if (w.structs[id] == null) {
 					w.structs[id] = {};
@@ -156,12 +190,14 @@ var StructureTree = function(config) {
 				}
 				
 				var info = w.structs[id];
-				var title = info._display;
-				newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
-					data: title,
-					attr: {name: id, 'class': $(this).attr('class')},
-					state: isLeaf
-				});
+				if (info) {
+					var title = info._display;
+					newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
+						data: title,
+						attr: {name: id, 'class': $(this).attr('class')},
+						state: isLeaf
+					});
+				}
 			}
 			_doUpdate(newChildren, newNodeParent);
 		});
