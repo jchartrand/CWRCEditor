@@ -112,7 +112,7 @@ var SettingsDialog = function(writer, config) {
 		if (settings.showEntityBrackets != $('#showentitybrackets').prop('checked')) {
 			w.editor.$('body').toggleClass('showEntityBrackets');
 		}
-		settings.showEntityBrackets = $('#showEntityBrackets').prop('checked');
+		settings.showEntityBrackets = $('#showentitybrackets').prop('checked');
 		
 		if (settings.showStructBrackets != $('#showstructbrackets').prop('checked')) {
 			w.editor.$('body').toggleClass('showStructBrackets');
