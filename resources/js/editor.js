@@ -154,16 +154,20 @@ var Writer = function(config) {
 	var _findDuplicateTags = function() {
 		for (id in w.entities) {
 			var match = w.editor.$('span[class~="start"][name="'+id+'"]');
-			if (match.length == 2) {
-				var newId = tinymce.DOM.uniqueId('ent_');
-				var newTagStart = match.last();
-				var newTagEnd = $(_findEntityBoundary('end', newTagStart[0].nextSibling, null, [newTagStart[0].parentNode]));
-				newTagStart.attr('name', newId);
-				newTagEnd.attr('name', newId);
-				
-				var newEntity = jQuery.extend(true, {}, w.entities[id]);
-				newEntity.props.id = newId;
-				w.entities[newId] = newEntity;
+			if (match.length > 1) {
+				match.each(function(index, el) {
+					if (index > 0) {
+						var newId = tinymce.DOM.uniqueId('ent_');
+						var newTagStart = $(el);
+						var newTagEnd = $(_findEntityBoundary('end', newTagStart[0].nextSibling, null, [newTagStart[0].parentNode]));
+						newTagStart.attr('name', newId);
+						newTagEnd.attr('name', newId);
+
+						var newEntity = jQuery.extend(true, {}, w.entities[id]);
+						newEntity.props.id = newId;
+						w.entities[newId] = newEntity;
+					}
+				});
 			}
 		}
 		for (var id in w.structs) {

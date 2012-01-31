@@ -176,16 +176,20 @@ var StructureTree = function(config) {
 					}
 				// duplicate struct check
 				} else {
-					var match = w.editor.$('*[id='+id+']');
-					if (match.length == 2) {
-						var newStruct = match.last();
-						var newId = tinymce.DOM.uniqueId('struct_');
-						newStruct.attr('id', newId);
-						w.structs[newId] = {};
-						for (var key in w.structs[id]) {
-							w.structs[newId][key] = w.structs[id][key];
-						}
-						w.structs[newId].id = newId;
+					var match = w.editor.$('[id='+id+']');
+					if (match.length > 1) {
+						match.each(function(index, el) {
+							if (index > 0) {
+								var newStruct = $(el);
+								var newId = tinymce.DOM.uniqueId('struct_');
+								newStruct.attr('id', newId);
+								w.structs[newId] = {};
+								for (var key in w.structs[id]) {
+									w.structs[newId][key] = w.structs[id][key];
+								}
+								w.structs[newId].id = newId;
+							}
+						});
 					}
 				}
 				
