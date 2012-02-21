@@ -39,14 +39,18 @@ var EntitiesList = function(config) {
 		var entityTags = w.editor.$('span[class~=start]');
 		if (sort == 'category') {
 			var categories = {};
-			for (id in w.entities) {
-				entityTags = entityTags.not('[name='+id+']');
-				entry = w.entities[id];
+			entityTags.each(function(index, el) {
+				id = $(el).attr('name');
+				if (w.entities[id] == null) {
+					entry = _createEntityFromTag(el);
+				} else {
+					entry = w.entities[id];
+				}
 				if (categories[entry.props.type] == null) {
 					categories[entry.props.type] = [];
 				}
 				categories[entry.props.type].push(entry);
-			}
+			});
 			var category;
 			for (id in categories) {
 				category = categories[id];
@@ -58,18 +62,17 @@ var EntitiesList = function(config) {
 		} else if (sort == 'sequence') {
 			entityTags.each(function(index, el) {
 				id = $(this).attr('name');
-				entry = w.entities[id];
+				if (w.entities[id] == null) {
+					entry = _createEntityFromTag(el);
+				} else {
+					entry = w.entities[id];
+				}
 				if (entry) {
 					entityTags = entityTags.not('[name='+id+']');
 					entitiesString += _buildEntity(entry);
 				}
 			});
 		}
-		
-		// remove entity tags that got added back in by undo/redo
-		entityTags.each(function(index, el) {
-			w.editor.$('span[name='+$(this).attr('name')+']').remove();
-		});
 		
 		$('#entities > ul').html(entitiesString);
 		$('#entities > ul > li').hover(function() {
@@ -118,6 +121,35 @@ var EntitiesList = function(config) {
 				border: 'none'
 			}
 		});
+	};
+	
+	var _createEntityFromTag = function(tag) {
+		var tagEnd = w.getCorrespondingEntityTag(tag);
+		
+		var id = tinymce.DOM.uniqueId('ent_');
+		w.entities[id] = {
+			props: {
+				id: id,
+				type: $(tag).attr('_type'),
+				// TODO add title and content
+				title: '',
+				content: ''
+			},
+			info: {}
+		};
+		var attsToIgnore = ['class', 'name', '_entity', '_type'];
+		var att;
+		for (var i = 0; i < tag.attributes.length; i++) {
+			att = tag.attributes.item(i);
+			if (attsToIgnore.indexOf(att.name) == -1) {
+				w.entities[id]['info'][att.name] = att.value;
+			}
+		}
+		
+		$(tag).attr('name', id);
+		$(tagEnd).attr('name', id);
+		
+		return w.entities[id];
 	};
 	
 	var _buildEntity = function(entity) {

@@ -73,7 +73,8 @@ var Writer = function(config) {
 		ed.addCommand('getFilteredSchema', w.getFilteredSchema);
 		
 		// used in conjunction with the paste plugin
-		ed.pasteAsPlainText = true;
+		// needs to be false in order for paste postprocessing to function properly
+		ed.pasteAsPlainText = false;
 		
 		// highlight tracking
 		ed.onMouseUp.add(_doHighlightCheck);
@@ -159,7 +160,7 @@ var Writer = function(config) {
 					if (index > 0) {
 						var newId = tinymce.DOM.uniqueId('ent_');
 						var newTagStart = $(el);
-						var newTagEnd = $(_findEntityBoundary('end', newTagStart[0].nextSibling, null, [newTagStart[0].parentNode]));
+						var newTagEnd = $(w.getCorrespondingEntityTag(newTagStart));
 						newTagStart.attr('name', newId);
 						newTagEnd.attr('name', newId);
 
@@ -225,6 +226,21 @@ var Writer = function(config) {
 		
 		var bm = ed.selection.getBookmark();
 		w.highlightEntity(id, bm);
+	};
+	
+	/**
+	 * Get the entity boundary tag that corresponds to the passed tag.
+	 * @param tag
+	 */
+	w.getCorrespondingEntityTag = function(tag) {
+		tag = $(tag);
+		var corrTag;
+		if (tag.hasClass('start')) {
+			corrTag = _findEntityBoundary('end', tag[0].nextSibling, null, [tag[0].parentNode]);
+		} else {
+			corrTag = _findEntityBoundary('start', tag[0].previousSibling, null, [tag[0].parentNode]);
+		}
+		return corrTag;
 	};
 	
 	/**
@@ -466,13 +482,13 @@ var Writer = function(config) {
 		var sel = w.editor.selection;
 		var bm = sel.getBookmark();
 		
-		var start = w.editor.dom.create('span', {'_entity': true, 'class': 'entity '+type+' start', 'name': id});
+		var start = w.editor.dom.create('span', {'_entity': true, '_type': type, 'class': 'entity '+type+' start', 'name': id});
 		range.insertNode(start);
 		w.editor.dom.bind(start, 'click', _doMarkerClick);
 		
 		w.editor.selection.moveToBookmark(bm);
 		
-		var end = w.editor.dom.create('span', {'_entity': true, 'class': 'entity '+type+' end', 'name': id});
+		var end = w.editor.dom.create('span', {'_entity': true, '_type': type, 'class': 'entity '+type+' end', 'name': id});
 		sel.collapse(false);
 		range = sel.getRng(true);
 		range.insertNode(end);
@@ -483,6 +499,11 @@ var Writer = function(config) {
 		if (info == null) {
 			w.removeEntity(id);
 		} else {
+			var startTag = w.editor.$('[name='+id+'][class~=start]');
+			for (var key in info) {
+				startTag.attr(key, w.sanitizeAttributeValue(info[key]));
+			}
+			
 			w.entities[id].info = info;
 			w.entitiesList.update();
 			w.highlightEntity(id);
@@ -623,7 +644,7 @@ var Writer = function(config) {
 		var tag = 'span';
 		var open_tag = '<'+tag;
 		for (var key in attributes) {
-			open_tag += ' '+key+'="'+attributes[key]+'"';
+			open_tag += ' '+key+'="'+w.sanitizeAttributeValue(attributes[key])+'"';
 		}
 		open_tag += '>';
 		var close_tag = '</'+tag+'>';
@@ -714,6 +735,14 @@ var Writer = function(config) {
 		return validKeys;
 	};
 	
+	w.sanitizeAttributeValue = function(value) {
+		if (typeof value == 'string') {
+			return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		} else {
+			return value;
+		}
+	};
+	
 	var _doResize = function() {
 		var newHeight = $(window).height() - 30;
 		$('#leftcol > div').height(newHeight);
@@ -790,11 +819,13 @@ var Writer = function(config) {
 			'class': true,
 			'name': true,
 			'_entity': true,
+			'_type': true,
 			'_tag': true,
 			'_display': true,
 			'_struct': true,
 			'_editable': true
 		};
+		// TODO add atts for entities
 		for (var key in w.schema) {
 			schemaEntry = w.schema[key];
 			for (var i = 0; i < schemaEntry.attributes.length; i++) {
@@ -994,11 +1025,29 @@ var Writer = function(config) {
 //			force_br_newlines: false,
 			force_p_newlines: true,
 			
-			paste_auto_cleanup_on_paste: false,
-			paste_preprocess: function(pl, o) {
-				console.log(o.content);
-				// replace <br>s and <pre>s with <p>s
-				o.content = o.content.replace(/(.*?)<br\s?\/?>/gi,'<p>$1</p>').replace(/<pre>(.*?)<\/pre>/gi,'<p>$1</p>');
+			paste_auto_cleanup_on_paste: true,
+			paste_postprocess: function(pl, o) {
+				function stripTags(index, node) {
+					if (node.nodeName.toLowerCase() != 'p') {
+						if ($(node).contents().length == 0) {
+							$(node).remove();
+						} else {
+							var contents = $(node).contents().unwrap();
+							contents.not(':text').each(stripTags);
+						}
+					} else {
+						$(node).children().each(stripTags);
+					}
+				}
+				
+				function replacePTags(index, node) {
+					if (node.nodeName.toLowerCase() == 'p') {
+						$(node).contents().unwrap().wrapAll('<span _struct="true" _tag="p"></span>').not(':text').each(replacePTags);
+					}
+				}
+				
+				$(o.node).children().each(stripTags);
+				$(o.node).children().each(replacePTags);
 			},
 			
 			extended_valid_elements: w.root+',span['+w.formattedSchema+']',
