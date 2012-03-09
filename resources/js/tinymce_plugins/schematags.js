@@ -11,6 +11,8 @@
 			t.EDIT = 1;
 			t.mode = null;
 			
+			t.isDirty = false;
+			
 			t.schema = null;
 			
 			t.tag = null;
@@ -123,6 +125,7 @@
 							t.showHelpDialog();
 						}
 					},{
+						id: 'schemaOkButton',
 						text: 'Ok',
 						click: function() {
 							t.result();
@@ -130,9 +133,7 @@
 					},{
 						text: 'Cancel',
 						click: function() {
-							t.editor.selection.moveToBookmark(t.bm);
-							$('#schemaDialog').dialog('close');
-							$('#schemaHelpDialog').dialog('close');
+							t.cancel();
 						}
 					}
 				]
@@ -150,8 +151,10 @@
 			var t = this;
 			t.currentKey = key;
 			
+			t.isDirty = false;
+			
 			var entry = t.schema[key];
-			var formString = '<form>';
+			var formString = '<div name="form">';
 			var attribute;
 			
 			$('#schemaDialog div.content').empty();
@@ -181,20 +184,32 @@
 					// formString += '<input type="hidden" name="id" value=""/>';
 				}
 			}
-			formString += '</form>';
+			formString += '</div>';
 			
 			$('#schemaDialog div.content').append(formString);
 			
-			$('#schemaDialog input').keyup(function(event) {
+			$('#schemaDialog input, #schemaDialog select, #schemaDialog option').change(function(event) {
+				t.isDirty = true;
+			});
+			$('#schemaDialog select, #schemaDialog option').click(function(event) {
+				t.isDirty = true;
+			});
+			
+			$('#schemaDialog input, #schemaDialog select, #schemaDialog option').keyup(function(event) {
 				if (event.keyCode == '13') {
 					event.preventDefault();
-					t.result();
+					if (t.isDirty) t.result();
+					else t.cancel(); 
 				}
 			});
 			
 			$('#schemaDialog').dialog('option', 'title', entry.displayName);
 			if (pos) $('#schemaDialog').dialog('option', 'position', [pos.x, pos.y]);
 			$('#schemaDialog').dialog('open');
+			
+			// focus on the ok button if there are no inputs
+			$('#schemaOkButton').focus();
+			$('#schemaDialog input, #schemaDialog select').first().focus();
 		},
 		showHelpDialog: function() {
 			var key = this.schema[this.currentKey].displayName;
@@ -252,7 +267,7 @@
 			var t = this;
 			var entry = t.schema[t.currentKey];
 			var params = {};
-			$('#schemaDialog form input, #schemaDialog form select').each(function(index, el) {
+			$('#schemaDialog input, #schemaDialog select').each(function(index, el) {
 				params[$(this).attr('name')] = $(this).val();
 			});
 			
@@ -291,6 +306,12 @@
 			}
 			
 			$('#schemaDialog').dialog('close');
+		},
+		cancel: function() {
+			var t = this;
+			t.editor.selection.moveToBookmark(t.bm);
+			$('#schemaDialog').dialog('close');
+			$('#schemaHelpDialog').dialog('close');
 		},
 		createControl: function(n, cm) {
 			if (n == 'schematags') {

@@ -12,6 +12,8 @@ var Writer = function(config) {
 		
 		baseUrl: 'http://apps.testing.cwrc.ca/',
 		
+		schemaCSS: 'css/orlando.css', // css for schema tags used in the editor
+		
 		// tag types and their titles
 		titles: {
 			person: 'Person',
@@ -42,6 +44,8 @@ var Writer = function(config) {
 		NO_COMMON_PARENT: 1,
 		VALID: 2,
 		
+		fixEmptyStructTag: false, // whether to check the current empty struct tag for the &#65279; we inserted and then remove it
+		
 		fm: null, // filemanager
 		entitiesList: null, // entities list
 		tree: null, // structure tree
@@ -50,6 +54,45 @@ var Writer = function(config) {
 	};
 	
 	var _onInitHandler = function(ed) {
+		// parse schema css
+		if (w.schemaCSS) {
+			var name = w.schemaCSS.split('/');
+			name = name[name.length-1];
+			var stylesheets = ed.getDoc().styleSheets;
+			var stylesheet = null;
+			for (var i = 0; i < stylesheets.length; i++) {
+				var s = stylesheets[i];
+				if (s.href.indexOf(name) != -1) {
+					stylesheet = s;
+					break;
+				}
+			}
+			if (stylesheet) {
+				var rules = stylesheet.cssRules;
+				var newRules = '';
+				// adapt the rules to our format, should only modify element names in selectors
+				for (var i = 0; i < rules.length; i++) {
+					var selector = rules[i].selectorText;
+					var newSelector = selector.replace(/(^|,|\s)(\w+)/g, function(str, p1, p2, offset, s) {
+						return p1+'span[_tag="'+p2.toLowerCase()+'"]';
+					});
+					var css = rules[i].cssText;
+					var newCss = css.replace(selector, newSelector);
+					newRules += newCss+'\n';
+				}
+				
+				var doc = ed.getDoc();
+				var styleEl = doc.createElement('style');
+				var styleType = doc.createAttribute('type');
+				styleType.value = 'text/css';
+				styleEl.setAttributeNode(styleType);
+				var styleText = doc.createTextNode(newRules);
+				styleEl.appendChild(styleText);
+				doc.head.appendChild(styleEl);
+				stylesheet.disabled = true;
+			}
+		}
+		
 		var settings = w.settings.getSettings();
 		if (settings.showEntityBrackets) ed.$('body').addClass('showEntityBrackets');
 		if (settings.showStructBrackets) ed.$('body').addClass('showStructBrackets');
@@ -108,6 +151,15 @@ var Writer = function(config) {
 				_findDeletedTags();
 				w.entitiesList.update();
 				w.tree.update();
+			}
+			if (w.fixEmptyStructTag && ed.currentStruct) {
+				ed.$('#'+ed.currentStruct).contents().each(function(index, el) {
+					if (el.nodeValue && el.nodeValue.charCodeAt(0) == 65279) {
+						el.nodeValue = '';
+						w.fixEmptyStructTag = false;
+						return false;
+					}
+				});
 			}
 		});
 		
@@ -637,9 +689,13 @@ var Writer = function(config) {
 		var id = tinymce.DOM.uniqueId('struct_');
 		attributes.id = id;
 		w.structs[id] = attributes;
+		w.editor.currentStruct = id;
 		
 		w.editor.selection.moveToBookmark(bookmark);
 		var selection = w.editor.selection.getContent();
+		// add zero width no-break space, required for proper cursor positioning inside tag
+		// doesn't work in IE
+		if (selection == '') selection = '&#65279;';
 		
 		var tag = 'span';
 		var open_tag = '<'+tag;
@@ -652,9 +708,11 @@ var Writer = function(config) {
 		w.editor.execCommand('mceReplaceContent', false, content);
 		w.tree.update();
 		
-		if (selection == '') {
+		if (selection == '&#65279;') {
+			w.fixEmptyStructTag = true;
 			var range = w.editor.selection.getRng(true);
 			range.selectNodeContents(w.editor.$('#'+id)[0]);
+			range.collapse(true);
 		}
 	};
 	
@@ -805,7 +863,7 @@ var Writer = function(config) {
 		w.d = new DialogManager({writer: w});
 		w.settings = new SettingsDialog(w, {
 			showEntityBrackets: true,
-			showStructBrackets: true
+			showStructBrackets: false
 		});
 		
 		$('#separator').click(w.toggleSidepanel);
@@ -845,7 +903,7 @@ var Writer = function(config) {
 //			elements: 'editor',
 			theme: 'advanced',
 			
-			content_css: 'css/editor.css, css/orlando.css',
+			content_css: 'css/editor.css'+', '+w.schemaCSS,
 			
 			width: '100%',
 			

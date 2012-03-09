@@ -268,13 +268,44 @@ label {
 	border: none !important;
 }
 
-#results, #files {
+#search_query {
+	width: 200px;
+}
+
+#files {
 	margin: 10px 0;
+	border: 1px solid #fff;
+}
+
+.searchResultsParent, #files {
+	margin: 0;
 	border: 1px solid #fff;
 }
 
 #entitiesConverter {
 	display: none;
+}
+
+#lookupServices > div {
+	margin-bottom: 0px;
+}
+
+#lookupServices .ui-accordion-content {
+	padding: 5px 10px;
+}
+
+#lookup_alternate input[type='radio'] {
+	float: left;
+	margin-top: 10px;
+	margin-left: 0px;
+}
+
+#lookup_alternate input[type='text'] {
+	width: 225px;
+}
+
+#lookup_alternate ins {
+	display: inline-block;
 }
 
 .searchResults {
@@ -557,4 +588,8 @@ div.mceDropDown {
 
 .splitButtons .ui-dialog-buttonset button.left {
 	float: left;
+}
+
+.ui-icon-help {
+	cursor: pointer;
 }

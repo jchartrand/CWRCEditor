@@ -41,7 +41,7 @@ var SettingsDialog = function(writer, config) {
 	'<input type="checkbox" id="showentitybrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
-	'<label for="showstructbrackets">Show Tag Brackets</label>'+
+	'<label for="showstructbrackets">Show Tags</label>'+
 	'<input type="checkbox" id="showstructbrackets" />'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
