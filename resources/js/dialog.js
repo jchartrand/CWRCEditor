@@ -6,7 +6,8 @@ var DialogManager = function(config) {
 	var dialogs = null;
 	
 	var scripts = ['dialog_addevent.js', 'dialog_addorg.js', 'dialog_addperson.js', 'dialog_addplace.js',
-	               'dialog_date.js', 'dialog_message.js', 'dialog_note.js', 'dialog_search.js', 'dialog_title.js'];
+	               'dialog_date.js', 'dialog_message.js', 'dialog_note.js', 'dialog_search.js',
+	               'dialog_title.js', 'dialog_triple.js'];
 	var loadCount = 0;
 	for (var i = 0; i < scripts.length; i++) {
 		var url = 'js/dialogs/'+scripts[i];
@@ -28,7 +29,8 @@ var DialogManager = function(config) {
 			addperson: new AddPersonDialog(config),
 			addplace: new AddPlaceDialog(config),
 			addevent: new AddEventDialog(config),
-			addorg: new AddOrganizationDialog(config)
+			addorg: new AddOrganizationDialog(config),
+			triple: new TripleDialog(config)
 		};
 		
 		dialogs.person = dialogs.search;

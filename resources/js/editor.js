@@ -4,6 +4,7 @@ var Writer = function(config) {
 		editor: null, // reference to the tinyMCE instance we're creating, set in setup
 		entities: {}, // entities store
 		structs: {}, // structs store
+		triples: [], // triples store
 
 		schema: {}, // schema for additional custom tags
 		formattedSchema: '', // all the element & attribute names from the schema (used in extended_valid_elements config setting)
@@ -49,6 +50,7 @@ var Writer = function(config) {
 		fm: null, // filemanager
 		entitiesList: null, // entities list
 		tree: null, // structure tree
+		relations: null, // relations list
 		d: null, // dialog
 		settings: null // settings dialog
 	};
@@ -805,6 +807,8 @@ var Writer = function(config) {
 		var newHeight = $(window).height() - 30;
 		$('#leftcol > div').height(newHeight);
 		$('#'+w.editor.id+'_ifr').height(newHeight - 53);
+		var tabHeight = $('#tabs ul').height();
+		$('#tabs > div').height(newHeight - tabHeight - 7);
 	};
 	
 	w.toggleSidepanel = function() {
@@ -860,6 +864,7 @@ var Writer = function(config) {
 		w.fm = new FileManager({writer: w});
 		w.tree = new StructureTree({writer: w});
 		w.entitiesList = new EntitiesList({writer: w});
+		w.relations = new Relations({writer: w});
 		w.d = new DialogManager({writer: w});
 		w.settings = new SettingsDialog(w, {
 			showEntityBrackets: true,
@@ -1068,6 +1073,16 @@ var Writer = function(config) {
 					}
 				});
 				
+				ed.addButton('addtriple', {
+					title: 'Add Relation',
+					image: 'img/link_add.png',
+					'class': 'entityButton',
+					onclick: function() {
+						$('#tabs').tabs('select', 2);
+						w.d.show('triple');
+					}
+				});
+				
 //				ed.addButton('toggleeditor', {
 //					title: 'Show Advanced Mode',
 //					image: 'img/html.png',
@@ -1112,7 +1127,7 @@ var Writer = function(config) {
 			custom_elements: '~'+w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
-			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
