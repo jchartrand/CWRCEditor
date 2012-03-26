@@ -104,15 +104,29 @@ var SearchDialog = function(config) {
 		
 		if (lookupService == 'lookup_project') {
 			$.ajax({
-				url: w.baseUrl+'editor/solr-'+w.project+'/people/select/',
+				url: 'http://apps.testing.cwrc.ca/services/entity_lookup/uap',
 				data: {
-					q: query,
-					wt: 'json'
+					q: 'authlabel:'+query,
+					d: 'orlando',
+					f: 'by_auth_label',
+					v: 'auth_label'
 				},
-				dataType: 'json',
-				success: handleResults,
-				error: function() {
-					$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
+				dataType: 'text json',
+				success: function(data, status, xhr) {
+					handleResults(data);
+				},
+				error: function(xhr, status, error) {
+					if (status == 'parsererror') {
+						var lines = xhr.responseText.split(/\n/);
+						if (lines[lines.length-1] == '') {
+							lines.pop();
+						}
+						var string = lines.join(',');
+						var data = $.parseJSON('['+string+']');
+						handleResults(data);
+					} else {
+						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
+					}
 				}
 			});
 		} else if (lookupService == 'lookup_viaf') {
@@ -155,26 +169,22 @@ var SearchDialog = function(config) {
 		}
 	};
 	
-	var handleResults = function(data, status, xhr) {
+	var handleResults = function(results) {
 		var formattedResults = '';
 		var last = '';
-		var results = data.response.docs;
 		
 		if (results.length == 0) {
 			$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
 		} else {
-			var r, i, j;
+			var r, i;
 			for (i = 0; i < results.length; i++) {
-				
 				r = results[i];
 				
 				if (i == results.length - 1) last = 'last';
 				else last = '';
 				
 				formattedResults += '<li class="unselectable '+last+'">';
-				for (j in r) {
-					formattedResults += '<span>'+r[j]+'</span>';
-				}
+				formattedResults += '<span>'+r.entry.authorityLabel+'</span>';
 				formattedResults += '</li>';
 			}
 			

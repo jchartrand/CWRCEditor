@@ -70,28 +70,32 @@ var Writer = function(config) {
 				}
 			}
 			if (stylesheet) {
-				var rules = stylesheet.cssRules;
-				var newRules = '';
-				// adapt the rules to our format, should only modify element names in selectors
-				for (var i = 0; i < rules.length; i++) {
-					var selector = rules[i].selectorText;
-					var newSelector = selector.replace(/(^|,|\s)(\w+)/g, function(str, p1, p2, offset, s) {
-						return p1+'span[_tag="'+p2.toLowerCase()+'"]';
-					});
-					var css = rules[i].cssText;
-					var newCss = css.replace(selector, newSelector);
-					newRules += newCss+'\n';
-				}
-				
-				var doc = ed.getDoc();
-				var styleEl = doc.createElement('style');
-				var styleType = doc.createAttribute('type');
-				styleType.value = 'text/css';
-				styleEl.setAttributeNode(styleType);
-				var styleText = doc.createTextNode(newRules);
-				styleEl.appendChild(styleText);
-				doc.head.appendChild(styleEl);
-				stylesheet.disabled = true;
+				var parseCss = function() {
+					var rules = stylesheet.cssRules;
+					var newRules = '';
+					// adapt the rules to our format, should only modify element names in selectors
+					for (var i = 0; i < rules.length; i++) {
+						var selector = rules[i].selectorText;
+						var newSelector = selector.replace(/(^|,|\s)(\w+)/g, function(str, p1, p2, offset, s) {
+							return p1+'span[_tag="'+p2.toLowerCase()+'"]';
+						});
+						var css = rules[i].cssText;
+						var newCss = css.replace(selector, newSelector);
+						newRules += newCss+'\n';
+					}
+					
+					var doc = ed.getDoc();
+					var styleEl = doc.createElement('style');
+					var styleType = doc.createAttribute('type');
+					styleType.value = 'text/css';
+					styleEl.setAttributeNode(styleType);
+					var styleText = doc.createTextNode(newRules);
+					styleEl.appendChild(styleText);
+					doc.head.appendChild(styleEl);
+					stylesheet.disabled = true;
+				};
+				// error thrown unless...
+				setTimeout(parseCss, 0);
 			}
 		}
 		

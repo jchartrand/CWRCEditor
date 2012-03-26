@@ -154,9 +154,17 @@ var EntitiesList = function(config) {
 	
 	var _buildEntity = function(entity) {
 		var infoString = '<ul>';
-		for (var infoKey in entity.info) {
-			infoString += '<li><strong>'+infoKey+'</strong>: '+entity.info[infoKey]+'</li>';
-		}
+		var buildString = function(infoObject) {
+			for (var infoKey in infoObject) {
+				var info = infoObject[infoKey];
+				if ($.isPlainObject(info)) {
+					buildString(info);
+				} else {
+					infoString += '<li><strong>'+infoKey+'</strong>: '+info+'</li>';
+				}
+			}
+		};
+		buildString(entity.info);
 		infoString += '</ul>';
 		return '<li class="'+entity.props.type+'" name="'+entity.props.id+'">'+
 			'<span class="box"/><span class="entityTitle">'+entity.props.title+'</span><div class="info">'+infoString+'</div>'+
