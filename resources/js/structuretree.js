@@ -27,28 +27,26 @@ var StructureTree = function(config) {
 				if ($(node).attr('id') == 'root') return {};
 				var info = w.structs[node.attr('name')];
 
-				var validKeys = w.editor.execCommand('getFilteredSchema', info._tag);
+				var validKeys = w.editor.execCommand('getFilteredSchema', {filterKey: info._tag, type: 'element', returnType: 'object'});
 				var inserts = {};
 				for (var key in validKeys) {
-					if (w.schema[key]) {
-						var icon = 'img/tag_blue.png';
-						if (w.schema[key].attributes.length > 1) {
-							icon = 'img/tag_blue_edit.png';
-						}
-						inserts[key] = {
-							label: w.schema[key].displayName,
-							icon: icon,
-							action: function(obj) {
-								var key = obj.text().toLowerCase();
-								var pos = {
-									x: parseInt($('#tree_popup').css('left')),
-									y: parseInt($('#tree_popup').css('top'))
-								};
-								w.editor.selection.collapse();
-								w.editor.execCommand('addSchemaTag', key, pos);
-							}
-						};
+					var doc = key;
+					if (validKeys[key].def['a:documentation']) {
+						doc = validKeys[key].def['a:documentation']['#text'] || validKeys[key].def['a:documentation'];
 					}
+					inserts[key] = {
+						label: '<span title="'+doc+'">'+key+'</span>',
+						icon: 'img/tag_blue.png',
+						action: function(obj) {
+							var key = obj.text();
+							var pos = {
+								x: parseInt($('#tree_popup').css('left')),
+								y: parseInt($('#tree_popup').css('top'))
+							};
+							w.editor.selection.collapse();
+							w.editor.execCommand('addSchemaTag', key, pos);
+						}
+					};
 				}
 
 				var items = {
@@ -156,9 +154,9 @@ var StructureTree = function(config) {
 					id = tinymce.DOM.uniqueId('struct_');
 					var tag = $(this).attr('_tag');
 					if (tag == null && $(this).is(w.root)) tag = w.root;
-					var entry = w.schema[tag];
+					var entry = w.schema.define[tag];
 					if (entry) {
-						var display = entry.displayName;
+						var display = tag;
 						$(this).attr('id', id).attr('_tag', tag).attr('_display', display).attr('_struct', true);
 						w.structs[id] = {
 							id: id,

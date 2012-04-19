@@ -387,14 +387,72 @@ label {
 	margin-bottom: 10px;
 }
 
+#schemaDialog {
+	padding: 0.5em 0.5em 0;
+}
+
+#schemaDialog .content {
+	margin-bottom: 0;
+}
+
 #schemaDialog label {
-	text-align: right;
-	display: inline-block;
+	display: block;
 }
 
 #schemaDialog input, #schemaDialog select {
 	width: 150px;
 	border: 1px solid #ccc;
+}
+
+#attributeSelector {
+	border: 1px solid #999;
+	top: 5px;
+	bottom: 0;
+	width: 130px;
+	position: absolute;
+}
+
+#attributeSelector ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+    overflow: auto;
+    position: absolute;
+	left: 0;
+    right: 0;
+    top: 23px;
+	bottom: 0;
+}
+
+#attributeSelector li {
+	padding: 3px;
+	background-color: #fff;
+}
+
+#attributeSelector li:hover {
+	background-color: #ddd;
+	cursor: pointer;
+}
+
+#attributeSelector li.selected {
+	background-color: #ccc;
+}
+
+#attsContainer {
+	position: absolute;
+	top: 5px;
+	right: 0;
+	left: 147px;
+	bottom: 0;
+	overflow: auto;
+}
+
+#attsContainer label {
+	width: 135px;
+}
+
+.required {
+	color: red;
 }
 
 #personName input {
@@ -455,7 +513,7 @@ label {
 	left: 67%;
 }
 
-#tripleDialog h2 {
+#tripleDialog h2, #attributeSelector h2 {
 	padding: 3px;
 	background-color: #ccc;
 	height: 16px;
@@ -624,7 +682,7 @@ div.mceDropDown {
 	margin: 2px 2px 0 2px !important;
 }
 
-#vakata-contextmenu .submenu a span {
+#vakata-contextmenu .submenu > a span {
 	background-image: url("../img/menu_arrow.gif");
     color: #fff;
     display: block;

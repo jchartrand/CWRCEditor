@@ -25,7 +25,7 @@
 				
 				menu.onShowMenu.add(function(m) {
 					var filterKey = ed.currentNode.getAttribute('_tag');
-					var validKeys = t.editor.execCommand('getFilteredSchema', filterKey);
+					var validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
 					var item;
 					var count = 0, disCount = 0;
 					for (var itemId in m.items) {
@@ -43,15 +43,12 @@
 					}
 				});
 				
-				for (var key in t.schema) {
-					var icon = url + 'tag_blue.png';
-					if (t.schema[key].attributes.length > 1) {
-						icon = url + 'tag_blue_edit.png';
-					}
+				for (var i = 0; i < t.schema.elements.length; i++) {
+					var key = t.schema.elements[i];
 					var menuitem = menu.add({
-						title: t.schema[key].displayName,
+						title: key,
 						key: key,
-						icon_src: icon,
+						icon_src: url + 'tag_blue.png',
 						onclick : function() {
 							t.editor.execCommand('addSchemaTag', this.key, config.pos);
 						}
@@ -108,14 +105,14 @@
 			
 			$('#schemaDialog').dialog({
 				modal: true,
-				resizable: false,
+				resizable: true,
 				dialogClass: 'splitButtons',
 				closeOnEscape: false,
 				open: function(event, ui) {
 					$('#schemaDialog').parent().find('.ui-dialog-titlebar-close').hide();
 				},
-				height: 310,
-				width: 435,
+				height: 460,
+				width: 500,
 				autoOpen: false,
 				buttons: [
 					{
@@ -153,40 +150,100 @@
 			
 			t.isDirty = false;
 			
-			var entry = t.schema[key];
-			var formString = '<div name="form">';
-			var attribute;
-			
 			$('#schemaDialog div.content').empty();
 			
-			// build form from schema entry
-			for (var i = 0; i < entry.attributes.length; i++) {
-				attribute = entry.attributes[i];
-				if (attribute.name != 'id') {
-					formString += '<div><label>'+attribute.displayName+'</label>';
-					var defaultVal = attribute.defaultValue == undefined ? '' : attribute.defaultValue;
-					if (t.mode == t.EDIT) defaultVal = $(t.tag).attr(attribute.name);
-					// select
-					if (attribute.values) {
-						formString += '<select name="'+attribute.name+'">';
-						var attVal, selected;
-						for (var j = 0; j < attribute.values.length; j++) {
-							attVal = attribute.values[j];
-							selected = defaultVal == attVal ? ' selected="selected"' : '';
-							formString += '<option value="'+attVal+'"'+selected+'>'+attVal+'</option>';
-						}
-						formString += '</select></div>';
-					// text input
-					} else {
-						formString += '<input type="text" name="'+attribute.name+'" value="'+defaultVal+'"/></div>';
-					}
+			var atts = t.editor.execCommand('getFilteredSchema', {filterKey: key, type: 'attribute', returnType: 'array'});
+			
+			// build atts
+			var level1Atts = '<div id="level1Atts">';
+			var highLevelAtts = '<div id="highLevelAtts">';
+			var attributeSelector = '<div id="attributeSelector"><h2>Attributes</h2><ul>';
+			var att, currAttString, attDef;
+			var isLevel1 = false;
+			var required = false;
+			for (var i = 0; i < atts.length; i++) {
+				att = atts[i];
+				currAttString = '';
+				required = !att.optional;
+				if (att.level == 1 || required) {
+					isLevel1 = true; // required attributes should be displayed by default
 				} else {
-					// formString += '<input type="hidden" name="id" value=""/>';
+					isLevel1 = false;
+				}
+				attDef = att.def;
+				var attName = attDef['-name'];
+				var doc = '';
+				if (attDef['a:documentation']) {
+					var text = attDef['a:documentation']['#text'] || attDef['a:documentation'];
+					doc = 'title="'+text+'"';
+				}
+				if (attName != 'id') {
+					var display = 'block';
+					var requiredClass = required ? ' required' : '';
+					if (isLevel1 || t.mode == t.EDIT && $(t.tag).attr(attName) != undefined) {
+						display = 'block';
+						attributeSelector += '<li id="select_'+attName+'" class="selected'+requiredClass+'" '+doc+'>'+attName+'</li>';
+					} else {
+						display = 'none';
+						attributeSelector += '<li id="select_'+attName+'" '+doc+'>'+attName+'</li>';
+					}
+					currAttString += '<div id="form_'+attName+'" style="display:'+display+';" '+doc+'><label>'+attName+'</label>';
+					
+					var defaultVal = attDef['-a:defaultValue'] == undefined ? '' : attDef['-a:defaultValue'];
+					if (t.mode == t.EDIT) defaultVal = $(t.tag).attr(attName) || '';
+					if (attDef.list) {
+						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+					} else if (attDef.choice && attDef.choice.value) {
+						currAttString += '<select name="'+attName+'">';
+						var attVal, selected;
+						for (var j = 0; j < attDef.choice.value.length; j++) {
+							attVal = attDef.choice.value[j];
+							selected = defaultVal == attVal ? ' selected="selected"' : '';
+							currAttString += '<option value="'+attVal+'"'+selected+'>'+attVal+'</option>';
+						}
+						currAttString += '</select>';
+					} else if (attDef.ref) {
+						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+					} else {
+						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+					}
+					if (required) currAttString += ' <span class="required">*</span>';
+					currAttString += '</div>';
+					
+					if (isLevel1) {
+						level1Atts += currAttString;
+					} else {
+						highLevelAtts += currAttString;
+					}
 				}
 			}
-			formString += '</div>';
 			
-			$('#schemaDialog div.content').append(formString);
+			level1Atts += '</div>';
+			highLevelAtts += '</div>';
+			attributeSelector += '</ul></div>';
+			
+			$('#schemaDialog div.content').append(attributeSelector + '<div id="attsContainer">'+level1Atts + highLevelAtts+'</div>');
+			
+			$('#attributeSelector li').click(function() {
+				if ($(this).hasClass('required')) return;
+				
+				var name = $(this).attr('id').split('select_')[1].replace(/:/g, '\\:');
+				var div = $('#form_'+name);
+				$(this).toggleClass('selected');
+				if ($(this).hasClass('selected')) {
+					div.show();
+				} else {
+					div.hide();
+				}
+			});
+			
+			$('#schemaDialog .info').hover(function(event) {
+				var offset = $(this).offset();
+				$(this).toggleClass('hover ui-corner-all ui-state-highlight');
+				$(this).offset(offset);
+			}, function(event) {
+				$(this).toggleClass('hover ui-corner-all ui-state-highlight');
+			});
 			
 			$('#schemaDialog input, #schemaDialog select, #schemaDialog option').change(function(event) {
 				t.isDirty = true;
@@ -203,7 +260,7 @@
 				}
 			});
 			
-			$('#schemaDialog').dialog('option', 'title', entry.displayName);
+			$('#schemaDialog').dialog('option', 'title', key);
 			if (pos) $('#schemaDialog').dialog('option', 'position', [pos.x, pos.y]);
 			$('#schemaDialog').dialog('open');
 			
@@ -212,7 +269,7 @@
 			$('#schemaDialog input, #schemaDialog select').first().focus();
 		},
 		showHelpDialog: function() {
-			var key = this.schema[this.currentKey].displayName;
+			var key = this.currentKey;
 			$.ajax({
 				url: this.editor.writer.baseUrl+'documentation/glossary_item_xml.php?KEY_VALUE_STR='+key,
 				success: function(data, status, xhr) {
@@ -265,33 +322,29 @@
 		},
 		result: function() {
 			var t = this;
-			var entry = t.schema[t.currentKey];
 			var params = {};
-			$('#schemaDialog input, #schemaDialog select').each(function(index, el) {
+			$('#attsContainer > div > div:visible').children('input, select').each(function(index, el) {
 				params[$(this).attr('name')] = $(this).val();
 			});
 			
 			// validation
 			var invalid = [];
-			var i, att;
-			for (i = 0; i < entry.attributes.length; i++) {
-				att = entry.attributes[i];
-				if (att.required && params[att.name] == '') {
-					invalid.push(att.name);
+			$('#attsContainer span.required').parent().children('label').each(function(index, el) {
+				if (params[$(this).text()] == '') {
+					invalid.push($(this).text());
 				}
-			}
-			
+			});
 			if (invalid.length > 0) {
-				for (i = 0; i < invalid.length; i++) {
+				for (var i = 0; i < invalid.length; i++) {
 					var name = invalid[i];
-					$('#schemaDialog input[name="'+name+'"]').css({borderColor: 'red'}).keyup(function(event) {
+					$('#attsContainer *[name="'+name+'"]').css({borderColor: 'red'}).keyup(function(event) {
 						$(this).css({borderColor: '#ccc'});
 					});
 				}
 				return;
 			}
 			
-			params._display = entry.displayName;
+			params._display = t.currentKey;
 			params._tag = t.currentKey;
 			params._struct = true;
 			params._editable = true;

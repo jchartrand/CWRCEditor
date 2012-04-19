@@ -6,8 +6,8 @@ var Writer = function(config) {
 		structs: {}, // structs store
 		triples: [], // triples store
 
+		schemaUrl: config.schemaUrl || 'js/cwrc_basic_tei.js',
 		schema: {}, // schema for additional custom tags
-		formattedSchema: '', // all the element & attribute names from the schema (used in extended_valid_elements config setting)
 		
 		project: config.project, // the current project (cwrc or russell)
 		
@@ -34,7 +34,7 @@ var Writer = function(config) {
 		validationSchema: 'common',
 		
 		// root block element, should come from schema
-		root: 'div0',
+		root: 'TEI',
 		
 		// possible editor modes
 		XMLRDF: 0, // allows for overlapping elements, i.e. entities
@@ -103,7 +103,7 @@ var Writer = function(config) {
 		if (settings.showEntityBrackets) ed.$('body').addClass('showEntityBrackets');
 		if (settings.showStructBrackets) ed.$('body').addClass('showStructBrackets');
 		
-		ed.setContent('<'+w.root+'><span _struct="true" _tag="div1">Paste or type your text here.</span></'+w.root+'>');
+		ed.setContent('<'+w.root+'><span _struct="true" _tag="text">Paste or type your text here.</span></'+w.root+'>');
 		
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
@@ -171,14 +171,15 @@ var Writer = function(config) {
 		
 		// create css to display schema tags
 		$('head', ed.dom.doc).append('<style id="schemaTags" type="text/css" />');
-		var tag = w.schema[w.root].displayName;
-		var schemaTags = w.root+' { display: block; }';
-		schemaTags += '.showStructBrackets '+w.root+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-		schemaTags += '.showStructBrackets '+w.root+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-		for (var key in w.schema) {
-			tag = w.schema[key].displayName;
-			schemaTags += '.showStructBrackets span[_tag='+key+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-			schemaTags += '.showStructBrackets span[_tag='+key+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+		var tag = w.root;
+		// xhtml only allows lower case elements
+		var schemaTags = w.root.toLowerCase()+' { display: block; }';
+		schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+		schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+		for (var i = 0; i < w.schema.elements.length; i++) {
+			tag = w.schema.elements[i];
+			schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+			schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
 		}
 		$('#schemaTags', ed.dom.doc).text(schemaTags);
 		
@@ -557,10 +558,10 @@ var Writer = function(config) {
 		if (info == null) {
 			w.removeEntity(id);
 		} else {
-			var startTag = w.editor.$('[name='+id+'][class~=start]');
-			for (var key in info) {
-				startTag.attr(key, w.sanitizeAttributeValue(info[key]));
-			}
+//			var startTag = w.editor.$('[name='+id+'][class~=start]');
+//			for (var key in info) {
+//				startTag.attr(key, w.sanitizeAttributeValue(info[key]));
+//			}
 			
 			w.entities[id].info = info;
 			w.entitiesList.update();
@@ -771,32 +772,79 @@ var Writer = function(config) {
 	w.removeHighlights = function() {
 		w.highlightEntity();
 	};
-	
-	w.getFilteredSchema = function(filterKey) {
-		var validKeys = {};
-		
-		var getSubElements = function(key, validKeys) {
-			var entry = w.schema[key];
-			if (entry) {
-//				var addedNew = false;
-				var e;
-				for (var i = 0; i < entry.elements.length; i++) {
-					e = entry.elements[i].name;
-					if (validKeys[e] == null) {
-						validKeys[e] = true;
-//						addedNew = true;
-//						getSubElements(e, validKeys);
+
+	/**
+	 * @param obj The current object being processed
+	 * @param refs An array of references that have already been processed
+	 * @param defs The definitions to return
+	 * @param level The current level of sub-reference
+	 * @param type The type of definition type to look for: "element" or "attribute"
+	 * @param tag The original tag/element name
+	 * @param objKey The key that was used to get the current object
+	 */
+	var _getRefsFromDef = function(obj, refs, defs, level, type, tag, objKey) {
+		if ($.isPlainObject(obj)) {
+			for (var key in obj) {
+				if (key == 'ref') {
+					var ref = obj[key];
+					if (!$.isArray(ref)) {
+						ref = [ref];
 					}
+					for (var i = 0; i < ref.length; i++) {
+						var r = ref[i]['-name'];
+						if (refs.indexOf(r) == -1) {
+							refs.push(r);
+							var refdef = w.schema.define[r];
+							if (refdef[type]) {
+								defs.push({defname: refdef[type]['-name'], def: refdef[type], level: level+0});
+							} else {
+								_getRefsFromDef(refdef, refs, defs, level+1, type, tag, 'define');
+							}
+						}
+					}
+				} else if (key == type && obj[type]['-name'] != tag) {
+					defs.push({defname: obj[type]['-name'], def: obj[type], level: level+0, optional: objKey == 'optional'});
+				} else if (type == 'attribute' && key == 'element') {
+					// don't get attributes from other elements
+				} else {
+					_getRefsFromDef(obj[key], refs, defs, level+1, type, tag, key);
 				}
-//				if (!addedNew) {
-//					return;
-//				}
 			}
-		};
+		} else if ($.isArray(obj)) {
+			for (var i = 0; i < obj.length; i++) {
+				_getRefsFromDef(obj[i], refs, defs, level+0, type, tag, objKey);
+			}
+		}
+	};
+	
+	/**
+	 * @param filterKey The key to filter by / definition to look up
+	 * @param type The type of filtering to perform: "element" or "attribute"
+	 * @param returnType Either: "array" or "object"
+	 */
+	w.getFilteredSchema = function(p) {
+		var refs = [];
+		var defs = [];
+		var def = w.schema.define[p.filterKey];
+		if (p.type == 'attribute' && def.element) {
+			def = def.element;
+		}
+		var level = 0;
+		_getRefsFromDef(def, refs, defs, level, p.type, p.filterKey, "define");
 		
-		getSubElements(filterKey, validKeys);
-		
-		return validKeys;
+		if (p.returnType == 'array') {
+			defs.sort(function(a, b) {
+				return a.level - b.level;
+			});
+			return defs;
+		} else {
+			var validKeys = {};
+			for (var i = 0; i < defs.length; i++) {
+				var d = defs[i];
+				validKeys[d.defname] = d;
+			}
+			return validKeys;
+		}
 	};
 	
 	w.sanitizeAttributeValue = function(value) {
@@ -841,24 +889,11 @@ var Writer = function(config) {
 		}
 		
 		$.ajax({
-			url: 'js/schema.js',
+			url: w.schemaUrl,
 			success: function(data, status, xhr) {
 				var schema = eval(xhr.responseText)[0];
-				
-				var sortedSchema = {}, key, a = [];
 
-			    for (key in schema) {
-//			    	schema[key].displayName = schema[key].displayName.replace('-element', '');
-			        if (schema.hasOwnProperty(key)) {
-			            a.push(key);
-			        }
-			    }
-			    a.sort();
-
-			    for (key = 0; key < a.length; key++) {
-			    	sortedSchema[a[key]] = schema[a[key]];
-			    }
-			    w.schema = sortedSchema;
+			    w.schema = schema.grammar;
 				
 			    // need to get the schema before we can initialize the editor
 				w._initEditor();
@@ -879,32 +914,7 @@ var Writer = function(config) {
 		$('#tabs').tabs();
 	};
 	
-	w._initEditor = function() {
-		var schemaEntry, att;
-		var atts = {
-			'id': true,
-			'class': true,
-			'name': true,
-			'_entity': true,
-			'_type': true,
-			'_tag': true,
-			'_display': true,
-			'_struct': true,
-			'_editable': true
-		};
-		// TODO add atts for entities
-		for (var key in w.schema) {
-			schemaEntry = w.schema[key];
-			for (var i = 0; i < schemaEntry.attributes.length; i++) {
-				att = schemaEntry.attributes[i].name;
-				if (!atts[att]) atts[att] = true;
-			}
-		}
-		for (var key in atts) {
-			w.formattedSchema += key+'|';
-		}
-		w.formattedSchema = w.formattedSchema.substr(0, w.formattedSchema.length-1);
-		
+	w._initEditor = function() {		
 		$('#editor').tinymce({
 			script_url : 'js/tinymce/jscripts/tiny_mce/tiny_mce.js',
 //		tinyMCE.init({
@@ -1127,7 +1137,7 @@ var Writer = function(config) {
 				$(o.node).children().each(replacePTags);
 			},
 			
-			extended_valid_elements: w.root+',span['+w.formattedSchema+']',
+			valid_elements: '*[*]', // allow everything
 			custom_elements: '~'+w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',

@@ -6,9 +6,11 @@
 			t.editor = ed;
 			
 			ed.onNodeChange.add(function(ed, cm, e) {
-				var currentNode = e.getAttribute('_display');
-				if (currentNode == null) currentNode = e.nodeName.toLowerCase();
-				$('#editor_currentTagButton .mceIcon').html(currentNode);
+				if (e.nodeType == 1) {
+					var currentNode = e.getAttribute('_display');
+					if (currentNode == null) currentNode = e.nodeName.toLowerCase();
+					$('#editor_currentTagButton .mceIcon').html(currentNode);
+				}
 			});
 			
 			ed.addCommand('closeCurrentTag', function() {
