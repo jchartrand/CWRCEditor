@@ -40,9 +40,9 @@ var SearchDialog = function(config) {
 	    '</div>'+
 	    '<div id="certainty" style="position: absolute; bottom: 0; left: 10px; right: 10px; height: 65px;">'+
 	    	'<p>This identification is:</p>'+
-	    	'<input type="radio" id="c_definite" name="certainty" /><label for="c_definite">Definite</label>'+
-	    	'<input type="radio" id="c_reasonable" name="certainty" /><label for="c_reasonable">Reasonably Certain</label>'+
-	    	'<input type="radio" id="c_speculative" name="certainty" /><label for="c_speculative">Speculative</label>'+
+			'<input type="radio" id="c_definite" name="certainty" value="definite" /><label for="c_definite">Definite</label>'+
+			'<input type="radio" id="c_reasonable" name="certainty" value="reasonable" /><label for="c_reasonable">Reasonably Certain</label>'+
+			'<input type="radio" id="c_speculative" name="certainty" value="speculative" /><label for="c_speculative">Speculative</label>'+
 	    '</div>'+
 	'</div>');
 	
@@ -87,8 +87,10 @@ var SearchDialog = function(config) {
 			msg: msg
 		});
 	});
-	$('#lookup_alternate input[type=text]').focus(function() {
+	$('#lookup_alternate input[type="text"]').focus(function() {
 		$(this).prevAll('input').prop('checked', true);
+	}).keyup(function() {
+		$(this).css({borderColor: '#ccc'});
 	});
 	
 	$('#certainty').buttonset();
@@ -103,17 +105,23 @@ var SearchDialog = function(config) {
 		var query = searchInput.value;
 		
 		if (lookupService == 'lookup_project') {
+			var url = 'http://apps.testing.cwrc.ca/services/entity_lookup/uap'+encodeURIComponent('?q=authlabel:'+query+'&d=orlando&f=by_auth_label&v=auth_label');
 			$.ajax({
-				url: 'http://apps.testing.cwrc.ca/services/entity_lookup/uap',
-				data: {
-					q: 'authlabel:'+query,
-					d: 'orlando',
-					f: 'by_auth_label',
-					v: 'auth_label'
-				},
+				url: 'proxy.jsp?mimeType=text/plain&url='+url,
+//				data: {
+//					q: 'authlabel:'+query,
+//					d: 'orlando',
+//					f: 'by_auth_label',
+//					v: 'auth_label'
+//				},
 				dataType: 'text json',
 				success: function(data, status, xhr) {
-					handleResults(data);
+					if ($.isPlainObject(data)) data = [data];
+					if (data != null) {
+						handleResults(data, 'project');
+					} else {
+						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
+					}
 				},
 				error: function(xhr, status, error) {
 					if (status == 'parsererror') {
@@ -123,7 +131,7 @@ var SearchDialog = function(config) {
 						}
 						var string = lines.join(',');
 						var data = $.parseJSON('['+string+']');
-						handleResults(data);
+						handleResults(data, 'project');
 					} else {
 						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
 					}
@@ -137,54 +145,54 @@ var SearchDialog = function(config) {
 				},
 				dataType: 'jsonp',
 				success: function(data, status, xhr) {
-					var result = {response: {docs: []}};
-					for (var i = 0; i < data.result.length; i++) {
-						var r = data.result[i];
-						for (var key in r) {
-							if (key != 'term' && key != 'viafid') delete r[key];
-						}
-						result.response.docs.push(r);
+					if (data != null && data.result != null) {
+						handleResults(data.result, 'viaf');
+					} else {
+						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
 					}
-					handleResults(result, status, xhr);
 				},
 				error: function() {
 					$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
 				}
 			});
-		} else {
-			var data = {
-				response: {
-					docs: []
-				}
-			};
+		} else if (lookupService == 'lookup_orca') {
+			var data = [];
 			var length = Math.ceil(Math.random()*10);
 			for (var i = 0; i < length; i++) {
 				var d = {
 					date: new Date(Math.round(Math.random()*1000000000000)).toDateString()
 				};
 				d[currentType] = 'Random '+currentType+' '+i;
-				data.response.docs.push(d);
+				data.push(d);
 			}
 			handleResults(data);
 		}
 	};
 	
-	var handleResults = function(results) {
+	var handleResults = function(results, lookup) {
 		var formattedResults = '';
 		var last = '';
 		
 		if (results.length == 0) {
 			$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
 		} else {
-			var r, i;
+			var r, i, label;
 			for (i = 0; i < results.length; i++) {
 				r = results[i];
 				
+				if (lookup == 'project') {
+					label = r.entry.authorityLabel;
+				} else if (lookup == 'viaf') {
+					label = r.term;
+				} else {
+					label = r[currentType];
+				}
+
 				if (i == results.length - 1) last = 'last';
 				else last = '';
 				
 				formattedResults += '<li class="unselectable '+last+'">';
-				formattedResults += '<span>'+r.entry.authorityLabel+'</span>';
+				formattedResults += '<span>'+label+'</span>';
 				formattedResults += '</li>';
 			}
 			
@@ -212,19 +220,44 @@ var SearchDialog = function(config) {
 	var searchResult = function(cancelled) {
 		var data = null;
 		if (!cancelled) {
-			data = $('div.ui-accordion-content-active ul li.selected').data();
-			if (data) {
-				for (var key in data) {
-					if (key.match(/jQuery/)) {
-						delete data[key];
+			var certainty = $('#certainty input:checked').val();
+			var lookupService = $('#lookupServices div.ui-accordion-content-active').parent()[0].id;
+			if (lookupService == 'lookup_alternate') {
+				var type = $('#lookup_alternate input[name="altLookup"]:checked');
+				if (type.length == 1) {
+					var value = type.nextAll('input').val();
+					if (value == '') {
+						$('#lookup_alternate input[type="text"]').css({borderColor: '#ccc'});
+						type.nextAll('input').css({borderColor: 'red'});
+						return false;
+					} else {
+						data = {
+							type: 'alt_id',
+							typeName: type.nextAll('input').attr('name'),
+							value: value
+						};
 					}
+				} else {
+					$('#lookup_alternate input[type="text"]').css({borderColor: '#ccc'});
+					$('#lookup_alternate input[name="altLookup"]').first().prop('checked', true).nextAll('input').css({borderColor: 'red'});
+					return false;
 				}
 			} else {
-				$('div.ui-accordion-content-active div.searchResultsParent').css({borderColor: 'red'});
-				return false;
+				data = $('div.ui-accordion-content-active ul li.selected').data();
+				if (data) {
+					for (var key in data) {
+						if (key.match(/jQuery/)) {
+							delete data[key];
+						}
+					}
+				} else {
+					$('div.ui-accordion-content-active div.searchResultsParent').css({borderColor: 'red'});
+					return false;
+				}
 			}
 		}
 		if (!(mode == EDIT && data == null)) {
+			data.certainty = certainty;
 			w.finalizeEntity(w.editor.currentEntity, data);
 		}
 		search.dialog('close');
@@ -247,6 +280,8 @@ var SearchDialog = function(config) {
 			
 			$('div.searchResultsParent').css({borderColor: '#fff'});
 			$('div.searchResultsParent').children('ul').html('');
+			
+			$('#lookup_alternate input[type="text"]').css({borderColor: '#ccc'}).val('');
 			
 			$('#c_definite').trigger('click');
 			
