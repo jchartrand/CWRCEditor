@@ -105,15 +105,14 @@ var SearchDialog = function(config) {
 		var query = searchInput.value;
 		
 		if (lookupService == 'lookup_project') {
-			var url = 'http://apps.testing.cwrc.ca/services/entity_lookup/uap'+encodeURIComponent('?q=authlabel:'+query+'&d=orlando&f=by_auth_label&v=auth_label');
 			$.ajax({
-				url: 'proxy.jsp?mimeType=text/plain&url='+url,
-//				data: {
-//					q: 'authlabel:'+query,
-//					d: 'orlando',
-//					f: 'by_auth_label',
-//					v: 'auth_label'
-//				},
+				url: 'http://apps.testing.cwrc.ca/services/entity_lookup/uap',
+				data: {
+					q: 'authlabel:'+query,
+					d: 'orlando',
+					f: 'by_auth_label',
+					v: 'auth_label'
+				},
 				dataType: 'text json',
 				success: function(data, status, xhr) {
 					if ($.isPlainObject(data)) data = [data];
