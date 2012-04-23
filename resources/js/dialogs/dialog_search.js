@@ -68,7 +68,7 @@ var SearchDialog = function(config) {
 		header: 'div > h3',
 		fillSpace: true,
 		change: function(event, ui) {
-			doQuery();
+			if (ui.options.active < 3) doQuery();
 		}
 	});
 	
@@ -220,7 +220,6 @@ var SearchDialog = function(config) {
 	var searchResult = function(cancelled) {
 		var data = null;
 		if (!cancelled) {
-			var certainty = $('#certainty input:checked').val();
 			var lookupService = $('#lookupServices div.ui-accordion-content-active').parent()[0].id;
 			if (lookupService == 'lookup_alternate') {
 				var type = $('#lookup_alternate input[name="altLookup"]:checked');
@@ -255,9 +254,9 @@ var SearchDialog = function(config) {
 					return false;
 				}
 			}
+			if (data) data.certainty = $('#certainty input:checked').val();
 		}
 		if (!(mode == EDIT && data == null)) {
-			data.certainty = certainty;
 			w.finalizeEntity(w.editor.currentEntity, data);
 		}
 		search.dialog('close');
@@ -282,8 +281,6 @@ var SearchDialog = function(config) {
 			$('div.searchResultsParent').children('ul').html('');
 			
 			$('#lookup_alternate input[type="text"]').css({borderColor: '#ccc'}).val('');
-			
-			$('#c_definite').trigger('click');
 			
 			var query = w.entities[w.editor.currentEntity].props.content;
 			searchInput.value = query;
@@ -314,10 +311,21 @@ var SearchDialog = function(config) {
 			search.dialog('open');
 			
 			$('#lookupServices').accordion('resize');
-			if ($('#lookupServices').accordion('option', 'active') == 0) {
-				doQuery();
+			if (mode == EDIT) {
+				$('#certainty input[value="'+config.entry.info.certainty+'"]').click();
+				if (config.entry.info.type && config.entry.info.type == 'alt_id') {
+					$('#lookupServices').accordion('activate', 3);
+					$('#lookup_alternate input[name="'+config.entry.info.typeName+'"]').val(config.entry.info.value).prevAll('input').click();
+				} else {
+					$('#lookupServices').accordion('activate', 0);
+				}
 			} else {
-				$('#lookupServices').accordion('activate', 0);
+				$('#c_definite').trigger('click');
+				if ($('#lookupServices').accordion('option', 'active') == 0) {
+					doQuery();
+				} else {
+					$('#lookupServices').accordion('activate', 0);
+				}
 			}
 		},
 		hide: function() {
