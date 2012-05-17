@@ -17,8 +17,6 @@
 			
 			t.tag = null;
 			
-			t.bm = null;
-			
 			ed.addCommand('createSchemaTagsControl', function(config) {
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
@@ -68,7 +66,6 @@
 			
 			ed.addCommand('addSchemaTag', function(key, pos) {
 				t.editor.selection.moveToBookmark(t.editor.currentBookmark);
-				t.editor.currentBookmark = null;
 				
 				var valid = ed.execCommand('isSelectionValid', true);
 				if (valid != 2) {
@@ -351,7 +348,7 @@
 			
 			switch (t.mode) {
 				case t.ADD:
-					t.editor.execCommand('addStructureTag', t.bm, params);
+					t.editor.execCommand('addStructureTag', t.editor.currentBookmark, params);
 					break;
 				case t.EDIT:
 					t.editor.execCommand('editStructureTag', t.tag, params);
@@ -362,7 +359,8 @@
 		},
 		cancel: function() {
 			var t = this;
-			t.editor.selection.moveToBookmark(t.bm);
+			t.editor.selection.moveToBookmark(t.editor.currentBookmark);
+			t.editor.currentBookmark = null;
 			$('#schemaDialog').dialog('close');
 			$('#schemaHelpDialog').dialog('close');
 		},
