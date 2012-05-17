@@ -973,7 +973,7 @@ var Writer = function(config) {
 				tinymce.html.Schema.blockElementsMap[w.root.toUpperCase()] = {};
 				
 				// add custom plugins and buttons
-				var plugins = ['customtags','schematags','currenttag','entitycontextmenu','viewsource'];
+				var plugins = ['customtags','schematags','currenttag','entitycontextmenu','viewsource','scrolling_dropmenu'];
 				
 				for (var i = 0; i < plugins.length; i++) {
 					var name = plugins[i];
