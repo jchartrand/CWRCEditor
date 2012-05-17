@@ -23,7 +23,7 @@
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
 				
-				menu.onShowMenu.add(function(m) {
+				menu.beforeShowMenu.add(function(m) {
 					var filterKey = ed.currentNode.getAttribute('_tag');
 					var validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
 					var item;
@@ -67,6 +67,9 @@
 			});
 			
 			ed.addCommand('addSchemaTag', function(key, pos) {
+				t.editor.selection.moveToBookmark(t.editor.currentBookmark);
+				t.editor.currentBookmark = null;
+				
 				var valid = ed.execCommand('isSelectionValid', true);
 				if (valid != 2) {
 					ed.execCommand('showError', valid);
@@ -82,9 +85,7 @@
 					range.setStart(range.startContainer, range.startOffset+leftTrimAmount);
 					range.setEnd(range.endContainer, range.endOffset-rightTrimAmount);
 					sel.setRng(range);
-				}
-				
-				t.bm = t.editor.selection.getBookmark();
+				}				
 				
 				t.mode = t.ADD;
 				t.showDialog(key, pos);
@@ -344,7 +345,6 @@
 				return;
 			}
 			
-			params._display = t.currentKey;
 			params._tag = t.currentKey;
 			params._struct = true;
 			params._editable = true;
@@ -377,6 +377,9 @@
 					title: 'Tags',
 					image: url+'tag.png',
 					'class': 'entityButton'
+				}, tinymce.ui.ScrollingMenuButton);
+				t.menuButton.beforeShowMenu.add(function(c) {
+					t.editor.currentBookmark = t.editor.selection.getBookmark();
 				});
 				t.menuButton.onRenderMenu.add(function(c, m) {
 					t.editor.execCommand('createSchemaTagsControl', {menu: m, disabled: false});

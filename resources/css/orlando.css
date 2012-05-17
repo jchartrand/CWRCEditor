@@ -85,7 +85,7 @@ AVAILABILITY {
     display: inline;
 }
 
-P {
+P, LB {
     display: block;
 }
 

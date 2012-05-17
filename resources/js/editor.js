@@ -94,8 +94,13 @@ var Writer = function(config) {
 					doc.head.appendChild(styleEl);
 					stylesheet.disabled = true;
 				};
-				// error thrown unless...
-				setTimeout(parseCss, 0);
+				try {
+					parseCss();
+				} catch(e) {
+					// if it fails then stylesheet hasn't completely loaded
+					// give it some time and try again
+					setTimeout(parseCss, 500);
+				}
 			}
 		}
 		
@@ -103,7 +108,7 @@ var Writer = function(config) {
 		if (settings.showEntityBrackets) ed.$('body').addClass('showEntityBrackets');
 		if (settings.showStructBrackets) ed.$('body').addClass('showStructBrackets');
 		
-		ed.setContent('<'+w.root+'><span _struct="true" _tag="text">Paste or type your text here.</span></'+w.root+'>');
+		ed.setContent('<'+w.root+' _tag="'+w.root+'"><span _struct="true" _tag="text">Paste or type your text here.</span></'+w.root+'>');
 		
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
@@ -253,7 +258,17 @@ var Writer = function(config) {
 	};
 	
 	var _onNodeChangeHandler = function(ed, cm, e) {
-		ed.currentNode = e;
+		if (e.nodeType != 1) {
+			var root = ed.$(w.root, ed.getBody());
+			ed.currentNode = root[0];
+		} else {
+			if (e.getAttribute('_tag') == null && e.nodeName != w.root) {
+				e = e.parentNode;
+				_onNodeChangeHandler(ed, cm, e);
+			} else {
+				ed.currentNode = e;
+			}
+		}
 	};
 	
 	var _onPasteHandler = function(ed, event) {
@@ -493,6 +508,7 @@ var Writer = function(config) {
 	w.addEntity = function(type) {
 		var result = w.isSelectionValid();
 		if (result == w.VALID) {
+			w.editor.currentBookmark = w.editor.selection.getBookmark();
 			w.editor.currentEntity = _addEntityTag(type);
 			w.d.show(type, {type: type, title: w.titles[type], pos: w.editor.contextMenuPos});
 		} else {
@@ -557,6 +573,7 @@ var Writer = function(config) {
 	w.finalizeEntity = function(id, info) {
 		if (info == null) {
 			w.removeEntity(id);
+			w.editor.selection.moveToBookmark(w.editor.currentBookmark);
 		} else {
 //			var startTag = w.editor.$('[name='+id+'][class~=start]');
 //			for (var key in info) {
@@ -567,6 +584,7 @@ var Writer = function(config) {
 			w.entitiesList.update();
 			w.highlightEntity(id);
 		}
+		w.editor.currentBookmark = null;
 	};
 	
 	var _getCurrentTag = function(id) {
@@ -936,6 +954,7 @@ var Writer = function(config) {
 				// custom properties added to the editor
 				ed.currentEntity = null; // the id of the currently highlighted entity
 				ed.currentStruct = null; // the id of the currently selected structural tag
+				ed.currentBookmark = null; // for storing a bookmark used when adding a tag
 				ed.currentNode = null; // the node that the cursor is currently in
 				ed.entityCopy = null; // store a copy of an entity for pasting
 				ed.contextMenuPos = null; // the position of the context menu (used to position related dialog box)
@@ -1110,12 +1129,12 @@ var Writer = function(config) {
 			
 			forced_root_block : w.root,
 //			force_br_newlines: false,
-			force_p_newlines: true,
+			force_p_newlines: false,
 			
 			paste_auto_cleanup_on_paste: true,
 			paste_postprocess: function(pl, o) {
 				function stripTags(index, node) {
-					if (node.nodeName.toLowerCase() != 'p') {
+					if (node.nodeName.toLowerCase() != 'p' && node.nodeName.toLowerCase() != 'br') {
 						if ($(node).contents().length == 0) {
 							$(node).remove();
 						} else {
@@ -1127,14 +1146,16 @@ var Writer = function(config) {
 					}
 				}
 				
-				function replacePTags(index, node) {
+				function replaceTags(index, node) {
 					if (node.nodeName.toLowerCase() == 'p') {
-						$(node).contents().unwrap().wrapAll('<span _struct="true" _tag="p"></span>').not(':text').each(replacePTags);
+						$(node).contents().unwrap().wrapAll('<span _struct="true" _tag="p"></span>').not(':text').each(replaceTags);
+					} else if (node.nodeName.toLowerCase() == 'br') {
+						$(node).replaceWith('<span _struct="true" _tag="lb"></span>');
 					}
 				}
 				
 				$(o.node).children().each(stripTags);
-				$(o.node).children().each(replacePTags);
+				$(o.node).children().each(replaceTags);
 			},
 			
 			valid_elements: '*[*]', // allow everything

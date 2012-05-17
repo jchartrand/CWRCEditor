@@ -44,9 +44,22 @@ label {
 	float: left;
 }
 
-#settingsLink {
+#settingsLink, #helpLink {
 	float: right;
 	cursor: pointer;
+	margin-left: 20px;
+}
+
+#helpLink h2 {
+	display: inline-block;
+	margin-left: 2px;
+	vertical-align: top;
+}
+
+#helpDialog iframe {
+	border: none;
+	width: 100%;
+	height: 100%;
 }
 
 #main {
@@ -275,6 +288,11 @@ label {
 	background-color: #eee;
 }
 
+#currentPath a:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
 #tree {
 	border: none !important;
 }
@@ -295,6 +313,10 @@ label {
 
 #entitiesConverter {
 	display: none;
+}
+
+#searchDialog input[type='text'] {
+	border: 1px solid #ccc;
 }
 
 #lookupServices > div {
@@ -587,7 +609,6 @@ label {
 
 #menu_editor_editor_schemaTagsButton_menu_co, #menu_structTagsContextMenu_co {
 	/*max-height: 600px;
-	max-width: 200px;
 	overflow: auto;*/
 }
 

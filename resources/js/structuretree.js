@@ -157,10 +157,9 @@ var StructureTree = function(config) {
 					var entry = w.schema.define[tag];
 					if (entry) {
 						var display = tag;
-						$(this).attr('id', id).attr('_tag', tag).attr('_display', display).attr('_struct', true);
+						$(this).attr('id', id).attr('_tag', tag).attr('_struct', true);
 						w.structs[id] = {
 							id: id,
-							_display: display,
 							_tag: tag
 						};
 					}
@@ -193,7 +192,7 @@ var StructureTree = function(config) {
 				
 				var info = w.structs[id];
 				if (info) {
-					var title = info._display;
+					var title = info._tag;
 					newNodeParent = $('#tree').jstree('create_node', nodeParent, 'last', {
 						data: title,
 						attr: {name: id, 'class': $(this).attr('class')},

@@ -11,7 +11,8 @@ var SettingsDialog = function(writer, config) {
 	jQuery.extend(settings, config);
 	
 	$('#header').append(''+
-		'<div id="settingsLink"><h2>Settings</h2></div>');
+	'<div id="helpLink"><img src="img/help.png" title="Help"/><h2>Help</h2></div>'+
+	'<div id="settingsLink"><h2>Settings</h2></div>');
 	
 	$(document.body).append(''+
 	'<div id="settingsDialog">'+
@@ -56,6 +57,8 @@ var SettingsDialog = function(writer, config) {
 	'<option value="events">Events Schema</option>'+
 	'</select>'+
 	'</div>'+
+	'</div>'+
+	'<div id="helpDialog">'+
 	'</div>');
 	
 	$('#settingsLink').click(function() {
@@ -66,6 +69,13 @@ var SettingsDialog = function(writer, config) {
 		$('select[name="editormode"] > option[value="'+w.mode+'"]', $('#settingsDialog')).attr('selected', true);
 		$('select[name="schema"] > option[value="'+w.validationSchema+'"]', $('#settingsDialog')).attr('selected', true);
 		$('#settingsDialog').dialog('open');
+	});
+	
+	$('#helpLink').click(function() {
+		if ($('#helpDialog iframe').length == 0) {
+			$('#helpDialog').html('<iframe src="http://docs.google.com/document/d/1kJpewMUkUtC1rzVgxDw8HaVf5xKDwGBrH4mI-Piiu9w/edit"/>');
+		}
+		$('#helpDialog').dialog('open');
 	});
 	
 	$('#settingsDialog').dialog({
@@ -83,6 +93,21 @@ var SettingsDialog = function(writer, config) {
 			},
 			'Cancel': function() {
 				$('#settingsDialog').dialog('close');
+			}
+		}
+	});
+	
+	$('#helpDialog').dialog({
+		title: 'Help',
+		modal: true,
+		resizable: true,
+		closeOnEscape: true,
+		height: 500,
+		width: 900,
+		autoOpen: false,
+		buttons: {
+			'Close': function() {
+				$('#helpDialog').dialog('close');
 			}
 		}
 	});
