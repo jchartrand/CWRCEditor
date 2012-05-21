@@ -22,7 +22,17 @@
 				var menu = config.menu;
 				
 				menu.beforeShowMenu.add(function(m) {
-					var filterKey = ed.currentNode.getAttribute('_tag');
+					var filterKey;
+					// get the node from currentBookmark if available, otherwise use currentNode
+					if (ed.currentBookmark != null) {
+						var node = ed.currentBookmark.rng.commonAncestorContainer;
+						while (node.nodeType == 3) {
+							node = node.parentNode;
+						}
+						filterKey = node.getAttribute('_tag');
+					} else {
+						filterKey = ed.currentNode.getAttribute('_tag');
+					}
 					var validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
 					var item;
 					var count = 0, disCount = 0;
@@ -37,7 +47,7 @@
 						}
 					}
 					if (count == disCount) {
-						m.items['no_tags'].setDisabled(false);
+						m.items['no_tags_'+m.id].setDisabled(false);
 					}
 				});
 				
@@ -55,7 +65,7 @@
 				}
 				var menuitem = menu.add({
 					title: 'No tags available for current parent tag.',
-					id: 'no_tags',
+					id: 'no_tags_'+menu.id,
 					icon_src: url + 'cross.png',
 					onclick : function() {}
 				});
@@ -377,7 +387,7 @@
 					'class': 'entityButton'
 				}, tinymce.ui.ScrollingMenuButton);
 				t.menuButton.beforeShowMenu.add(function(c) {
-					t.editor.currentBookmark = t.editor.selection.getBookmark();
+					t.editor.currentBookmark = t.editor.selection.getBookmark(1);
 				});
 				t.menuButton.onRenderMenu.add(function(c, m) {
 					t.editor.execCommand('createSchemaTagsControl', {menu: m, disabled: false});

@@ -43,10 +43,15 @@
 				// Select the image if it's clicked. WebKit would other wise expand the selection
 				if (e.target.nodeName == 'IMG') ed.selection.select(e.target);
 				
+				var x = e.clientX || e.pageX;
+				var y = e.clientY || e.pageY;
+				
 				var editorPos = ed.$(ed.contentAreaContainer).offset();
-				t.curPos = ed.contextMenuPos = {x: (e.clientX || e.pageX) + editorPos.left, y: (e.clientY || e.pageX) + editorPos.top};
+				t.curPos = ed.contextMenuPos = {x: x + editorPos.left, y: y + editorPos.top};
 
-				t._getMenu(ed).showMenu(e.clientX || e.pageX, e.clientY || e.pageX);
+				ed.currentBookmark = ed.selection.getBookmark(1);
+				
+				t._getMenu(ed).showMenu(x, y);
 				Event.add(ed.getDoc(), 'click', function(e) {
 					hide(ed, e);
 				});
@@ -96,13 +101,13 @@
 
 			p1 = DOM.getPos(ed.getContentAreaContainer());
 			p2 = DOM.getPos(ed.getContainer());
-
+			
 			m = ed.controlManager.createDropMenu('contextmenu', {
 				offset_x : p1.x + ed.getParam('contextmenu_offset_x', 0),
 				offset_y : p1.y + ed.getParam('contextmenu_offset_y', 0),
 				constrain : 1,
 				keyboard_focus: true
-			});
+			}, tinymce.ui.ScrollingDropMenu);
 			
 			t._menu = m;
 
@@ -169,6 +174,10 @@
 				id: 'structTagsContextMenu',
 				title: 'Structural Tags',
 				icon_src: url+'tag.png'
+			});
+			tagMenu.beforeShowMenu.add(function(m) {
+				m.element.addClass('defaultSkin');
+				m.element.addClass('mceDropDown');
 			});
 			ed.execCommand('createSchemaTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
 			m.addSeparator();

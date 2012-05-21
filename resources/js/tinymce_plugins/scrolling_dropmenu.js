@@ -248,6 +248,32 @@
 			if (s.keyboard_focus) { 
 				t._setupKeyboardNav(); 
 			}
+		},
+		
+		addMenu : function(o) {
+			if (!o.collapse)
+				o = this.createMenu(o);
+
+			this.menuCount++;
+
+			return this.add(o);
+		},
+		
+		createMenu : function(s) {
+			var t = this, cs = t.settings, m;
+
+			s.container = s.container || cs.container;
+			s.parent = t;
+			s.constrain = s.constrain || cs.constrain;
+			s['class'] = s['class'] || cs['class'];
+			s.vp_offset_x = s.vp_offset_x || cs.vp_offset_x;
+			s.vp_offset_y = s.vp_offset_y || cs.vp_offset_y;
+			s.keyboard_focus = cs.keyboard_focus;
+			m = new tinymce.ui.ScrollingDropMenu(s.id || DOM.uniqueId(), s);
+
+			m.onAddItem.add(t.onAddItem.dispatch, t.onAddItem);
+
+			return m;
 		}
 	});
 })(tinymce);

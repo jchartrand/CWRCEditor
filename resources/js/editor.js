@@ -298,7 +298,7 @@ var Writer = function(config) {
 		var id = entityStart.getAttribute('name');
 		if (id == ed.currentEntity) return;
 		
-		var bm = ed.selection.getBookmark();
+		var bm = ed.selection.getBookmark(1);
 		w.highlightEntity(id, bm);
 	};
 	
@@ -508,8 +508,8 @@ var Writer = function(config) {
 	w.addEntity = function(type) {
 		var result = w.isSelectionValid();
 		if (result == w.VALID) {
-			w.editor.currentBookmark = w.editor.selection.getBookmark();
-			w.editor.currentEntity = _addEntityTag(type);
+			w.editor.currentBookmark = w.editor.selection.getBookmark(1);
+//			w.editor.currentEntity = _addEntityTag(type);
 			w.d.show(type, {type: type, title: w.titles[type], pos: w.editor.contextMenuPos});
 		} else {
 			w.showError(result);
@@ -570,16 +570,14 @@ var Writer = function(config) {
 		w.editor.dom.bind(end, 'click', _doMarkerClick);
 	};
 	
-	w.finalizeEntity = function(id, info) {
-		if (info == null) {
-			w.removeEntity(id);
-			w.editor.selection.moveToBookmark(w.editor.currentBookmark);
-		} else {
+	w.finalizeEntity = function(type, info) {
+		w.editor.selection.moveToBookmark(w.editor.currentBookmark);
+		if (info != null) {
 //			var startTag = w.editor.$('[name='+id+'][class~=start]');
 //			for (var key in info) {
 //				startTag.attr(key, w.sanitizeAttributeValue(info[key]));
 //			}
-			
+			var id = _addEntityTag(type);
 			w.entities[id].info = info;
 			w.entitiesList.update();
 			w.highlightEntity(id);
@@ -612,6 +610,12 @@ var Writer = function(config) {
 			var type = tag.entity.props.type;
 			w.d.show(type, {type: type, title: w.titles[type], pos: pos, entry: tag.entity});
 		}
+	};
+	
+	w.editEntity = function(id, info) {
+		w.entities[id].info = info;
+		w.entitiesList.update();
+		w.highlightEntity(id);
 	};
 	
 	w.copyEntity = function(id, pos) {
@@ -707,7 +711,7 @@ var Writer = function(config) {
 			range.setEndBefore(marker);
 		}
 		w.editor.selection.setRng(range);
-		w.highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark());
+		w.highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark(1));
 	};
 	
 	w.addStructureTag = function(bookmark, attributes) {

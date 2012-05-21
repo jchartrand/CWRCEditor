@@ -255,8 +255,10 @@ var SearchDialog = function(config) {
 			}
 			if (data) data.certainty = $('#certainty input:checked').val();
 		}
-		if (!(mode == EDIT && data == null)) {
-			w.finalizeEntity(w.editor.currentEntity, data);
+		if (mode == EDIT && data != null) {
+			w.editEntity(w.editor.currentEntity, data);
+		} else {
+			w.finalizeEntity(currentType, data);
 		}
 		search.dialog('close');
 		currentType = null;
@@ -271,9 +273,12 @@ var SearchDialog = function(config) {
 			currentType = config.type;
 			mode = config.entry ? EDIT : ADD;
 			var prefix = 'Tag ';
-			
+			var query;
 			if (mode == EDIT) {
 				prefix = 'Edit ';
+				query = w.entities[w.editor.currentEntity].props.content;
+			} else {
+				query = w.editor.currentBookmark.rng.toString();
 			}
 			
 			$('div.searchResultsParent').css({borderColor: '#fff'});
@@ -281,7 +286,6 @@ var SearchDialog = function(config) {
 			
 			$('#lookup_alternate input[type="text"]').css({borderColor: '#ccc'}).val('');
 			
-			var query = w.entities[w.editor.currentEntity].props.content;
 			searchInput.value = query;
 			
 			var title = prefix+config.title;
