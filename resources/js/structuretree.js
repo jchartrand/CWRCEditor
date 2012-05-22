@@ -43,7 +43,7 @@ var StructureTree = function(config) {
 								x: parseInt($('#tree_popup').css('left')),
 								y: parseInt($('#tree_popup').css('top'))
 							};
-							w.editor.selection.collapse();
+							w.editor.currentBookmark = w.editor.selection.getBookmark(1);
 							w.editor.execCommand('addSchemaTag', key, pos);
 						}
 					};

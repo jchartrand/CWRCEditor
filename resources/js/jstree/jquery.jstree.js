@@ -3546,11 +3546,39 @@
 				.css({ "left" : x, "top" : y })
 				.find("li:has(ul)")
 					.bind("mouseenter", function (e) { 
-						var w = $(document).width(),
-							h = $(document).height(),
-							ul = $(this).children("ul").show(); 
-						if(w !== $(document).width()) { ul.toggleClass("right"); }
-						if(h !== $(document).height()) { ul.toggleClass("bottom"); }
+						var mx = $(document.body).width(),
+							my = $(document.body).height();
+						
+						var ul = $(this).children("ul");
+						ul.css({
+							overflow: 'hidden',
+							height: 'auto'
+						});
+						
+						var cntWidth = $.vakata.context.cnt.width();
+						var offset = $.vakata.context.cnt.offset();
+						var ulHeight = ul.outerHeight();
+						var ulWidth = ul.outerWidth();
+						
+						// height constraint
+						if (ulHeight + offset.top > my) {
+							ul.css({
+								overflow: 'auto',
+								height: (my-(offset.top+25))+'px'
+							});
+						}
+						// width constraint
+						var x = cntWidth;
+						var y = -2;
+						if ((x + ulWidth + offset.left > mx)) {
+							x = -ulWidth;
+						}
+
+						ul.css({
+							left: x+'px',
+							top: y+'px'
+						});
+						ul.show();
 					})
 					.bind("mouseleave", function (e) { 
 						$(this).children("ul").hide(); 
