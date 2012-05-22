@@ -173,8 +173,9 @@
 
 			// Move inside viewport if not submenu
 			if (s.constrain) {
-				w = co.clientWidth - ot;
-				h = co.clientHeight - ot;
+				var size = DOM.getSize(co);
+				w = size.w - ot;
+				h = size.h - ot;
 				mx = vp.x + vp.w;
 				my = vp.y + vp.h;
 
