@@ -3560,11 +3560,13 @@
 						var ulHeight = ul.outerHeight();
 						var ulWidth = ul.outerWidth();
 						
+						var targetOffset = $(e.target).parents('li').offset();
+						
 						// height constraint
-						if (ulHeight + offset.top > my) {
+						if (ulHeight + targetOffset.top > my) {
 							ul.css({
 								overflow: 'auto',
-								height: (my-(offset.top+25))+'px'
+								height: (my-(targetOffset.top+25))+'px'
 							});
 						}
 						// width constraint

@@ -24,37 +24,81 @@ var StructureTree = function(config) {
 			show_at_node: false,
 			items: function(node) {
 				_hidePopup();
-				if ($(node).attr('id') == 'root') return {};
+				if (node.attr('id') == 'root') return {};
+				var parentNode = node.parents('li:first');
+				
 				var info = w.structs[node.attr('name')];
-
+				var parentInfo = w.structs[parentNode.attr('name')];
+				
 				var validKeys = w.editor.execCommand('getFilteredSchema', {filterKey: info._tag, type: 'element', returnType: 'object'});
-				var inserts = {};
-				for (var key in validKeys) {
-					var doc = key;
-					if (validKeys[key].def['a:documentation']) {
-						doc = validKeys[key].def['a:documentation']['#text'] || validKeys[key].def['a:documentation'];
-					}
-					inserts[key] = {
-						label: '<span title="'+doc+'">'+key+'</span>',
-						icon: 'img/tag_blue.png',
-						action: function(obj) {
-							var key = obj.text();
-							var pos = {
-								x: parseInt($('#tree_popup').css('left')),
-								y: parseInt($('#tree_popup').css('top'))
-							};
-							w.editor.currentBookmark = w.editor.selection.getBookmark(1);
-							w.editor.execCommand('addSchemaTag', key, pos);
-						}
-					};
+				var parentKeys = {};
+				if (parentInfo) {
+					parentKeys = w.editor.execCommand('getFilteredSchema', {filterKey: parentInfo._tag, type: 'element', returnType: 'object'});
 				}
+				
+				function getSubmenu(keys) {
+					var inserts = {};
+					var inserted = false;
+					for (var key in keys) {
+						inserted = true;
+						var doc = key;
+						if (keys[key].def['a:documentation']) {
+							doc = keys[key].def['a:documentation']['#text'] || keys[key].def['a:documentation'];
+						}
+						inserts[key] = {
+							label: '<span title="'+doc+'">'+key+'</span>',
+							icon: 'img/tag_blue.png',
+							action: function(obj) {
+								var actionType = obj.parents('li.submenu').children('a').attr('rel');
+								var key = obj.text();
+								var pos = {
+									x: parseInt($('#tree_popup').css('left')),
+									y: parseInt($('#tree_popup').css('top'))
+								};
+								w.editor.currentBookmark = w.editor.selection.getBookmark(1);
+								w.editor.execCommand('addSchemaTag', {key: key, pos: pos, action: actionType});
+							}
+						};
+					}
+					if (!inserted) {
+						inserts['no_tags'] = {
+							label: 'No tags available.',
+							icon: 'img/cross.png',
+							action: function(obj) {}
+						};
+					}
+					return inserts;
+				}
+				
+				var submenu = getSubmenu(validKeys);
+				var parentSubmenu = getSubmenu(parentKeys);
+				
 
 				var items = {
-					'insert': {
-						label: 'Insert Tag',
+					'before': {
+						label: 'Insert Tag Before',
 						icon: 'img/tag_blue_add.png',
 						_class: 'submenu',
-						submenu: inserts
+						submenu: parentSubmenu
+					},
+					'after': {
+						label: 'Insert Tag After',
+						icon: 'img/tag_blue_add.png',
+						_class: 'submenu',
+						submenu: parentSubmenu
+					},
+					'around': {
+						label: 'Insert Tag Around',
+						icon: 'img/tag_blue_add.png',
+						_class: 'submenu',
+						submenu: parentSubmenu
+					},
+					'inside': {
+						label: 'Insert Tag Inside',
+						icon: 'img/tag_blue_add.png',
+						_class: 'submenu',
+						separator_after: true,
+						submenu: submenu
 					},
 					'edit': {
 						label: 'Edit Tag',
@@ -79,6 +123,11 @@ var StructureTree = function(config) {
 					delete items.edit;
 				} else if (info._tag == 'p') {
 					delete items['delete'];
+				} else if (info._tag == w.root) {
+					delete items['delete'];
+					delete items['before'];
+					delete items['after'];
+					delete items['around'];
 				}
 				return items;
 			}

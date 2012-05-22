@@ -6,6 +6,7 @@
 			t.url = url;
 			t.editor = ed;
 			t.currentKey = null;
+			t.action = null;
 			
 			t.ADD = 0;
 			t.EDIT = 1;
@@ -58,7 +59,7 @@
 						key: key,
 						icon_src: url + 'tag_blue.png',
 						onclick : function() {
-							t.editor.execCommand('addSchemaTag', this.key, config.pos);
+							t.editor.execCommand('addSchemaTag', {key: this.key, pos: config.pos});
 						}
 					});
 					menuitem.setDisabled(config.disabled);
@@ -74,7 +75,11 @@
 				return menu;
 			});
 			
-			ed.addCommand('addSchemaTag', function(key, pos) {
+			ed.addCommand('addSchemaTag', function(params) {
+				var key = params.key;
+				var pos = params.pos;
+				t.action = params.action;
+				
 				t.editor.selection.moveToBookmark(t.editor.currentBookmark);
 				
 				var valid = ed.execCommand('isSelectionValid', true);
@@ -330,15 +335,15 @@
 		},
 		result: function() {
 			var t = this;
-			var params = {};
+			var attributes = {};
 			$('#attsContainer > div > div:visible').children('input, select').each(function(index, el) {
-				params[$(this).attr('name')] = $(this).val();
+				attributes[$(this).attr('name')] = $(this).val();
 			});
 			
 			// validation
 			var invalid = [];
 			$('#attsContainer span.required').parent().children('label').each(function(index, el) {
-				if (params[$(this).text()] == '') {
+				if (attributes[$(this).text()] == '') {
 					invalid.push($(this).text());
 				}
 			});
@@ -352,16 +357,16 @@
 				return;
 			}
 			
-			params._tag = t.currentKey;
-			params._struct = true;
-			params._editable = true;
+			attributes._tag = t.currentKey;
+			attributes._struct = true;
+			attributes._editable = true;
 			
 			switch (t.mode) {
 				case t.ADD:
-					t.editor.execCommand('addStructureTag', t.editor.currentBookmark, params);
+					t.editor.execCommand('addStructureTag', {bookmark: t.editor.currentBookmark, attributes: attributes, action: t.action});
 					break;
 				case t.EDIT:
-					t.editor.execCommand('editStructureTag', t.tag, params);
+					t.editor.execCommand('editStructureTag', t.tag, attributes);
 					t.tag = null;
 			}
 			

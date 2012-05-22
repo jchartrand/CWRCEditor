@@ -696,7 +696,7 @@ div.mceDropDown {
 	box-shadow: 1px 1px 2px #ccc;
 }
 #vakata-contextmenu, #vakata-contextmenu ul {
-	min-width: 120px !important;
+	min-width: 140px !important;
 }
 
 #vakata-contextmenu li ins, #jqContextMenu li ins {

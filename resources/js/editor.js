@@ -714,17 +714,20 @@ var Writer = function(config) {
 		w.highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark(1));
 	};
 	
-	w.addStructureTag = function(bookmark, attributes) {
+	w.addStructureTag = function(params) {
+		var bookmark = params.bookmark;
+		var attributes = params.attributes;
+		var action = params.action;
+		
 		var id = tinymce.DOM.uniqueId('struct_');
 		attributes.id = id;
 		w.structs[id] = attributes;
 		w.editor.currentStruct = id;
 		
-		w.editor.selection.moveToBookmark(bookmark);
-		var selection = w.editor.selection.getContent();
-		// add zero width no-break space, required for proper cursor positioning inside tag
-		// doesn't work in IE
-		if (selection == '') selection = '&#65279;';
+		var node = bookmark.rng.commonAncestorContainer;
+		while (node.nodeType == 3) {
+			node = node.parentNode;
+		}
 		
 		var tag = 'span';
 		var open_tag = '<'+tag;
@@ -733,9 +736,28 @@ var Writer = function(config) {
 		}
 		open_tag += '>';
 		var close_tag = '</'+tag+'>';
+		
+		var selection = '&#65279;';
 		var content = open_tag + selection + close_tag;
-		w.editor.execCommand('mceReplaceContent', false, content);
-		w.tree.update();
+		
+		if (action == 'before') {
+			$(node).before(content);
+		} else if (action == 'after') {
+			$(node).after(content);
+		} else if (action == 'around') {
+			$(node).wrap(content);
+		} else if (action == 'inside') {
+			$(node).wrapInner(content);
+		} else {
+			w.editor.selection.moveToBookmark(bookmark);
+			selection = w.editor.selection.getContent();
+			// add zero width no-break space, required for proper cursor positioning inside tag
+			// doesn't work in IE
+			if (selection == '') selection = '&#65279;';
+
+			content = open_tag + selection + close_tag;
+			w.editor.execCommand('mceReplaceContent', false, content);
+		}
 		
 		if (selection == '&#65279;') {
 			w.fixEmptyStructTag = true;
@@ -743,6 +765,8 @@ var Writer = function(config) {
 			range.selectNodeContents(w.editor.$('#'+id)[0]);
 			range.collapse(true);
 		}
+		
+		w.tree.update();
 	};
 	
 	w.editStructureTag = function(tag, attributes) {
