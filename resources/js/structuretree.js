@@ -25,9 +25,13 @@ var StructureTree = function(config) {
 			items: function(node) {
 				_hidePopup();
 				if (node.attr('id') == 'root') return {};
+				
 				var parentNode = node.parents('li:first');
 				
 				var info = w.structs[node.attr('name')];
+
+				if (info._tag == 'teiHeader') return {};
+				
 				var parentInfo = w.structs[parentNode.attr('name')];
 				
 				var validKeys = w.editor.execCommand('getFilteredSchema', {filterKey: info._tag, type: 'element', returnType: 'object'});
@@ -152,7 +156,13 @@ var StructureTree = function(config) {
 	$('#tree').bind('select_node.jstree', function(event, data) {
 		var node = data.rslt.obj;
 		var id = node.attr('name');
-		if (id) w.selectStructureTag(id);
+		if (id) {
+			if (w.structs[id]._tag == 'teiHeader') {
+				w.d.show('teiheader');
+			} else {
+				w.selectStructureTag(id);
+			}
+		}
 	});
 	$('#tree').bind('hover_node.jstree', function(event, data) {
 		if ($('#vakata-contextmenu').css('visibility') == 'visible') return;

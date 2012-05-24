@@ -14,6 +14,10 @@ h2 {
 	font-size: 12px;
 }
 
+h3 {
+	font-size: 11px;
+}
+
 h1, h2 {
 	margin: 0;
 }
@@ -44,7 +48,7 @@ label {
 	float: left;
 }
 
-#settingsLink, #helpLink {
+#settingsLink, #helpLink, #headerLink {
 	float: right;
 	cursor: pointer;
 	margin-left: 20px;
@@ -591,6 +595,21 @@ label {
 #tripleColumnsParent .customEntry input {
 	width: 95%;
 	text-align: left;
+}
+
+#teiHeaderDialog h1, #teiHeaderDialog h2, #teiHeaderDialog h3 {
+	margin: 5px 0;
+}
+
+#teiHeaderDialog label {
+	display: inline-block;
+    text-align: right;
+    width: 120px;
+}
+
+#teiHeaderDialog input {
+	width: 200px;
+	vertical-align: top;
 }
 
 /* tinymce style overrides */
