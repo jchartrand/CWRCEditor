@@ -59,8 +59,13 @@ var StructureTree = function(config) {
 									x: parseInt($('#tree_popup').css('left')),
 									y: parseInt($('#tree_popup').css('top'))
 								};
-								w.editor.currentBookmark = w.editor.selection.getBookmark(1);
-								w.editor.execCommand('addSchemaTag', {key: key, pos: pos, action: actionType});
+								if (actionType == 'change') {
+									var id = $('#tree a.ui-state-active').closest('li').attr('name');
+									w.editor.execCommand('changeTag', {key: key, pos: pos, id: id});
+								} else {
+									w.editor.currentBookmark = w.editor.selection.getBookmark(1);
+									w.editor.execCommand('addSchemaTag', {key: key, pos: pos, action: actionType});
+								}
 							}
 						};
 					}
@@ -104,6 +109,12 @@ var StructureTree = function(config) {
 						separator_after: true,
 						submenu: submenu
 					},
+					'change': {
+						label: 'Change Tag',
+						icon: 'img/tag_blue_edit.png',
+						_class: 'submenu',
+						submenu: parentSubmenu
+					},
 					'edit': {
 						label: 'Edit Tag',
 						icon: 'img/tag_blue_edit.png',
@@ -123,9 +134,7 @@ var StructureTree = function(config) {
 						}
 					}
 				};
-				if (info._editable == false) {
-					delete items.edit;
-				} else if (info._tag == 'p') {
+				if (info._tag == 'p') {
 					delete items['delete'];
 				} else if (info._tag == w.root) {
 					delete items['delete'];

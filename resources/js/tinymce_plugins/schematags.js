@@ -111,6 +111,13 @@
 				t.showDialog(key, pos);
 			});
 			
+			ed.addCommand('changeSchemaTag', function(params) {
+				t.currentKey = params.key;
+				t.tag = params.tag;
+				t.mode = t.EDIT;
+				t.showDialog(params.key, params.pos);
+			});
+			
 			$(document.body).append(''+
 				'<div id="schemaDialog"><div class="content"></div></div>'+
 				'<div id="schemaHelpDialog"></div>'
@@ -359,7 +366,6 @@
 			
 			attributes._tag = t.currentKey;
 			attributes._struct = true;
-			attributes._editable = true;
 			
 			switch (t.mode) {
 				case t.ADD:

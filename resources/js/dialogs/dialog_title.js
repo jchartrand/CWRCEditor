@@ -61,7 +61,7 @@ var TitleDialog = function(config) {
 			var level = $('input[name="level"]:checked', title).val();
 			var ref = $('input[name="ref"]', title).val();
 			var alt = $('input[name="alt"]', title).val();
-			var unformatted = $('input[name="unformatted"]', title).attr('checked');
+			var unformatted = $('input[name="unformatted"]', title).prop('checked');
 			
 			data = {
 				level: level,
@@ -76,8 +76,10 @@ var TitleDialog = function(config) {
 //				data['class'] = 'titleTagItalics';
 //			}
 		}
-		if (!(mode == EDIT && data == null)) {
-			w.finalizeEntity(w.editor.currentEntity, data);
+		if (mode == EDIT && data != null) {
+			w.editEntity(w.editor.currentEntity, data);
+		} else {
+			w.finalizeEntity('title', data);
 		}
 		title.dialog('close');
 	};

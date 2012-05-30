@@ -40,8 +40,10 @@ var NoteDialog = function(config) {
 			data = {};
 			data[currentType] = noteInput.value;
 		}
-		if (!(mode == EDIT && data == null)) {
-			w.finalizeEntity(w.editor.currentEntity, data);
+		if (mode == EDIT && data != null) {
+			w.editEntity(w.editor.currentEntity, data);
+		} else {
+			w.finalizeEntity(currentType, data);
 		}
 		note.dialog('close');
 		currentType = null;

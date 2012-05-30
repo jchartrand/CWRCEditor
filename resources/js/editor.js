@@ -114,12 +114,14 @@ var Writer = function(config) {
 		ed.addCommand('showError', w.showError);
 		ed.addCommand('addEntity', w.addEntity);
 		ed.addCommand('editTag', w.editTag);
+		ed.addCommand('changeTag', w.changeTag);
 		ed.addCommand('removeTag', w.removeTag);
 		ed.addCommand('copyEntity', w.copyEntity);
 		ed.addCommand('pasteEntity', w.pasteEntity);
 		ed.addCommand('removeEntity', w.removeEntity);
 		ed.addCommand('addStructureTag', w.addStructureTag);
 		ed.addCommand('editStructureTag', w.editStructureTag);
+		ed.addCommand('changeStructureTag', w.changeStructureTag);
 		ed.addCommand('updateStructureTree', w.tree.update);
 		ed.addCommand('removeHighlights', w.removeHighlights);
 		ed.addCommand('exportDocument', w.fm.exportDocument);
@@ -612,6 +614,17 @@ var Writer = function(config) {
 		}
 	};
 	
+	// a general change/replace function
+	w.changeTag = function(params) {
+		var tag = _getCurrentTag(params.id);
+		if (tag.struct) {
+			if (w.editor.$(tag.struct).attr('_struct')) {
+				w.editor.execCommand('changeSchemaTag', {tag: tag.struct, pos: params.pos, key: params.key});
+			}
+		} else if (tag.entity) {
+		}
+	};
+	
 	w.editEntity = function(id, info) {
 		w.entities[id].info = info;
 		w.entitiesList.update();
@@ -771,6 +784,11 @@ var Writer = function(config) {
 	
 	w.editStructureTag = function(tag, attributes) {
 		var id = tag.attr('id');
+		$.each($(tag[0].attributes), function(index, att) {
+			if (att.name != 'id') {
+				tag.removeAttr(att.name);
+			}
+		});
 		for (var key in attributes) {
 			tag.attr(key, attributes[key]);
 		}
@@ -1001,7 +1019,7 @@ var Writer = function(config) {
 				tinymce.html.Schema.blockElementsMap[w.root.toUpperCase()] = {};
 				
 				// add custom plugins and buttons
-				var plugins = ['customtags','schematags','currenttag','entitycontextmenu','viewsource','scrolling_dropmenu'];
+				var plugins = ['schematags','currenttag','entitycontextmenu','viewsource','scrolling_dropmenu'];
 				
 				for (var i = 0; i < plugins.length; i++) {
 					var name = plugins[i];
