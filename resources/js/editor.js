@@ -784,6 +784,7 @@ var Writer = function(config) {
 	
 	w.editStructureTag = function(tag, attributes) {
 		var id = tag.attr('id');
+		attributes.id = id;
 		$.each($(tag[0].attributes), function(index, att) {
 			if (att.name != 'id') {
 				tag.removeAttr(att.name);

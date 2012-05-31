@@ -21,19 +21,26 @@
 			ed.addCommand('createSchemaTagsControl', function(config) {
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
+				var mode = config.mode || 'add';
+				var node;
 				
 				menu.beforeShowMenu.add(function(m) {
 					var filterKey;
 					// get the node from currentBookmark if available, otherwise use currentNode
 					if (ed.currentBookmark != null) {
-						var node = ed.currentBookmark.rng.commonAncestorContainer;
+						node = ed.currentBookmark.rng.commonAncestorContainer;
 						while (node.nodeType == 3) {
 							node = node.parentNode;
 						}
-						filterKey = node.getAttribute('_tag');
 					} else {
-						filterKey = ed.currentNode.getAttribute('_tag');
+						node = ed.currentNode;
 					}
+					filterKey = node.getAttribute('_tag');
+					
+					if (mode == 'change') {
+						filterKey = $(node).parent().attr('_tag');
+					}
+					
 					var validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
 					var item;
 					var count = 0, disCount = 0;
@@ -59,7 +66,11 @@
 						key: key,
 						icon_src: url + 'tag_blue.png',
 						onclick : function() {
-							t.editor.execCommand('addSchemaTag', {key: this.key, pos: config.pos});
+							if (mode == 'change') {
+								t.editor.execCommand('changeTag', {key: this.key, pos: config.pos, id: $(node).attr('id')});
+							} else {
+								t.editor.execCommand('addSchemaTag', {key: this.key, pos: config.pos});
+							}
 						}
 					});
 					menuitem.setDisabled(config.disabled);

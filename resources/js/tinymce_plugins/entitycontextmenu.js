@@ -182,8 +182,19 @@
 			ed.execCommand('createSchemaTagsControl', {menu: tagMenu, disabled: col, pos: t.curPos});
 			m.addSeparator();
 			
-			// TODO disable edit tag for non-editable tags
 			col = (ed.currentEntity == null && ed.currentStruct == null);
+			
+			var changeTagMenu = m.addMenu({
+				id: 'changeTagContextMenu',
+				title: 'Change Tag',
+				icon_src: url+'tag_blue_edit.png'
+			});
+			changeTagMenu.beforeShowMenu.add(function(m) {
+				m.element.addClass('defaultSkin');
+				m.element.addClass('mceDropDown');
+			});
+			ed.execCommand('createSchemaTagsControl', {menu: changeTagMenu, disabled: col, pos: t.curPos, mode: 'change'});
+			
 			m.add({
 				title: 'Edit Tag',
 				icon_src: url+'tag_blue_edit.png',
