@@ -1,5 +1,6 @@
 var Writer = function(config) {
 	config = config || {};
+
 	var w = {
 		editor: null, // reference to the tinyMCE instance we're creating, set in setup
 		entities: {}, // entities store
@@ -7,7 +8,7 @@ var Writer = function(config) {
 		triples: [], // triples store
 
 		schemaUrl: config.schemaUrl || 'js/cwrc_basic_tei.js',
-		schema: {}, // schema for additional custom tags
+		schema: {define:{}}, // schema for additional custom tags
 		
 		project: config.project, // the current project (cwrc or russell)
 		
@@ -56,59 +57,84 @@ var Writer = function(config) {
 	};
 	
 	var _onInitHandler = function(ed) {
+		// modify isBlock method to check _tag attributes
+		ed.dom.isBlock = function(node) {
+			var type = node.nodeType;
+
+			// If it's a node then check the type and use the nodeName
+			if (type) {
+				if (type === 1) {
+					var tag = node.getAttribute('_tag') || node.nodeName;
+					return !!(ed.schema.getBlockElements()[tag]);
+				}
+			}
+
+			return !!ed.schema.getBlockElements()[node];
+		};
+		
 		// parse schema css
 		if (w.schemaCSS) {
 			var name = w.schemaCSS.split('/');
 			name = name[name.length-1];
-			var stylesheets = ed.getDoc().styleSheets;
-			var stylesheet = null;
-			for (var i = 0; i < stylesheets.length; i++) {
-				var s = stylesheets[i];
-				if (s.href.indexOf(name) != -1) {
-					stylesheet = s;
-					break;
-				}
-			}
-			if (stylesheet) {
-				var parseCss = function() {
-					var rules = stylesheet.cssRules;
-					var newRules = '';
-					// adapt the rules to our format, should only modify element names in selectors
-					for (var i = 0; i < rules.length; i++) {
-						var selector = rules[i].selectorText;
-						var newSelector = selector.replace(/(^|,|\s)(\w+)/g, function(str, p1, p2, offset, s) {
-							return p1+'span[_tag="'+p2.toLowerCase()+'"]';
-						});
-						var css = rules[i].cssText;
-						var newCss = css.replace(selector, newSelector);
-						newRules += newCss+'\n';
+			var numCss = ed.getDoc().styleSheets.length;
+			var cssInt = null;
+			function parseCss() {
+				var stylesheet = null;
+				var stylesheets = ed.getDoc().styleSheets;
+				for (var i = 0; i < stylesheets.length; i++) {
+					var s = stylesheets[i];
+					if (s.href.indexOf(name) != -1) {
+						stylesheet = s;
+						break;
 					}
-					
-					var doc = ed.getDoc();
-					var styleEl = doc.createElement('style');
-					var styleType = doc.createAttribute('type');
-					styleType.value = 'text/css';
-					styleEl.setAttributeNode(styleType);
-					var styleText = doc.createTextNode(newRules);
-					styleEl.appendChild(styleText);
-					doc.head.appendChild(styleEl);
-					stylesheet.disabled = true;
-				};
-				try {
-					parseCss();
-				} catch(e) {
-					// if it fails then stylesheet hasn't completely loaded
-					// give it some time and try again
-					setTimeout(parseCss, 500);
 				}
+				if (stylesheet) {
+					try {
+						var rules = stylesheet.cssRules;
+						var newRules = '';
+						// adapt the rules to our format, should only modify element names in selectors
+						for (var i = 0; i < rules.length; i++) {
+							var selector = rules[i].selectorText;
+							var newSelector = selector.replace(/(^|,|\s)(\w+)/g, function(str, p1, p2, offset, s) {
+								return p1+'span[_tag="'+p2.toLowerCase()+'"]';
+							});
+							var css = rules[i].cssText;
+							var newCss = css.replace(selector, newSelector);
+							newRules += newCss+'\n';
+						}
+						
+						var doc = ed.getDoc();
+						var styleEl = doc.createElement('style');
+						var styleType = doc.createAttribute('type');
+						styleType.value = 'text/css';
+						styleEl.setAttributeNode(styleType);
+						var styleText = doc.createTextNode(newRules);
+						styleEl.appendChild(styleText);
+						doc.head.appendChild(styleEl);
+						stylesheet.disabled = true;
+					} catch (e) {
+						setTimeout(parseCss, 25);
+					}
+				} else {
+					setTimeout(parseCss, 25);
+				}
+			};
+			if (numCss > 0) {
+				parseCss();
+			} else {
+				cssInt = setInterval(function() {
+					var len = ed.getDoc().styleSheets.length;
+					if (len > numCss) {
+						clearInterval(cssInt);
+						parseCss();
+					}
+				}, 25);
 			}
 		}
 		
 		var settings = w.settings.getSettings();
 		if (settings.showEntityBrackets) ed.$('body').addClass('showEntityBrackets');
 		if (settings.showStructBrackets) ed.$('body').addClass('showStructBrackets');
-		
-		ed.setContent('<'+w.root+' _tag="'+w.root+'"><span _struct="true" _tag="text">Paste or type your text here.</span></'+w.root+'>');
 		
 		ed.addCommand('isSelectionValid', w.isSelectionValid);
 		ed.addCommand('showError', w.showError);
@@ -137,7 +163,7 @@ var Writer = function(config) {
 		
 		ed.onKeyUp.add(function(ed, evt) {
 			// nav keys check
-			if (evt.keyCode >= 33 || evt.keyCode <= 40) {
+			if (evt.which >= 33 || evt.which <= 40) {
 				_doHighlightCheck(ed, evt);
 			}
 			
@@ -152,15 +178,24 @@ var Writer = function(config) {
 			
 			// delete keys check
 			// need to do this here instead of in onchangehandler because that one doesn't update often enough
-			if (evt.keyCode == 8 || evt.keyCode == 46) {
+			if (evt.which == 8 || evt.which == 46) {
 				_findDeletedTags();
 				w.tree.update();
+			}
+			
+			// replace br's inserted on shift+enter
+			if (evt.shiftKey && evt.which == 13) {
+				if (ed.currentNode) {
+					var node = ed.currentNode;
+					if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
+					ed.$(node).find('br').replaceWith('<span _tag="lb" _struct="true"></span>');
+				}
 			}
 		});
 		
 		$(ed.dom.doc).keydown(function(e) {
 			// redo/undo listener
-			if ((e.keyCode == 89 || e.keyCode == 90) && e.ctrlKey) {
+			if ((e.which == 89 || e.which == 90) && e.ctrlKey) {
 				_findDeletedTags();
 				w.entitiesList.update();
 				w.tree.update();
@@ -175,20 +210,6 @@ var Writer = function(config) {
 				});
 			}
 		});
-		
-		// create css to display schema tags
-		$('head', ed.dom.doc).append('<style id="schemaTags" type="text/css" />');
-		var tag = w.root;
-		// xhtml only allows lower case elements
-		var schemaTags = w.root.toLowerCase()+' { display: block; }';
-		schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-		schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-		for (var i = 0; i < w.schema.elements.length; i++) {
-			tag = w.schema.elements[i];
-			schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-			schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-		}
-		$('#schemaTags', ed.dom.doc).text(schemaTags);
 		
 		_doResize();
 		
@@ -252,8 +273,9 @@ var Writer = function(config) {
 		}
 	};
 	
-	var _onChangeHandler = function(ed) {
+	var _onChangeHandler = function(ed, event) {
 		if (ed.isDirty()) {
+			ed.$('br[_moz_editor_bogus_node]').remove(); // FF inserts br tags on enter sometimes
 			_findDeletedTags();
 			w.tree.update();
 		}
@@ -302,6 +324,51 @@ var Writer = function(config) {
 		
 		var bm = ed.selection.getBookmark(1);
 		w.highlightEntity(id, bm);
+	};
+	
+	/**
+	 * Load a new schema.
+	 * @param schema
+	 */
+	w.loadSchema = function(schemaUrl, callback) {
+		$.ajax({
+			url: schemaUrl,
+			success: function(data, status, xhr) {
+				var schema = eval(xhr.responseText)[0];
+
+			    w.schema = schema.grammar;
+				
+			    w.root = w.schema.start.ref;
+			    w.editor.schema.addCustomElements(w.root);
+			    w.editor.schema.addCustomElements(w.root.toLowerCase());
+			    
+			    // create css to display schema tags
+				$('#schemaTags', w.editor.dom.doc).remove();
+				$('head', w.editor.dom.doc).append('<style id="schemaTags" type="text/css" />');
+				var tag = w.root;
+				// xhtml only allows lower case elements
+				var schemaTags = w.root.toLowerCase()+' { display: block; }';
+				schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+				schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+				for (var i = 0; i < w.schema.elements.length; i++) {
+					tag = w.schema.elements[i];
+					schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+					schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+				}
+				$('#schemaTags', w.editor.dom.doc).text(schemaTags);
+				
+				w.editor.setContent('<'+w.root+' _tag="'+w.root+'">Paste or type your text here.</'+w.root+'>');
+				
+				w.entitiesList.update();
+				w.tree.update(true);
+				w.relations.update();
+				
+				if (callback) callback();
+			},
+			error: function() {
+				w.d.show('message', {title: 'Error', msg: 'Error loading schema.'});
+			}
+		});
 	};
 	
 	/**
@@ -653,6 +720,7 @@ var Writer = function(config) {
 			var newEntity = jQuery.extend(true, {}, w.editor.entityCopy);
 			newEntity.props.id = tinymce.DOM.uniqueId('ent_');
 			
+			w.editor.selection.moveToBookmark(w.editor.currentBookmark);
 			var sel = w.editor.selection;
 			sel.collapse();
 			var rng = sel.getRng(true);
@@ -704,6 +772,7 @@ var Writer = function(config) {
 		parent.normalize();
 		w.highlightEntity();
 		w.entitiesList.remove(id);
+		w.editor.currentEntity = null;
 	};
 	
 	w.getTitleFromContent = function(content) {
@@ -800,8 +869,6 @@ var Writer = function(config) {
 	w.removeStructureTag = function(id) {
 		id = id || w.editor.currentStruct;
 		
-		if (w.editor.$('#'+id).is('p')) return;
-		
 		delete w.structs[id];
 		var node = w.editor.$('#'+id);
 		var parent = node.parent()[0];
@@ -813,6 +880,7 @@ var Writer = function(config) {
 		}
 		parent.normalize();
 		w.tree.update();
+		w.editor.currentStruct = null;
 	};
 	
 	w.selectStructureTag = function(id) {
@@ -947,29 +1015,22 @@ var Writer = function(config) {
 	 */
 	
 	w.init = function() {
+		var title = 'CWRCWriter v0.3';
+		$(document.body).append('<div id="wrap"><div id="header"><h1>'+title+'</h1></div><div id="leftcol"><div id="tabs"><ul><li><a href="#entities">Entities</a></li><li><a href="#structure">Structure</a></li><li><a href="#relations">Relations</a></li></ul></div><div id="separator" class="arrowLeft" title="Click to expand/contract"></div></div><div id="main"><form method="post" action=""><textarea id="editor" name="editor" class="tinymce"></textarea></form></div></div>');
+		
 		if (w.mode != null && w.mode == 'xml') {
 			w.mode = w.XML;
 		} else {
 			w.mode = w.XMLRDF;
 		}
 		
-		$.ajax({
-			url: w.schemaUrl,
-			success: function(data, status, xhr) {
-				var schema = eval(xhr.responseText)[0];
-
-			    w.schema = schema.grammar;
-				
-			    // need to get the schema before we can initialize the editor
-				w._initEditor();
-			}
-		});
-		
+		w.d = new DialogManager({writer: w, callback: function() {
+			w.d.show('start');
+		}});
 		w.fm = new FileManager({writer: w});
-		w.tree = new StructureTree({writer: w});
-		w.entitiesList = new EntitiesList({writer: w});
-		w.relations = new Relations({writer: w});
-		w.d = new DialogManager({writer: w});
+		w.tree = new StructureTree({writer: w, parentId: '#tabs'});
+		w.entitiesList = new EntitiesList({writer: w, parentId: '#tabs'});
+		w.relations = new Relations({writer: w, parentId: '#tabs'});
 		w.settings = new SettingsDialog(w, {
 			showEntityBrackets: true,
 			showStructBrackets: false
@@ -977,6 +1038,8 @@ var Writer = function(config) {
 		
 		$('#separator').click(w.toggleSidepanel);
 		$('#tabs').tabs();
+		
+		w._initEditor();
 	};
 	
 	w._initEditor = function() {		
@@ -1016,9 +1079,6 @@ var Writer = function(config) {
 					return w.schema;
 				});
 				
-				// add root to block elements
-				tinymce.html.Schema.blockElementsMap[w.root.toUpperCase()] = {};
-				
 				// add custom plugins and buttons
 				var plugins = ['schematags','currenttag','entitycontextmenu','viewsource','scrolling_dropmenu'];
 				
@@ -1027,136 +1087,82 @@ var Writer = function(config) {
 					tinymce.PluginManager.load(name, '../../../tinymce_plugins/'+name+'.js');
 				}
 				
-				ed.addButton('addperson', {
-					title: 'Tag Person',
-					image: 'img/user.png',
-					'class': 'entityButton person',
+				ed.addButton('addperson', {title: 'Tag Person', image: 'img/user.png', 'class': 'entityButton person',
 					onclick : function() {
 						ed.execCommand('addEntity', 'person');
 					}
 				});
-				ed.addButton('addplace', {
-					title: 'Tag Place',
-					image: 'img/world.png',
-					'class': 'entityButton place',
+				ed.addButton('addplace', {title: 'Tag Place', image: 'img/world.png', 'class': 'entityButton place',
 					onclick : function() {
 						ed.execCommand('addEntity', 'place');
 					}
 				});
-				ed.addButton('adddate', {
-					title: 'Tag Date',
-					image: 'img/calendar.png',
-					'class': 'entityButton date',
+				ed.addButton('adddate', {title: 'Tag Date', image: 'img/calendar.png', 'class': 'entityButton date',
 					onclick : function() {
 						ed.execCommand('addEntity', 'date');
 					}
 				});
-				ed.addButton('addevent', {
-					title: 'Tag Event',
-					image: 'img/cake.png',
-					'class': 'entityButton event',
+				ed.addButton('addevent', {title: 'Tag Event', image: 'img/cake.png', 'class': 'entityButton event',
 					onclick : function() {
 						ed.execCommand('addEntity', 'event');
 					}
 				});
-				ed.addButton('addorg', {
-					title: 'Tag Organization',
-					image: 'img/group.png',
-					'class': 'entityButton org',
+				ed.addButton('addorg', {title: 'Tag Organization', image: 'img/group.png', 'class': 'entityButton org',
 					onclick : function() {
 						ed.execCommand('addEntity', 'org');
 					}
 				});
-				ed.addButton('addcitation', {
-					title: 'Tag Citation',
-					image: 'img/vcard.png',
-					'class': 'entityButton citation',
+				ed.addButton('addcitation', {title: 'Tag Citation', image: 'img/vcard.png', 'class': 'entityButton citation',
 					onclick : function() {
 						ed.execCommand('addEntity', 'citation');
 					}
 				});
-				ed.addButton('addnote', {
-					title: 'Tag Note',
-					image: 'img/note.png',
-					'class': 'entityButton note',
+				ed.addButton('addnote', {title: 'Tag Note', image: 'img/note.png', 'class': 'entityButton note',
 					onclick : function() {
 						ed.execCommand('addEntity', 'note');
 					}
 				});
-				ed.addButton('addtitle', {
-					title: 'Tag Text/Title',
-					image: 'img/book.png',
-					'class': 'entityButton textTitle',
+				ed.addButton('addtitle', {title: 'Tag Text/Title', image: 'img/book.png', 'class': 'entityButton textTitle',
 					onclick : function() {
 						ed.execCommand('addEntity', 'title');
 					}
 				});
-				
-				ed.addButton('editTag', {
-					title: 'Edit Tag',
-					image: 'img/tag_blue_edit.png',
-					'class': 'entityButton',
+				ed.addButton('editTag', {title: 'Edit Tag', image: 'img/tag_blue_edit.png', 'class': 'entityButton',
 					onclick : function() {
 						ed.execCommand('editTag');
 					}
 				});
-				
-				ed.addButton('removeTag', {
-					title: 'Remove Tag',
-					image: 'img/cross.png',
-					'class': 'entityButton',
+				ed.addButton('removeTag', {title: 'Remove Tag', image: 'img/cross.png', 'class': 'entityButton',
 					onclick : function() {
 						ed.execCommand('removeTag');
 					}
 				});
-				
-				ed.addButton('savebutton', {
-					title: 'Save',
-					image: 'img/save.png',
+				ed.addButton('savebutton', {title: 'Save', image: 'img/save.png',
 					onclick: function() {
 						w.fm.validate(true);
 					}
 				});
-				
-				ed.addButton('saveasbutton', {
-					title: 'Save As',
-					image: 'img/save_as.png',
+				ed.addButton('saveasbutton', {title: 'Save As', image: 'img/save_as.png',
 					onclick: function() {
 						w.fm.openSaver();
 					}
 				});
-				
-				ed.addButton('loadbutton', {
-					title: 'Load',
-					image: 'img/folder_page.png',
-					'class': 'entityButton',
+				ed.addButton('loadbutton', {title: 'Load', image: 'img/folder_page.png', 'class': 'entityButton',
 					onclick: function() {
 						w.fm.openLoader();
 					}
 				});
-				
-				ed.addButton('editsource', {
-					title: 'Edit Source',
-					image: 'img/editsource.gif',
-					'class': 'wideButton',
+				ed.addButton('editsource', {title: 'Edit Source', image: 'img/editsource.gif', 'class': 'wideButton',
 					onclick: function() {
 						w.fm.editSource();
 					}
 				});
-				
-				ed.addButton('validate', {
-					title: 'Validate',
-					image: 'img/validate.png',
-					'class': 'entityButton',
+				ed.addButton('validate', {title: 'Validate', image: 'img/validate.png', 'class': 'entityButton',
 					onclick: function() {
 						w.fm.validate();
 					}
 				});
-				
-				ed.addButton('addtriple', {
-					title: 'Add Relation',
-					image: 'img/link_add.png',
-					'class': 'entityButton',
+				ed.addButton('addtriple', {title: 'Add Relation', image: 'img/link_add.png', 'class': 'entityButton',
 					onclick: function() {
 						$('#tabs').tabs('select', 2);
 						w.d.show('triple');
@@ -1174,9 +1180,8 @@ var Writer = function(config) {
 			doctype: '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
 			element_format: 'xhtml',
 			
-			forced_root_block : w.root,
-//			force_br_newlines: false,
-			force_p_newlines: false,
+			forced_root_block: w.root,
+			force_p_newlines: true,
 			
 			paste_auto_cleanup_on_paste: true,
 			paste_postprocess: function(pl, o) {
@@ -1206,14 +1211,16 @@ var Writer = function(config) {
 			},
 			
 			valid_elements: '*[*]', // allow everything
-			custom_elements: '~'+w.root,
+			custom_elements: w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
 			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
-			theme_advanced_toolbar_align: 'left'
+			theme_advanced_toolbar_align: 'left',
+			theme_advanced_path: false,
+			theme_advanced_statusbar_location: 'none'
 		});
 		
 		$(window).resize(_doResize);

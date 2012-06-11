@@ -7,7 +7,7 @@ var DialogManager = function(config) {
 	
 	var scripts = ['dialog_addevent.js', 'dialog_addorg.js', 'dialog_addperson.js', 'dialog_addplace.js',
 	               'dialog_date.js', 'dialog_message.js', 'dialog_note.js', 'dialog_search.js',
-	               'dialog_title.js', 'dialog_triple.js', 'dialog_teiheader.js'];
+	               'dialog_title.js', 'dialog_triple.js', 'dialog_teiheader.js', 'dialog_start.js'];
 	var loadCount = 0;
 	for (var i = 0; i < scripts.length; i++) {
 		var url = 'js/dialogs/'+scripts[i];
@@ -31,7 +31,8 @@ var DialogManager = function(config) {
 			addevent: new AddEventDialog(config),
 			addorg: new AddOrganizationDialog(config),
 			triple: new TripleDialog(config),
-			teiheader: new TeiHeaderDialog(config)
+			teiheader: new TeiHeaderDialog(config),
+			start: new StartDialog(config)
 		};
 		
 		dialogs.person = dialogs.search;
@@ -40,6 +41,10 @@ var DialogManager = function(config) {
 		dialogs.org = dialogs.search;
 		
 		dialogs.citation = dialogs.note;
+		
+		if (config.callback) {
+			config.callback();
+		}
 	};
 	
 	return {

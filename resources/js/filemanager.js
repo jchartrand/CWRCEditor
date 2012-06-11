@@ -106,8 +106,7 @@ var FileManager = function(config) {
 				$('#editDocLoader').contents().find('html').html(newDocString);
 				w.entities = {};
 				w.structs = {};
-				var newDoc = $('#editDocLoader').contents().clone()[0];
-				_loadDocumentHandler(newDoc);
+				_loadDocumentHandler($('#editDocLoader').contents()[0]);
 				edit.dialog('close');
 			},
 			'Cancel': function() {
@@ -293,13 +292,12 @@ var FileManager = function(config) {
 		
 		_entitiesToUnicode(doc.body);
 		
-		var head, content, exportText;
+		var content, exportText;
 		if (w.mode == w.XMLRDF) {
 			var offsets = [];
 			_getNodeOffsets($(doc.body), offsets);
 			$(doc.body).find('[_entity]').remove();
-			head = '<?xml version="1.0"?><html><head><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
-			content = '\n<body>\n'+w.editor.getContent({format: 'raw'})+'\n</body>\n</html>';
+			var head = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
 			
 			// entities
 			for (var i = 0; i < offsets.length; i++) {
@@ -328,10 +326,11 @@ var FileManager = function(config) {
 				'\n</rdf:Description>';
 			}
 			
-			head += '</rdf:RDF></head>';
-			exportText = head + content;
+			head += '</rdf:RDF>';
+			w.editor.$(w.root).prepend(head);
+			exportText = w.editor.getContent({format: 'raw'});
+//			exportText = head + content;
 		} else {
-			head = '<?xml version="1.0"?><html><head></head>';
 			for (var id in w.entities) {
 				var markers = w.editor.dom.select('[name="'+id+'"]');
 				var start = markers[0];
@@ -344,7 +343,7 @@ var FileManager = function(config) {
 					nodes.push(currentNode);
 				}
 				
-				var attributes = ' type="'+w.entities[id].props.type+'"';
+				var attributes = ' id="'+id+'" type="'+w.entities[id].props.type+'"';
 				for (var key in w.entities[id].info) {
 					attributes += ' '+key+'="'+w.entities[id].info[key]+'"';
 				}
@@ -352,8 +351,8 @@ var FileManager = function(config) {
 				w.editor.$(nodes).wrapAll('<entity'+attributes+'/>');
 				w.editor.$(markers).remove();
 			}
-			content = '\n<body>\n'+w.editor.getContent({format: 'raw'})+'\n</body>\n</html>';
-			exportText = head + content;
+			content = '\n'+w.editor.getContent({format: 'raw'});
+			exportText = '<?xml version="1.0"?>' + content;
 		}
 		$(doc.body).replaceWith(originalDoc);
 		return exportText;
@@ -388,6 +387,14 @@ var FileManager = function(config) {
 					offset: currentOffset,
 					length: w.entities[id].props.content.length
 				});
+			} else if (this.nodeName.toLowerCase() == 'entity') {
+				var id = $(this).attr('id');
+				offsets.push({
+					id: id,
+					parent: $(parent).attr('id'),
+					offset: currentOffset,
+					length: $(this).text().length
+				});
 			}
 		});
 	};
@@ -415,11 +422,11 @@ var FileManager = function(config) {
 	};
 	
 	var _loadDocumentHandler = function(doc) {
-		var offsets = {};
+		var offsets = [];
 		
 		var maxId = 0; // track what the largest id num is
 		
-		var rdfs = $(doc).find('rdf\\:RDF');
+		var rdfs = $(doc).find('rdf\\:RDF, RDF');
 		
 		var docMode;
 		if (rdfs.length > 0) {
@@ -439,87 +446,107 @@ var FileManager = function(config) {
 			w.mode = docMode;
 		}
 		
-		rdfs.children().each(function(i1, el1) {
-			// entity
-			if ($(this).attr('rdf:ID')) {
-				var id = $(this).find('w\\:ID').text();
-				
-				var idNum = parseInt(id.split('_')[1]);
-				if (idNum > maxId) maxId = idNum;
-				
-				offsets[id] = {
-					parent: $(this).find('w\\:parent').text(),
-					offset: parseInt($(this).find('w\\:offset').text()),
-					length: parseInt($(this).find('w\\:length').text())
-				};
+		if (docMode == w.XMLRDF) {
+			rdfs.children().each(function(i1, el1) {
+				// entity
+				if ($(this).attr('rdf:ID')) {
+					var id = $(this).find('w\\:id, id').text();
+					
+					var idNum = parseInt(id.split('_')[1]);
+					if (idNum > maxId) maxId = idNum;
+					
+					offsets.push({
+						id: id,
+						parent: $(this).find('w\\:parent, parent').text(),
+						offset: parseInt($(this).find('w\\:offset, offset').text()),
+						length: parseInt($(this).find('w\\:length, length').text())
+					});
+					w.entities[id] = {
+						props: {
+							id: id
+						},
+						info: {}
+					};
+					$(this).children('[type="props"]').each(function(i2, el2) {
+						var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
+						if (key == 'content') {
+							var title = w.getTitleFromContent($(this).text());
+							w.entities[id]['props']['title'] = title;
+						}
+						w.entities[id]['props'][key] = $(this).text();
+					});
+					$(this).children('[type="info"]').each(function(i2, el2) {
+						var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
+						w.entities[id]['info'][key] = $(this).text();
+					});
+					
+				// triple
+				} else {
+					var subject = $(this);
+					var subjectUri = subject.attr('rdf:about');
+					var predicate = $(this).children().first();
+					var object = $(this).find('rdf\\:Description, Description');
+					var objectUri = object.attr('rdf:about');
+					
+					var triple = {
+						subject: {
+							uri: subjectUri,
+							text: subject.attr('w:external') == 'false' ? w.entities[subjectUri].props.title : subjectUri,
+							external: subject.attr('w:external, external')
+						},
+						predicate: {
+							text: predicate.attr('w:text'),
+							name: predicate[0].nodeName.split(':')[1].toLowerCase(),
+							external: predicate.attr('w:external')
+						},
+						object: {
+							uri: objectUri,
+							text: object.attr('w:external') == 'false' ? w.entities[objectUri].props.title : objectUri,
+							external: object.attr('w:external')
+						}
+					};
+					
+					w.triples.push(triple);
+				}
+			});
+			$(doc).find('rdf\\:RDF, RDF').remove();
+		} else {
+			_getNodeOffsets($(doc.body), offsets);
+			
+			var ents = $(doc).find('entity');
+			ents.each(function(index, el) {
+				var ent = $(el);
+				var id = ent.attr('id');
+				var content = ent.text();
 				w.entities[id] = {
 					props: {
-						id: id
+						id: id,
+						type: ent.attr('type'),
+						content: content,
+						title: w.getTitleFromContent(content)
 					},
 					info: {}
 				};
-				$(this).children('[type="props"]').each(function(i2, el2) {
-					var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
-					if (key == 'content') {
-						var title = w.getTitleFromContent($(this).text());
-						w.entities[id]['props']['title'] = title;
-					}
-					w.entities[id]['props'][key] = $(this).text();
-				});
-				$(this).children('[type="info"]').each(function(i2, el2) {
-					var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
-					w.entities[id]['info'][key] = $(this).text();
+				$(el.attributes).each(function(index, att) {
+					w.entities[id].info[att.name] = att.value;
 				});
 				
-			// triple
-			} else {
-				var subject = $(this);
-				var subjectUri = subject.attr('rdf:about');
-				var predicate = $(this).children().first();
-				var object = $(this).find('rdf\\:Description');
-				var objectUri = object.attr('rdf:about');
-				
-				var triple = {
-					subject: {
-						uri: subjectUri,
-						text: subject.attr('w:external') == 'false' ? w.entities[subjectUri].props.title : subjectUri,
-						external: subject.attr('w:external')
-					},
-					predicate: {
-						text: predicate.attr('w:text'),
-						name: predicate[0].nodeName.split(':')[1].toLowerCase(),
-						external: predicate.attr('w:external')
-					},
-					object: {
-						uri: objectUri,
-						text: object.attr('w:external') == 'false' ? w.entities[objectUri].props.title : objectUri,
-						external: object.attr('w:external')
-					}
-				};
-				
-				w.triples.push(triple);
-			}
-		});
-		$(doc).find('rdf\\:RDF').remove();
-		
-		var body = doc.getElementsByTagName('body')[0];
-		var xmlString = '';
-		try {
-			if (window.ActiveXObject) {
-				xmlString = body.xml;
-			} else {
-			   xmlString = (new XMLSerializer()).serializeToString(body);
-			}
-		} catch (e) {
-			alert(e);
+				ent.contents().unwrap();
+			});
 		}
+		
+		var root = doc.getElementsByTagName(w.root)[0];
+		var xmlString = w.editor.serializer.serialize(root);
 		w.editor.setContent(xmlString);
 		
-		var id, o, range, contents, lengthCount, match, startOffset, endOffset, startNode, endNode;
-		for (id in offsets) {
+		var id, o, range, parent, contents, lengthCount, match, startOffset, endOffset, startNode, endNode;
+		for (var i = 0; i < offsets.length; i++) {
+			o = offsets[i];
+			id = o.id;
+			parent = w.editor.$('#'+o.parent);
+			
 			// get all text nodes
-			o = offsets[id];
-			contents = w.editor.$('#'+o.parent).contents().filter(function() {
+			contents = parent.contents().filter(function() {
 				return this.nodeType == Node.TEXT_NODE;
 			});
 			
@@ -529,7 +556,7 @@ var FileManager = function(config) {
 			startNode = contents.filter(function() {
 				if (!match) {
 					lengthCount += this.length;
-					if (lengthCount >= o.offset) {
+					if (lengthCount > o.offset) {
 						match = true;
 						return true;
 					} else {

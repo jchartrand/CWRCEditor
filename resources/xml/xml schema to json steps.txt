@@ -14,7 +14,7 @@ for (var i = 0; i < grammar.define.length; i++) {
 	var d = grammar.define[i];
 	newdef[d['-name']] = d;
 }
-var string = JSON.stringify(def);
+var string = JSON.stringify(newdef);
 
 Then copy paste the string into the file (removing the surrounding quotation marks).
 

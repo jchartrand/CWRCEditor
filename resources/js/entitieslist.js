@@ -4,6 +4,7 @@ var EntitiesList = function(config) {
 	
 	var entitiesList = {};
 	
+	$(config.parentId).append('<div id="entities"><div id="sortBy"><span>Sort By</span> <input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input><input type="radio" id="category" name="sortBy"><label for="category">Category</label></input></div><ul class="entitiesList"></ul></div>');
 	$(document.body).append(''+
 		'<div id="entitiesMenu" class="contextMenu" style="display: none;"><ul>'+
 		'<li id="editEntity"><ins style="background:url(img/tag_blue_edit.png) center center no-repeat;" />Edit Entity</li>'+

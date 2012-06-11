@@ -73,7 +73,7 @@ var SettingsDialog = function(writer, config) {
 	
 	$('#helpLink').click(function() {
 		if ($('#helpDialog iframe').length == 0) {
-			$('#helpDialog').html('<iframe src="http://docs.google.com/document/d/1kJpewMUkUtC1rzVgxDw8HaVf5xKDwGBrH4mI-Piiu9w/edit"/>');
+			$('#helpDialog').html('<iframe src="http://docs.google.com/document/d/1Y8u_wtQT9vLWyUjmd5AV77iBhTL3o9H6S1UJeLX6Q3M/edit"/>');
 		}
 		$('#helpDialog').dialog('open');
 	});

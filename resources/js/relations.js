@@ -2,6 +2,7 @@ var Relations = function(config) {
 	
 	var w = config.writer;
 	
+	$(config.parentId).append('<div id="relations"><ul class="relationsList"></ul></div>');
 	$(document.body).append(''+
 		'<div id="relationsMenu" class="contextMenu" style="display: none;"><ul>'+
 		'<li id="removeRelation"><ins style="background:url(img/cross.png) center center no-repeat;" />Remove Relation</li>'+

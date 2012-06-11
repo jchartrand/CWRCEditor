@@ -4,6 +4,7 @@ var StructureTree = function(config) {
 	
 	var tree = {};
 
+	$(config.parentId).append('<div id="structure"><div id="tree"></div></div>');
 	$(document.body).append('<div id="tree_popup"></div>');
 	
 	$('#tree').jstree({
@@ -134,9 +135,7 @@ var StructureTree = function(config) {
 						}
 					}
 				};
-				if (info._tag == 'p') {
-					delete items['delete'];
-				} else if (info._tag == w.root) {
+				if (info._tag == w.root) {
 					delete items['delete'];
 					delete items['before'];
 					delete items['after'];

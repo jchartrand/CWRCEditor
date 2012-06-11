@@ -95,6 +95,19 @@ label {
 	background-image: url('../img/arrow_right.gif');
 }
 
+.buttonsParent {
+	text-align: center;
+}
+
+.buttonsParent button {
+	margin: 10px;
+	width: 300px;
+}
+
+#startDialog button .ui-button-text {
+	font-size: 14px !important;
+}
+
 #sortBy {
 	padding: 3px 10px;
 }

@@ -14,11 +14,9 @@
 			
 			t.isDirty = false;
 			
-			t.schema = null;
-			
 			t.tag = null;
 			
-			ed.addCommand('createSchemaTagsControl', function(config) {
+			t.editor.addCommand('createSchemaTagsControl', function(config) {
 				var url = t.url+'/../../img/';
 				var menu = config.menu;
 				var mode = config.mode || 'add';
@@ -27,13 +25,13 @@
 				menu.beforeShowMenu.add(function(m) {
 					var filterKey;
 					// get the node from currentBookmark if available, otherwise use currentNode
-					if (ed.currentBookmark != null) {
-						node = ed.currentBookmark.rng.commonAncestorContainer;
+					if (t.editor.currentBookmark != null) {
+						node = t.editor.currentBookmark.rng.commonAncestorContainer;
 						while (node.nodeType == 3) {
 							node = node.parentNode;
 						}
 					} else {
-						node = ed.currentNode;
+						node = t.editor.currentNode;
 					}
 					filterKey = node.getAttribute('_tag');
 					
@@ -41,7 +39,10 @@
 						filterKey = $(node).parent().attr('_tag');
 					}
 					
-					var validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
+					var validKeys = {};
+					if (filterKey != 'teiHeader') {
+						validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
+					}
 					var item;
 					var count = 0, disCount = 0;
 					for (var itemId in m.items) {
@@ -59,8 +60,9 @@
 					}
 				});
 				
-				for (var i = 0; i < t.schema.elements.length; i++) {
-					var key = t.schema.elements[i];
+				var schema = t.editor.execCommand('getSchema');
+				for (var i = 0; i < schema.elements.length; i++) {
+					var key = schema.elements[i];
 					var menuitem = menu.add({
 						title: key,
 						key: key,
@@ -86,20 +88,25 @@
 				return menu;
 			});
 			
-			ed.addCommand('addSchemaTag', function(params) {
+			t.editor.addCommand('addSchemaTag', function(params) {
 				var key = params.key;
 				var pos = params.pos;
 				t.action = params.action;
-				
-				t.editor.selection.moveToBookmark(t.editor.currentBookmark);
-				
-				var valid = ed.execCommand('isSelectionValid', true);
-				if (valid != 2) {
-					ed.execCommand('showError', valid);
+				if (key == 'teiHeader') {
+					t.editor.execCommand('addStructureTag', {bookmark: t.editor.currentBookmark, attributes: {_struct: true, _tag: key}, action: t.action});
+					t.editor.writer.d.show('teiheader');
 					return;
 				}
 				
-				var sel = ed.selection;
+				t.editor.selection.moveToBookmark(t.editor.currentBookmark);
+				
+				var valid = t.editor.execCommand('isSelectionValid', true);
+				if (valid != 2) {
+					t.editor.execCommand('showError', valid);
+					return;
+				}
+				
+				var sel = t.editor.selection;
 				var content = sel.getContent();
 				var range = sel.getRng(true);
 				if (range.startContainer == range.endContainer) {
@@ -114,15 +121,19 @@
 				t.showDialog(key, pos);
 			});
 			
-			ed.addCommand('editSchemaTag', function(tag, pos) {
-				var key = tag.attr('_tag'); 
+			t.editor.addCommand('editSchemaTag', function(tag, pos) {
+				var key = tag.attr('_tag');
+				if (key == 'teiHeader') {
+					t.editor.writer.d.show('teiheader');
+					return;
+				}
 				t.currentKey = key;
 				t.tag = tag;
 				t.mode = t.EDIT;
 				t.showDialog(key, pos);
 			});
 			
-			ed.addCommand('changeSchemaTag', function(params) {
+			t.editor.addCommand('changeSchemaTag', function(params) {
 				t.currentKey = params.key;
 				t.tag = params.tag;
 				t.mode = t.EDIT;
@@ -399,8 +410,6 @@
 		createControl: function(n, cm) {
 			if (n == 'schematags') {
 				var t = this;
-				
-				t.schema = t.editor.execCommands.getSchema.func();//t.editor.execCommand('getSchema');
 				
 				var url = t.url+'/../../img/';
 				t.menuButton = cm.createMenuButton('schemaTagsButton', {

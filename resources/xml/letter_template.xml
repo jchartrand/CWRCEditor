@@ -1,0 +1,35 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+   <teiHeader>
+       <fileDesc>
+       <titleStmt>
+           <title>Put title here.</title>
+       </titleStmt>
+       <publicationStmt>
+           <p>Put publication statement here.</p>
+       </publicationStmt>
+       <sourceDesc>
+           <p>Put description of source here.</p>
+       </sourceDesc>
+       </fileDesc>
+   </teiHeader>
+   <text>
+       <body>
+           <div type="letter">
+               <opener>
+                   <p>Put any opening text here.</p>                    
+                   <dateline>                        
+                       <date>Put dateline here.</date>
+                   </dateline>
+                   <salute>Put opening salutation here.</salute>
+               </opener>
+               <p>Put text of letter here. Press return for more paragraphs. Place an pb element for page breaks.</p>
+               <closer>
+                   <salute>Put closing salutation here.</salute>
+                   <signed>
+                       <persName>Signature here.</persName>
+                   </signed>
+               </closer>
+           </div>
+       </body>        
+   </text>
+</TEI>
