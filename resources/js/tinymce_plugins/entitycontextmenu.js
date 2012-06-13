@@ -204,7 +204,7 @@
 			}).setDisabled(col);
 			m.add({
 				title: 'Remove Tag',
-				icon_src: url+'cross.png',
+				icon_src: url+'tag_blue_delete.png',
 				onclick : function() {
 					ed.execCommand('removeTag');
 				}

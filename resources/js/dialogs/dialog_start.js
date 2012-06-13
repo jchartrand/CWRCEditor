@@ -1,6 +1,4 @@
 var StartDialog = function(config) {
-	var w = config.writer;
-	
 	$(document.body).append(''+
 		'<div id="startDialog"><div class="buttonsParent">'+
 			'<button>Load an Existing Document</button>'+
@@ -26,74 +24,18 @@ var StartDialog = function(config) {
 	
 	var buttons = $('#startDialog button').button();
 	buttons.eq(0).click(function() {
-		start.dialog('close');
-		w.fm.openLoader();
+		window.location = 'editor.htm#load';
 	});
 	buttons.eq(1).click(function() {
-		start.dialog('close');
-		w.loadSchema('js/cwrc_basic_tei.js');
-		w.validationSchema = 'common';
+		window.location = 'editor.htm#tei';
 	});
 	buttons.eq(2).click(function() {
-		start.dialog('close');
-		w.loadSchema('js/common_events_schema.js');
-		w.validationSchema = 'events';
+		window.location = 'editor.htm#events';
 	});
 	buttons.eq(3).click(function() {
-		start.dialog('close');
-		w.validationSchema = 'common';
-		w.loadSchema('js/cwrc_basic_tei.js', function() {
-			function loadLetter(xml, xsl) {
-				var doc;
-				if (window.ActiveXObject) {
-					doc = xml.transformNode(xsl);
-				} else {
-					var xsltProcessor = new XSLTProcessor();
-					xsltProcessor.importStylesheet(xsl);
-					doc = xsltProcessor.transformToDocument(xml);
-				}
-				var xmlString = '';
-				try {
-					if (window.ActiveXObject) {
-						xmlString = doc;
-					} else {
-						xmlString = (new XMLSerializer()).serializeToString(doc.firstChild);
-					}
-				} catch (e) {
-					alert(e);
-				}
-				w.editor.setContent(xmlString);
-				
-				w.entitiesList.update();
-				w.tree.update(true);
-				w.relations.update();
-			}
-			
-			var xml, xsl = null;
-			$.ajax({
-				url: 'xml/letter_template.xml',
-				success: function(data, status, xhr) {
-					xml = data;
-					if (xsl != null) loadLetter(xml, xsl);
-				}
-			});
-			$.ajax({
-				url: 'xml/doc2internal.xsl',
-				success: function(data, status, xhr) {
-					xsl = data;
-					if (xml != null) loadLetter(xml, xsl); 
-				}
-			});
-		});
+		window.location = 'editor.htm#letter';
 	});
 	
-	return {
-		show: function(config) {
-			start.dialog('option', 'position', 'center');
-			start.dialog('open');
-		},
-		hide: function() {
-			start.dialog('close');
-		}
-	};
+	start.dialog('option', 'position', 'center');
+	start.dialog('open');
 };

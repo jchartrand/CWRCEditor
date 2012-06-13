@@ -7,7 +7,8 @@ var DialogManager = function(config) {
 	
 	var scripts = ['dialog_addevent.js', 'dialog_addorg.js', 'dialog_addperson.js', 'dialog_addplace.js',
 	               'dialog_date.js', 'dialog_message.js', 'dialog_note.js', 'dialog_search.js',
-	               'dialog_title.js', 'dialog_triple.js', 'dialog_teiheader.js', 'dialog_start.js'];
+	               'dialog_citation.js', 'dialog_title.js', 'dialog_triple.js', 'dialog_teiheader.js',
+	               'dialog_correction.js', 'dialog_keyword.js', 'dialog_link.js'];
 	var loadCount = 0;
 	for (var i = 0; i < scripts.length; i++) {
 		var url = 'js/dialogs/'+scripts[i];
@@ -24,27 +25,24 @@ var DialogManager = function(config) {
 			message: new MessageDialog(config),
 			search: new SearchDialog(config),
 			note: new NoteDialog(config),
+			citation: new CitationDialog(config),
+			correction: new CorrectionDialog(config),
+			keyword: new KeywordDialog(config),
 			title: new TitleDialog(config),
 			date: new DateDialog(config),
+			link: new LinkDialog(config),
 			addperson: new AddPersonDialog(config),
 			addplace: new AddPlaceDialog(config),
 			addevent: new AddEventDialog(config),
 			addorg: new AddOrganizationDialog(config),
 			triple: new TripleDialog(config),
-			teiheader: new TeiHeaderDialog(config),
-			start: new StartDialog(config)
+			teiheader: new TeiHeaderDialog(config)
 		};
 		
 		dialogs.person = dialogs.search;
 		dialogs.place = dialogs.search;
 		dialogs.event = dialogs.search;
 		dialogs.org = dialogs.search;
-		
-		dialogs.citation = dialogs.note;
-		
-		if (config.callback) {
-			config.callback();
-		}
 	};
 	
 	return {

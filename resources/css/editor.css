@@ -59,6 +59,18 @@ body {
 	background-color: #debb00;
 }
 
+#entityHighlight.correction {
+	background-color: #FF3300;
+}
+
+#entityHighlight.keyword {
+	background-color: #008040;
+}
+
+#entityHighlight.link {
+	background-color: #3366ff;
+}
+
 .showEntityBrackets .person {
 	border-color: #FF0000;
 }
@@ -89,6 +101,18 @@ body {
 
 .showEntityBrackets .title {
 	border-color: #debb00;
+}
+
+.showEntityBrackets .correction {
+	border-color: #FF3300;
+}
+
+.showEntityBrackets .keyword {
+	border-color: #008040;
+}
+
+.showEntityBrackets .link {
+	border-color: #3366ff;
 }
 
 .titleTagQuotes:before, .quoteTagShort:before {

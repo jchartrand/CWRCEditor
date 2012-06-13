@@ -129,7 +129,7 @@ var StructureTree = function(config) {
 					},
 					'delete': {
 						label: 'Remove Tag',
-						icon: 'img/cross.png',
+						icon: 'img/tag_blue_delete.png',
 						action: function(obj) {
 							w.removeStructureTag(obj.attr('name'));
 						}

@@ -247,6 +247,42 @@ label {
 	background-color: #debb00;
 }
 
+.entitiesList .correction .box {
+	background-image: url('../img/error.png');
+}
+
+.entitiesList .correction .box, .entitiesList .correction.over {
+	background-color: #FF9980;
+}
+
+.entitiesList .correction.selected, .entitiesList .correction.selected .box {
+	background-color: #FF3300;
+}
+
+.entitiesList .keyword .box {
+	background-image: url('../img/page_key.png');
+}
+
+.entitiesList .keyword .box, .entitiesList .keyword.over {
+	background-color: #1da862;
+}
+
+.entitiesList .keyword.selected, .entitiesList .keyword.selected .box {
+	background-color: #008040;
+}
+
+.entitiesList .link .box {
+	background-image: url('../img/link.png');
+}
+
+.entitiesList .link .box, .entitiesList .link.over {
+	background-color: #6289ff;
+}
+
+.entitiesList .link.selected, .entitiesList .link.selected .box {
+	background-color: #3366ff;
+}
+
 .entitiesList .entityTitle {
 	font-size: 11px;
 	vertical-align: 6px;
@@ -336,8 +372,8 @@ label {
 	border: 1px solid #ccc;
 }
 
-#lookupServices > div {
-	margin-bottom: 0px;
+.ui-accordion-icons > div {
+	margin-bottom: 0px !important;
 }
 
 #lookupServices .ui-accordion-content {
@@ -412,14 +448,18 @@ label {
    user-select: none;
 }
 
-#noteDialog textarea {
-	width: 275px;
-	height: 150px;
+
+#correctionDialog p, #noteDialog p {
+	margin: 5px 0;
 }
 
-#noteDialog button, #dateDialog button {
-	margin-top: 5px;
-	float: right;
+#correctionDialog textarea, #citationDialog textarea {
+	width: 350px;
+	height: 100px;
+}
+
+#keyword_choice {
+	height: 250px;
 }
 
 .ui-dialog-content div {
@@ -626,7 +666,7 @@ label {
 }
 
 /* tinymce style overrides */
-.defaultSkin table.mceLayout tr.mceFirst td {
+#editor_parent table.mceLayout tr.mceFirst td {
 	border: 0 none !important;
 }
 
@@ -714,6 +754,18 @@ label {
 
 .mceToolbar .textTitle {
 	border-bottom: 2px solid #debb00 !important;
+}
+
+.mceToolbar .correction {
+	border-bottom: 2px solid #FF3300 !important;
+}
+
+.mceToolbar .keyword {
+	border-bottom: 2px solid #008040 !important;
+}
+
+.mceToolbar .link {
+	border-bottom: 2px solid #3366ff !important;
 }
 
 /* tinymce overrides */

@@ -25,6 +25,9 @@ var Writer = function(config) {
 			org: 'Organization',
 			citation: 'Citation',
 			note: 'Note',
+			correction: 'Correction',
+			keyword: 'Keyword',
+			link: 'Link',
 			title: 'Text/Title'
 		},
 		
@@ -215,6 +218,63 @@ var Writer = function(config) {
 		
 		// populate with initial content
 		w.tree.update();
+		
+		// do one of serveral start options
+		var start = window.location.hash;
+		if (start.match('load')) {
+			w.fm.openLoader();
+		} else if (start.match('tei') || start == '') {
+			w.loadSchema('js/cwrc_basic_tei.js', true);
+			w.validationSchema = 'common';
+		} else if (start.match('events')) {
+			w.loadSchema('js/common_events_schema.js', true);
+			w.validationSchema = 'events';
+		} else if (start.match('letter')) {
+			w.validationSchema = 'common';
+			w.loadSchema('js/cwrc_basic_tei.js', false, function() {
+				function loadLetter(xml, xsl) {
+					var doc;
+					if (window.ActiveXObject) {
+						doc = xml.transformNode(xsl);
+					} else {
+						var xsltProcessor = new XSLTProcessor();
+						xsltProcessor.importStylesheet(xsl);
+						doc = xsltProcessor.transformToDocument(xml);
+					}
+					var xmlString = '';
+					try {
+						if (window.ActiveXObject) {
+							xmlString = doc;
+						} else {
+							xmlString = (new XMLSerializer()).serializeToString(doc.firstChild);
+						}
+					} catch (e) {
+						alert(e);
+					}
+					w.editor.setContent(xmlString);
+					
+					w.entitiesList.update();
+					w.tree.update(true);
+					w.relations.update();
+				}
+				
+				var xml, xsl = null;
+				$.ajax({
+					url: 'xml/letter_template.xml',
+					success: function(data, status, xhr) {
+						xml = data;
+						if (xsl != null) loadLetter(xml, xsl);
+					}
+				});
+				$.ajax({
+					url: 'xml/doc2internal.xsl',
+					success: function(data, status, xhr) {
+						xsl = data;
+						if (xml != null) loadLetter(xml, xsl); 
+					}
+				});
+			});
+		}
 	};
 	
 	var _findDeletedTags = function() {
@@ -330,7 +390,7 @@ var Writer = function(config) {
 	 * Load a new schema.
 	 * @param schema
 	 */
-	w.loadSchema = function(schemaUrl, callback) {
+	w.loadSchema = function(schemaUrl, startText, callback) {
 		$.ajax({
 			url: schemaUrl,
 			success: function(data, status, xhr) {
@@ -357,7 +417,9 @@ var Writer = function(config) {
 				}
 				$('#schemaTags', w.editor.dom.doc).text(schemaTags);
 				
-				w.editor.setContent('<'+w.root+' _tag="'+w.root+'">Paste or type your text here.</'+w.root+'>');
+				var text = '';
+				if (startText) text = 'Paste or type your text here.';
+				w.editor.setContent('<'+w.root+' _tag="'+w.root+'">'+text+'</'+w.root+'>');
 				
 				w.entitiesList.update();
 				w.tree.update(true);
@@ -644,7 +706,7 @@ var Writer = function(config) {
 		if (info != null) {
 //			var startTag = w.editor.$('[name='+id+'][class~=start]');
 //			for (var key in info) {
-//				startTag.attr(key, w.sanitizeAttributeValue(info[key]));
+//				startTag.attr(key, w.escapeHTMLString(info[key]));
 //			}
 			var id = _addEntityTag(type);
 			w.entities[id].info = info;
@@ -814,7 +876,7 @@ var Writer = function(config) {
 		var tag = 'span';
 		var open_tag = '<'+tag;
 		for (var key in attributes) {
-			open_tag += ' '+key+'="'+w.sanitizeAttributeValue(attributes[key])+'"';
+			open_tag += ' '+key+'="'+w.escapeHTMLString(attributes[key])+'"';
 		}
 		open_tag += '>';
 		var close_tag = '</'+tag+'>';
@@ -980,9 +1042,17 @@ var Writer = function(config) {
 		}
 	};
 	
-	w.sanitizeAttributeValue = function(value) {
+	w.escapeHTMLString = function(value) {
 		if (typeof value == 'string') {
-			return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+			return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#039;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		} else {
+			return value;
+		}
+	};
+	
+	w.unescapeHTMLString = function(value) {
+		if (typeof value == 'string') {
+			return value.replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 		} else {
 			return value;
 		}
@@ -1024,9 +1094,7 @@ var Writer = function(config) {
 			w.mode = w.XMLRDF;
 		}
 		
-		w.d = new DialogManager({writer: w, callback: function() {
-			w.d.show('start');
-		}});
+		w.d = new DialogManager({writer: w});
 		w.fm = new FileManager({writer: w});
 		w.tree = new StructureTree({writer: w, parentId: '#tabs'});
 		w.entitiesList = new EntitiesList({writer: w, parentId: '#tabs'});
@@ -1122,6 +1190,21 @@ var Writer = function(config) {
 						ed.execCommand('addEntity', 'note');
 					}
 				});
+				ed.addButton('addcorrection', {title: 'Tag Correction', image: 'img/error.png', 'class': 'entityButton correction',
+					onclick : function() {
+						ed.execCommand('addEntity', 'correction');
+					}
+				});
+				ed.addButton('addkeyword', {title: 'Tag Keyword', image: 'img/page_key.png', 'class': 'entityButton keyword',
+					onclick : function() {
+						ed.execCommand('addEntity', 'keyword');
+					}
+				});
+				ed.addButton('addlink', {title: 'Tag Link', image: 'img/link.png', 'class': 'entityButton link',
+					onclick : function() {
+						ed.execCommand('addEntity', 'link');
+					}
+				});
 				ed.addButton('addtitle', {title: 'Tag Text/Title', image: 'img/book.png', 'class': 'entityButton textTitle',
 					onclick : function() {
 						ed.execCommand('addEntity', 'title');
@@ -1132,7 +1215,7 @@ var Writer = function(config) {
 						ed.execCommand('editTag');
 					}
 				});
-				ed.addButton('removeTag', {title: 'Remove Tag', image: 'img/cross.png', 'class': 'entityButton',
+				ed.addButton('removeTag', {title: 'Remove Tag', image: 'img/tag_blue_delete.png', 'class': 'entityButton',
 					onclick : function() {
 						ed.execCommand('removeTag');
 					}
@@ -1162,7 +1245,7 @@ var Writer = function(config) {
 						w.fm.validate();
 					}
 				});
-				ed.addButton('addtriple', {title: 'Add Relation', image: 'img/link_add.png', 'class': 'entityButton',
+				ed.addButton('addtriple', {title: 'Add Relation', image: 'img/chart_org.png', 'class': 'entityButton',
 					onclick: function() {
 						$('#tabs').tabs('select', 2);
 						w.d.show('triple');
@@ -1214,7 +1297,7 @@ var Writer = function(config) {
 			custom_elements: w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
-			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
