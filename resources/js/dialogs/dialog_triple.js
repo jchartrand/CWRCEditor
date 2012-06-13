@@ -100,12 +100,12 @@ var TripleDialog = function(config) {
 		$('#tripleColumnsParent ul').each(function(index, el) {
 			var s = $(this).find('.selected');
 			if (s.length == 1) {
-				components[index] = {text: w.sanitizeAttributeValue(s.text()), uri: s.attr('name'), external: false};
+				components[index] = {text: w.escapeHTMLString(s.text()), uri: s.attr('name'), external: false};
 			}
 		});
 		$('#tripleColumnsParent input').each(function(index, el) {
 			var val = $(this).val();
-			if (val != '') components[index] = {text: w.sanitizeAttributeValue(val), uri: w.sanitizeAttributeValue(val), external: true};
+			if (val != '') components[index] = {text: w.escapeHTMLString(val), uri: w.escapeHTMLString(val), external: true};
 		});
 		
 		return components;
