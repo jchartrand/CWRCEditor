@@ -12,7 +12,7 @@ var Writer = function(config) {
 		
 		project: config.project, // the current project (cwrc or russell)
 		
-		baseUrl: 'http://apps.testing.cwrc.ca/',
+		baseUrl: window.location.protocol+'//'+window.location.host+'/',
 		
 		schemaCSS: 'css/orlando.css', // css for schema tags used in the editor
 		

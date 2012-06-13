@@ -106,7 +106,7 @@ var SearchDialog = function(config) {
 		
 		if (lookupService == 'lookup_project') {
 			$.ajax({
-				url: 'http://apps.testing.cwrc.ca/services/entity_lookup/uap',
+				url: w.baseUrl+'services/entity_lookup/uap',
 				data: {
 					q: 'authlabel:'+query,
 					d: 'orlando',
