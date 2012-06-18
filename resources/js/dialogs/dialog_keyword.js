@@ -16,7 +16,10 @@ var KeywordDialog = function(config) {
 		    '</div>'+
 		    '<div id="keyword_index">'+
 			    '<h3><a href="#">Index Term</a></h3>'+
-			    '<div><label for="keyword_lookup">OCLC Lookup</label><input type="text" id="keyword_lookup" /><ul></ul></div>'+
+			    '<div>'+
+				    '<label for="keyword_lookup">OCLC Lookup</label><input type="text" id="keyword_lookup" />'+
+				    '<ul class="searchResults" style="overflow: auto; border: 1px solid #fff;"></ul>'+
+			    '</div>'+
 			'</div>'+
 		'</div>'+
 	'</div>');
@@ -34,7 +37,7 @@ var KeywordDialog = function(config) {
 		open: function(event, ui) {
 			$('#keywordDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 350,
+		height: 400,
 		width: 400,
 		autoOpen: false,
 		buttons: {
@@ -50,30 +53,92 @@ var KeywordDialog = function(config) {
 	$('#keyword_lookup').keyup(function() {
 		var query = $(this).val();
 		$.ajax({
-			url: 'http://tspilot.oclc.org/lcsh/',
+			url: w.baseUrl+'services/ts-oclc/lcsh/',
 			data: {
 				query: query,
 				version: '1.1',
 				operation: 'searchRetrieve',
 				recordSchema: 'http%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore',
-				maximumRecords: '10',
+				maximumRecords: '15',
 				startRecord: '1'
 			},
+//			url: w.baseUrl+'cwrc/xml/keyword_search.xml',
+			type: 'GET',
+			dataType: 'xml',
 			success: function(data, status, xhr) {
-				
+				var records = $('record', data);
+				showResults(records);
 			},
 			error: function(xhr, status, error) {
-				
+				alert(error);
 			}
 		});
 	});
 	
+	var showResults = function(records) {
+		var list = $('#keyword_index ul');
+		list.empty();
+		if (records.length == 0) {
+			list.html('<li class="unselectable last"><span>No results.</span></li>');
+		} else {
+			var ids = [];
+			var liString = '';
+			records.each(function(index, el) {
+				var label = $('skos\\:prefLabel, prefLabel', el).text();
+				var id = $('dct\\:identifier, identifier', el).first().text();
+				var last = '';
+				if (index == records.length -1) last = 'last';
+				ids.push(id);
+				liString += '<li class="unselectable '+last+'"><span>'+label+'</span></li>';
+			});
+			
+			list.html(liString);
+			$('li', list).each(function(index, el) {
+				$(this).data('id', ids[index]);
+				$(this).data('title', $(this).text());
+			});
+			
+			$('li', list).click(function(event) {
+				list.css({borderColor: '#fff'});
+				var remove = $(this).hasClass('selected');
+				$('li', list).removeClass('selected');
+				if (!remove ) $(this).addClass('selected');
+			});
+			
+			$('li', list).dblclick(function(event) {
+				$('li', list).removeClass('selected');
+				$(this).addClass('selected');
+				keywordResult();
+			});
+		}
+		var height = list.parents('div.ui-accordion-content').height();
+		list.height(height - 20);
+	};
+	
 	var keywordResult = function(cancelled) {
 		var data = null;
 		if (!cancelled) {
-			var data = {
-				
-			};
+			var tab = $('#keywordDialog div.ui-accordion-content-active').parent()[0].id;
+			if (tab == 'keyword_key') {
+				data = {
+					type: 'keyword',
+					keyword: $('#keyword_input').val()
+				};
+			} else {
+				data = $('#keywordDialog div.ui-accordion-content-active ul li.selected').data();
+				if (data) {
+					for (var key in data) {
+						if (key.match(/jQuery/)) {
+							delete data[key];
+						}
+					}
+				} else {
+					$('#keywordDialog div.ui-accordion-content-active ul').css({borderColor: 'red'});
+					return false;
+				}
+				data.lookup = $('#keyword_lookup').val();
+				data.type = 'lookup';
+			}
 		}
 		if (mode == EDIT && data != null) {
 			w.editEntity(w.editor.currentEntity, data);
@@ -90,10 +155,20 @@ var KeywordDialog = function(config) {
 			mode = config.entry ? EDIT : ADD;
 			var prefix = 'Add ';
 			
+			$('#keyword_input').val('');
+			$('#keyword_lookup').val('');
+			$('#keyword_index ul').empty();
 			if (mode == ADD) {
-				
+				$('#keyword_choice').accordion('activate', 0);
 			} else {
 				prefix = 'Edit ';
+				if (config.entry.info.type == 'keyword') {
+					$('#keyword_choice').accordion('activate', 0);
+					$('#keyword_input').val(config.entry.info.keyword);
+				} else {
+					$('#keyword_choice').accordion('activate', 1);
+					$('#keyword_lookup').val(config.entry.info.lookup);
+				}
 			}
 			
 			var title = prefix+config.title;

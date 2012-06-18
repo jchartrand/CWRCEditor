@@ -98,9 +98,9 @@ var SearchDialog = function(config) {
 	var doQuery = function() {
 		var lookupService = $('#lookupServices div.ui-accordion-content-active').parent()[0].id;
 		
-		$('div.ui-accordion-content-active div.searchResultsParent').css({borderColor: '#fff'});
+		$('#lookupServices div.ui-accordion-content-active div.searchResultsParent').css({borderColor: '#fff'});
 		
-		$('div.ui-accordion-content-active ul').first().html('<li class="unselectable last"><span>Searching...</span></li>');
+		$('#lookupServices div.ui-accordion-content-active ul').first().html('<li class="unselectable last"><span>Searching...</span></li>');
 		
 		var query = searchInput.value;
 		
@@ -119,7 +119,7 @@ var SearchDialog = function(config) {
 					if (data != null) {
 						handleResults(data, 'project');
 					} else {
-						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
+						$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
 					}
 				},
 				error: function(xhr, status, error) {
@@ -132,7 +132,7 @@ var SearchDialog = function(config) {
 						var data = $.parseJSON('['+string+']');
 						handleResults(data, 'project');
 					} else {
-						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
+						$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
 					}
 				}
 			});
@@ -147,11 +147,11 @@ var SearchDialog = function(config) {
 					if (data != null && data.result != null) {
 						handleResults(data.result, 'viaf');
 					} else {
-						$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
+						$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
 					}
 				},
 				error: function() {
-					$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
+					$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>Server error.</span></li>');
 				}
 			});
 		} else if (lookupService == 'lookup_orca') {
@@ -173,7 +173,7 @@ var SearchDialog = function(config) {
 		var last = '';
 		
 		if (results.length == 0) {
-			$('div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
+			$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul').first().html('<li class="unselectable last"><span>No results.</span></li>');
 		} else {
 			var r, i, label;
 			for (i = 0; i < results.length; i++) {
@@ -195,21 +195,21 @@ var SearchDialog = function(config) {
 				formattedResults += '</li>';
 			}
 			
-			$('div.ui-accordion-content-active div.searchResultsParent ul').first().html(formattedResults);
+			$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul').first().html(formattedResults);
 			
-			$('div.ui-accordion-content-active div.searchResultsParent ul li').each(function(index) {
+			$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul li').each(function(index) {
 				$(this).data(results[index]);
 			});
 			
-			$('div.ui-accordion-content-active div.searchResultsParent ul li').click(function(event) {
-				$('div.ui-accordion-content-active div.searchResultsParent').css({borderColor: '#fff'});
+			$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul li').click(function(event) {
+				$('#lookupServices div.ui-accordion-content-active div.searchResultsParent').css({borderColor: '#fff'});
 				var remove = $(this).hasClass('selected');
-				$('div.ui-accordion-content-active ul li').removeClass('selected');
+				$('#lookupServices div.ui-accordion-content-active ul li').removeClass('selected');
 				if (!remove ) $(this).addClass('selected');
 			});
 			
-			$('div.ui-accordion-content-active div.searchResultsParent ul li').dblclick(function(event) {
-				$('div.ui-accordion-content-active ul li').removeClass('selected');
+			$('#lookupServices div.ui-accordion-content-active div.searchResultsParent ul li').dblclick(function(event) {
+				$('#lookupServices div.ui-accordion-content-active ul li').removeClass('selected');
 				$(this).addClass('selected');
 				searchResult();
 			});
@@ -241,7 +241,7 @@ var SearchDialog = function(config) {
 					return false;
 				}
 			} else {
-				data = $('div.ui-accordion-content-active ul li.selected').data();
+				data = $('#lookupServices div.ui-accordion-content-active ul li.selected').data();
 				if (data) {
 					for (var key in data) {
 						if (key.match(/jQuery/)) {
@@ -249,7 +249,7 @@ var SearchDialog = function(config) {
 						}
 					}
 				} else {
-					$('div.ui-accordion-content-active div.searchResultsParent').css({borderColor: 'red'});
+					$('#lookupServices div.ui-accordion-content-active div.searchResultsParent').css({borderColor: 'red'});
 					return false;
 				}
 			}

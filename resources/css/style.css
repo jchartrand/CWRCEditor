@@ -453,16 +453,24 @@ label {
 	margin: 5px 0;
 }
 
+#note_type {
+	margin-bottom: 10px;
+}
+
+#note_access {
+	margin-top: 10px;
+}
+
 #correctionDialog textarea, #citationDialog textarea {
 	width: 350px;
 	height: 100px;
 }
 
 #keyword_choice {
-	height: 250px;
+	height: 300px;
 }
 
-.ui-dialog-content div {
+#schemaDialog div, #titleDialog div, #correctionDialog div {
 	margin-bottom: 10px;
 }
 
