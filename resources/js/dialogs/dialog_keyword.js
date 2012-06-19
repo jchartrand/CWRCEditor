@@ -51,18 +51,18 @@ var KeywordDialog = function(config) {
 	});
 	
 	$('#keyword_lookup').keyup(function() {
-		var query = $(this).val();
+		var query = 'oclcts.preferredTerm="'+$(this).val()+'"';
 		$.ajax({
 			url: w.baseUrl+'services/ts-oclc/lcsh/',
 			data: {
 				query: query,
 				version: '1.1',
 				operation: 'searchRetrieve',
-				recordSchema: 'http%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore',
+				recordSchema: 'http://www.w3.org/2004/02/skos/core',
+				recordPacking: 'xml',
 				maximumRecords: '15',
 				startRecord: '1'
 			},
-//			url: w.baseUrl+'cwrc/xml/keyword_search.xml',
 			type: 'GET',
 			dataType: 'xml',
 			success: function(data, status, xhr) {
