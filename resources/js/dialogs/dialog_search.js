@@ -281,8 +281,7 @@ var SearchDialog = function(config) {
 				query = w.editor.currentBookmark.rng.toString();
 			}
 			
-			$('div.searchResultsParent').css({borderColor: '#fff'});
-			$('div.searchResultsParent').children('ul').html('');
+			$('#lookupServices div.searchResultsParent').css({borderColor: '#fff'}).children('ul').empty();
 			
 			$('#lookup_alternate input[type="text"]').css({borderColor: '#ccc'}).val('');
 			

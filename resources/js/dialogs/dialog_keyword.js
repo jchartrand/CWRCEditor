@@ -155,9 +155,19 @@ var KeywordDialog = function(config) {
 			mode = config.entry ? EDIT : ADD;
 			var prefix = 'Add ';
 			
+			var title = prefix+config.title;
+			keyword.dialog('option', 'title', title);
+			if (config.pos) {
+				keyword.dialog('option', 'position', [config.pos.x, config.pos.y]);
+			} else {
+				keyword.dialog('option', 'position', 'center');
+			}
+			keyword.dialog('open');
+			
 			$('#keyword_input').val('');
 			$('#keyword_lookup').val('');
-			$('#keyword_index ul').empty();
+			$('#keyword_index ul').css({borderColor: '#fff'}).empty();
+			$('#keyword_choice').accordion('resize');
 			if (mode == ADD) {
 				$('#keyword_choice').accordion('activate', 0);
 			} else {
@@ -170,15 +180,6 @@ var KeywordDialog = function(config) {
 					$('#keyword_lookup').val(config.entry.info.lookup);
 				}
 			}
-			
-			var title = prefix+config.title;
-			keyword.dialog('option', 'title', title);
-			if (config.pos) {
-				keyword.dialog('option', 'position', [config.pos.x, config.pos.y]);
-			} else {
-				keyword.dialog('option', 'position', 'center');
-			}
-			keyword.dialog('open');
 		},
 		hide: function() {
 			keyword.dialog('close');
