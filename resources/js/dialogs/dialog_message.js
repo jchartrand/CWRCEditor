@@ -20,8 +20,10 @@ var MessageDialog = function(config) {
 		show: function(config) {
 			var title = config.title;
 			var msg = config.msg;
+			var modal = config.modal == null ? true : config.modal;
 			
 			message.dialog('option', 'title', title);
+			message.dialog('option', 'modal', modal);
 			message.dialog('option', 'buttons', {
 				'Ok': function() {
 					message.dialog('close');

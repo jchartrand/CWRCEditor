@@ -390,8 +390,10 @@ label {
 	width: 225px;
 }
 
-#lookup_alternate ins {
+#lookup_alternate ins, #schemaDialog ins {
 	display: inline-block;
+	vertical-align: bottom;
+	margin-left: -5px;
 }
 
 .searchResults {
@@ -480,10 +482,6 @@ label {
 
 #schemaDialog .content {
 	margin-bottom: 0;
-}
-
-#schemaDialog label {
-	display: block;
 }
 
 #schemaDialog input, #schemaDialog select {

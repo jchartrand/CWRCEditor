@@ -84,7 +84,8 @@ var SearchDialog = function(config) {
 		}
 		w.d.show('message', {
 			title: 'Help',
-			msg: msg
+			msg: msg,
+			modal: false
 		});
 	});
 	$('#lookup_alternate input[type="text"]').focus(function() {

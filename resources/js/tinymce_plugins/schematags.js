@@ -161,6 +161,7 @@
 					{
 						text: 'Help',
 						'class': 'left',
+						disabled: true,
 						click: function() {
 							t.showHelpDialog();
 						}
@@ -216,24 +217,22 @@
 				}
 				
 				var attName = attDef.attr('name');
-				var doc = $('a\\:documentation, documentation', attDef).first();
-				if (doc.length == 1) {
-					doc = 'title="'+doc.text()+'"';
-				} else {
-					doc = '';
-				}
 				if (attName.toLowerCase() != 'id') {
 					var display = 'block';
 					var requiredClass = required ? ' required' : '';
 					if (isLevel1 || (t.mode == t.EDIT && $(t.tag).attr(attName) != undefined)) {
 						display = 'block';
-						attributeSelector += '<li id="select_'+attName+'" class="selected'+requiredClass+'" '+doc+'>'+attName+'</li>';
+						attributeSelector += '<li id="select_'+attName+'" class="selected'+requiredClass+'">'+attName+'</li>';
 					} else {
 						display = 'none';
-						attributeSelector += '<li id="select_'+attName+'" '+doc+'>'+attName+'</li>';
+						attributeSelector += '<li id="select_'+attName+'">'+attName+'</li>';
 					}
-					currAttString += '<div id="form_'+attName+'" style="display:'+display+';" '+doc+'><label>'+attName+'</label>';
-					
+					currAttString += '<div id="form_'+attName+'" style="display:'+display+';"><label>'+attName+'</label>';
+					var doc = $('a\\:documentation, documentation', attDef).first().text();
+					if (doc != '') {
+						currAttString += '<ins class="ui-icon ui-icon-help">&nbsp;</ins><input type="hidden" name="help" value="'+doc+'"/>';
+					}
+					currAttString += '<br/>';
 					var defaultVal = $('a\\:defaultValue', attDef).first().text();
 					if (t.mode == t.EDIT) defaultVal = $(t.tag).attr(attName) || '';
 					// TODO add list support
@@ -285,12 +284,14 @@
 				}
 			});
 			
-			$('#schemaDialog .info').hover(function(event) {
-				var offset = $(this).offset();
-				$(this).toggleClass('hover ui-corner-all ui-state-highlight');
-				$(this).offset(offset);
-			}, function(event) {
-				$(this).toggleClass('hover ui-corner-all ui-state-highlight');
+			$('#schemaDialog ins').click(function() {
+				var label = $(this).prev('label').text();
+				var msg = $(this).next('input:hidden').val();
+				t.editor.writer.d.show('message', {
+					title: label+' help',
+					msg: msg,
+					modal: false
+				});
 			});
 			
 			$('#schemaDialog input, #schemaDialog select, #schemaDialog option').change(function(event) {
