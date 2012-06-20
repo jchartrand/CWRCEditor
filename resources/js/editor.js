@@ -7,8 +7,8 @@ var Writer = function(config) {
 		structs: {}, // structs store
 		triples: [], // triples store
 
-		schemaUrl: config.schemaUrl || 'js/cwrc_basic_tei.js',
-		schema: {define:{}}, // schema for additional custom tags
+		schemaXML: null, // a cached copy of the loaded schema
+		schema: {elements: []}, // stores a list of all the elements of the loaded schema
 		
 		project: config.project, // the current project (cwrc or russell)
 		
@@ -155,7 +155,7 @@ var Writer = function(config) {
 		ed.addCommand('removeHighlights', w.removeHighlights);
 		ed.addCommand('exportDocument', w.fm.exportDocument);
 		ed.addCommand('loadDocument', w.fm.loadDocument);
-		ed.addCommand('getFilteredSchema', w.getFilteredSchema);
+		ed.addCommand('getChildrenForTag', w.getChildrenForTag);
 		
 		// used in conjunction with the paste plugin
 		// needs to be false in order for paste postprocessing to function properly
@@ -224,14 +224,14 @@ var Writer = function(config) {
 		if (start.match('load')) {
 			w.fm.openLoader();
 		} else if (start.match('tei') || start == '') {
-			w.loadSchema('js/cwrc_basic_tei.js', true);
+			w.loadSchema('xml/CWRCBasicTEI.xml', true);
 			w.validationSchema = 'common';
 		} else if (start.match('events')) {
-			w.loadSchema('js/common_events_schema.js', true);
+			w.loadSchema('xml/orlando_common_and_events_schema.xml', true);
 			w.validationSchema = 'events';
 		} else if (start.match('letter')) {
 			w.validationSchema = 'common';
-			w.loadSchema('js/cwrc_basic_tei.js', false, function() {
+			w.loadSchema('xml/CWRCBasicTEI.xml', false, function() {
 				function loadLetter(xml, xsl) {
 					var doc;
 					if (window.ActiveXObject) {
@@ -388,18 +388,24 @@ var Writer = function(config) {
 	
 	/**
 	 * Load a new schema.
-	 * @param schema
+	 * @param {String} url The url of the schema to load
+	 * @param {Boolean} startText Whether to include the default starting text
+	 * @param {Function} callback Callback for when the load is complete
 	 */
-	w.loadSchema = function(schemaUrl, startText, callback) {
+	w.loadSchema = function(url, startText, callback) {
 		$.ajax({
-			url: schemaUrl,
+			url: url,
 			success: function(data, status, xhr) {
-				var schema = eval(xhr.responseText)[0];
-
-			    w.schema = schema.grammar;
+				w.schemaXML = data;
 				
-			    w.root = w.schema.start.ref;
-			    w.editor.schema.addCustomElements(w.root);
+				var root = $('start', w.schemaXML).find('ref, element').first();
+				var rootName = root.attr('name');
+				if (root.is('element')) {
+					w.root = rootName;
+				} else {
+					w.root = $('define[name="'+rootName+'"]', w.schemaXML).find('element').first().attr('name');
+				}
+				w.editor.schema.addCustomElements(w.root);
 			    w.editor.schema.addCustomElements(w.root.toLowerCase());
 			    
 			    // create css to display schema tags
@@ -410,12 +416,18 @@ var Writer = function(config) {
 				var schemaTags = w.root.toLowerCase()+' { display: block; }';
 				schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
 				schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-				for (var i = 0; i < w.schema.elements.length; i++) {
-					tag = w.schema.elements[i];
-					schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-					schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-				}
+				var elements = [];
+				$('element', w.schemaXML).each(function(index, el) {
+					var tag = $(el).attr('name');
+					if (elements.indexOf(tag) == -1) {
+						elements.push(tag);
+						schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+						schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+					}
+				});
 				$('#schemaTags', w.editor.dom.doc).text(schemaTags);
+			    
+				w.schema.elements = elements;
 				
 				var text = '';
 				if (startText) text = 'Paste or type your text here.';
@@ -427,8 +439,8 @@ var Writer = function(config) {
 				
 				if (callback) callback();
 			},
-			error: function() {
-				w.d.show('message', {title: 'Error', msg: 'Error loading schema.'});
+			error: function(xhr, status, error) {
+				w.d.show('message', {title: 'Error', msg: 'Error loading schema: '+error});
 			}
 		});
 	};
@@ -967,79 +979,99 @@ var Writer = function(config) {
 	w.removeHighlights = function() {
 		w.highlightEntity();
 	};
-
+	
 	/**
-	 * @param obj The current object being processed
-	 * @param refs An array of references that have already been processed
-	 * @param defs The definitions to return
-	 * @param level The current level of sub-reference
-	 * @param type The type of definition type to look for: "element" or "attribute"
-	 * @param tag The original tag/element name
-	 * @param objKey The key that was used to get the current object
+	 * @param currEl The element that's currently being processed
+	 * @param defHits A list of define tags that have already been processed
+	 * @param level The level of recursion
+	 * @param type The type of child to search for (element or attribute)
+	 * @param children The children to return
 	 */
-	var _getRefsFromDef = function(obj, refs, defs, level, type, tag, objKey) {
-		if ($.isPlainObject(obj)) {
-			for (var key in obj) {
-				if (key == 'ref') {
-					var ref = obj[key];
-					if (!$.isArray(ref)) {
-						ref = [ref];
-					}
-					for (var i = 0; i < ref.length; i++) {
-						var r = ref[i]['-name'];
-						if (refs.indexOf(r) == -1) {
-							refs.push(r);
-							var refdef = w.schema.define[r];
-							if (refdef[type]) {
-								defs.push({defname: refdef[type]['-name'], def: refdef[type], level: level+0});
-							} else {
-								_getRefsFromDef(refdef, refs, defs, level+1, type, tag, 'define');
-							}
-						}
-					}
-				} else if (key == type && obj[type]['-name'] != tag) {
-					defs.push({defname: obj[type]['-name'], def: obj[type], level: level+0, optional: objKey == 'optional'});
-				} else if (type == 'attribute' && key == 'element') {
-					// don't get attributes from other elements
+	var _getChildren = function(currEl, defHits, level, type, children) {
+		// first get the direct types
+		currEl.find(type).each(function(index, el) {
+			var child = $(el);
+			if (type == 'attribute' && child.parents('element').length > 0 && level > 0) {
+				return; // don't get attributes from other elements
+			}
+			var childObj = {name: child.attr('name'), level: level+0};
+			childObj[type] = child;
+			children.push(childObj);
+		});
+		// now process the references
+		currEl.find('ref').each(function(index, el) {
+			var name = $(el).attr('name');
+			if (type == 'attribute' && $(el).parents('element').length > 0 && level > 0) {
+				return; // don't get attributes from other elements
+			}
+			if (!defHits[name]) {
+				defHits[name] = true;
+				var def = $('define[name="'+name+'"]', writer.schemaXML);
+				var child = $(type, def).first();
+				if (type == 'attribute' && child.parents('element').length > 0 && level > 0) {
+					return; // don't get attributes from other elements
+				}
+				if (child.length == 1) {
+					var childObj = {name: child.attr('name'), level: level+0};
+					childObj[type] = child;
+					children.push(childObj);
 				} else {
-					_getRefsFromDef(obj[key], refs, defs, level+1, type, tag, key);
+					_getChildren(def, defHits, level+1, type, children);
 				}
 			}
-		} else if ($.isArray(obj)) {
-			for (var i = 0; i < obj.length; i++) {
-				_getRefsFromDef(obj[i], refs, defs, level+0, type, tag, objKey);
-			}
-		}
+		});
 	};
 	
 	/**
-	 * @param filterKey The key to filter by / definition to look up
-	 * @param type The type of filtering to perform: "element" or "attribute"
+	 * @param tag The element name to get children of
+	 * @param type The type of children to get: "element" or "attribute"
 	 * @param returnType Either: "array" or "object"
 	 */
-	w.getFilteredSchema = function(p) {
-		var refs = [];
-		var defs = [];
-		var def = w.schema.define[p.filterKey];
-		if (p.type == 'attribute' && def.element) {
-			def = def.element;
-		}
+	w.getChildrenForTag = function(config) {
+		var element = $('element[name="'+config.tag+'"]', writer.schemaXML);
+		var type = config.type || 'element';
+		var defHits = {};
 		var level = 0;
-		_getRefsFromDef(def, refs, defs, level, p.type, p.filterKey, "define");
-		
-		if (p.returnType == 'array') {
-			defs.sort(function(a, b) {
+		var children = [];
+		_getChildren(element, defHits, level, type, children);
+
+		if (config.returnType == 'array') {
+			children.sort(function(a, b) {
 				return a.level - b.level;
 			});
-			return defs;
+			return children;
 		} else {
-			var validKeys = {};
-			for (var i = 0; i < defs.length; i++) {
-				var d = defs[i];
-				validKeys[d.defname] = d;
+			var childrenObj = {};
+			for (var i = 0; i < children.length; i++) {
+				var c = children[i];
+				childrenObj[c.name] = c;
 			}
-			return validKeys;
+			return childrenObj;
 		}
+	};
+	
+	var _getParentElementsFromDef = function(defName, defHits, parents) {
+		$('define:has(ref[name="'+defName+'"])', writer.schemaXML).each(function(index, el) {
+			var name = $(el).attr('name');
+			if (!defHits[name]) {
+				defHits[name] = true;
+				var element = $(el).find('element').first();
+				if (element.length == 1) {
+					parents[element.attr('name')] = true;
+				} else {
+					_getParentElementsFromDef(name, defHits, parents);
+				}
+			}
+		});
+	};
+	
+	w.getParentsForTag = function(tag) {
+		var element = $('element[name="'+tag+'"]', writer.schemaXML);
+		var defName = element.parents('define').attr('name');
+		var parents = {};
+		var defHits = {};
+		_getParentElementsFromDef(defName, defHits, parents);
+		return parents;
 	};
 	
 	w.escapeHTMLString = function(value) {

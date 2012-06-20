@@ -35,10 +35,10 @@ var StructureTree = function(config) {
 				
 				var parentInfo = w.structs[parentNode.attr('name')];
 				
-				var validKeys = w.editor.execCommand('getFilteredSchema', {filterKey: info._tag, type: 'element', returnType: 'object'});
+				var validKeys = w.editor.execCommand('getChildrenForTag', {tag: info._tag, type: 'element', returnType: 'object'});
 				var parentKeys = {};
 				if (parentInfo) {
-					parentKeys = w.editor.execCommand('getFilteredSchema', {filterKey: parentInfo._tag, type: 'element', returnType: 'object'});
+					parentKeys = w.editor.execCommand('getChildrenForTag', {tag: parentInfo._tag, type: 'element', returnType: 'object'});
 				}
 				
 				function getSubmenu(keys) {
@@ -46,9 +46,11 @@ var StructureTree = function(config) {
 					var inserted = false;
 					for (var key in keys) {
 						inserted = true;
-						var doc = key;
-						if (keys[key].def['a:documentation']) {
-							doc = keys[key].def['a:documentation']['#text'] || keys[key].def['a:documentation'];
+						var doc = $('a\\:documentation, documentation', keys[key].element).first();
+						if (doc.length == 1) {
+							doc = doc.text();
+						} else {
+							doc = key;
 						}
 						inserts[key] = {
 							label: '<span title="'+doc+'">'+key+'</span>',
@@ -221,9 +223,7 @@ var StructureTree = function(config) {
 					id = tinymce.DOM.uniqueId('struct_');
 					var tag = $(this).attr('_tag');
 					if (tag == null && $(this).is(w.root)) tag = w.root;
-					var entry = w.schema.define[tag];
-					if (entry) {
-						var display = tag;
+					if (w.schema.elements.indexOf(tag) != -1) {
 						$(this).attr('id', id).attr('_tag', tag).attr('_struct', true);
 						w.structs[id] = {
 							id: id,

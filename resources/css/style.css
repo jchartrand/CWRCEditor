@@ -376,7 +376,7 @@ label {
 	margin-bottom: 0px !important;
 }
 
-#lookupServices .ui-accordion-content {
+#lookupServices .ui-accordion-content, #keyword_choice .ui-accordion-content {
 	padding: 5px 10px;
 }
 

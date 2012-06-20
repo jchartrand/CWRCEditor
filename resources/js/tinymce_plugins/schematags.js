@@ -40,8 +40,9 @@
 					}
 					
 					var validKeys = {};
+					// TODO add handling for orlando header
 					if (filterKey != 'teiHeader') {
-						validKeys = t.editor.execCommand('getFilteredSchema', {filterKey: filterKey, type: 'element', returnType: 'object'});
+						validKeys = t.editor.execCommand('getChildrenForTag', {tag: filterKey, returnType: 'object'});
 					}
 					var item;
 					var count = 0, disCount = 0;
@@ -194,7 +195,7 @@
 			
 			$('#schemaDialog div.content').empty();
 			
-			var atts = t.editor.execCommand('getFilteredSchema', {filterKey: key, type: 'attribute', returnType: 'array'});
+			var atts = t.editor.execCommand('getChildrenForTag', {tag: key, type: 'attribute', returnType: 'array'});
 			
 			// build atts
 			var level1Atts = '<div id="level1Atts">';
@@ -205,24 +206,26 @@
 			var required = false;
 			for (var i = 0; i < atts.length; i++) {
 				att = atts[i];
+				attDef = att.attribute;
 				currAttString = '';
-				required = !att.optional;
-				if (att.level == 1 || required) {
+				required = attDef.parent('optional').length == 0;
+				if (att.level == 0 || required) {
 					isLevel1 = true; // required attributes should be displayed by default
 				} else {
 					isLevel1 = false;
 				}
-				attDef = att.def;
-				var attName = attDef['-name'];
-				var doc = '';
-				if (attDef['a:documentation']) {
-					var text = attDef['a:documentation']['#text'] || attDef['a:documentation'];
-					doc = 'title="'+text+'"';
+				
+				var attName = attDef.attr('name');
+				var doc = $('a\\:documentation, documentation', attDef).first();
+				if (doc.length == 1) {
+					doc = 'title="'+doc.text()+'"';
+				} else {
+					doc = '';
 				}
-				if (attName != 'id') {
+				if (attName.toLowerCase() != 'id') {
 					var display = 'block';
 					var requiredClass = required ? ' required' : '';
-					if (isLevel1 || t.mode == t.EDIT && $(t.tag).attr(attName) != undefined) {
+					if (isLevel1 || (t.mode == t.EDIT && $(t.tag).attr(attName) != undefined)) {
 						display = 'block';
 						attributeSelector += '<li id="select_'+attName+'" class="selected'+requiredClass+'" '+doc+'>'+attName+'</li>';
 					} else {
@@ -231,20 +234,23 @@
 					}
 					currAttString += '<div id="form_'+attName+'" style="display:'+display+';" '+doc+'><label>'+attName+'</label>';
 					
-					var defaultVal = attDef['-a:defaultValue'] == undefined ? '' : attDef['-a:defaultValue'];
+					var defaultVal = $('a\\:defaultValue', attDef).first().text();
 					if (t.mode == t.EDIT) defaultVal = $(t.tag).attr(attName) || '';
-					if (attDef.list) {
-						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
-					} else if (attDef.choice && attDef.choice.value) {
+					// TODO add list support
+//					if ($('list', attDef).length > 0) {
+//						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+//					} else if ($('choice', attDef).length > 0) {
+					var choice = $('choice', attDef).first();
+					if (choice.length == 1) {
 						currAttString += '<select name="'+attName+'">';
 						var attVal, selected;
-						for (var j = 0; j < attDef.choice.value.length; j++) {
-							attVal = attDef.choice.value[j];
+						$('value', choice).each(function(index, el) {
+							attVal = $(el).text();
 							selected = defaultVal == attVal ? ' selected="selected"' : '';
 							currAttString += '<option value="'+attVal+'"'+selected+'>'+attVal+'</option>';
-						}
+						});
 						currAttString += '</select>';
-					} else if (attDef.ref) {
+					} else if ($('ref', attDef).length > 0) {
 						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
 					} else {
 						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
