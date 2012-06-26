@@ -17,6 +17,7 @@ var Writer = function(config) {
 		schemaCSS: 'css/orlando.css', // css for schema tags used in the editor
 		
 		// tag types and their titles
+		// also used to determine what tags are entities
 		titles: {
 			person: 'Person',
 			date: 'Date',
@@ -34,8 +35,8 @@ var Writer = function(config) {
 		// editor mode
 		mode: config.mode,
 		
-		// schema for validation (common or events)
-		validationSchema: 'common',
+		// schema for validation (http://www.arts.ualberta.ca/~cwrc/schema/)
+		validationSchema: 'cwrcbasic',
 		
 		// root block element, should come from schema
 		root: 'TEI',
@@ -225,12 +226,12 @@ var Writer = function(config) {
 			w.fm.openLoader();
 		} else if (start.match('tei') || start == '') {
 			w.loadSchema('xml/CWRCBasicTEI.xml', true);
-			w.validationSchema = 'common';
+			w.validationSchema = 'cwrcbasic';
 		} else if (start.match('events')) {
 			w.loadSchema('xml/orlando_common_and_events_schema.xml', true);
 			w.validationSchema = 'events';
 		} else if (start.match('letter')) {
-			w.validationSchema = 'common';
+			w.validationSchema = 'cwrcbasic';
 			w.loadSchema('xml/CWRCBasicTEI.xml', false, function() {
 				function loadLetter(xml, xsl) {
 					var doc;
@@ -1296,7 +1297,7 @@ var Writer = function(config) {
 			element_format: 'xhtml',
 			
 			forced_root_block: w.root,
-			force_p_newlines: true,
+			keep_styles: false,
 			
 			paste_auto_cleanup_on_paste: true,
 			paste_postprocess: function(pl, o) {
