@@ -53,7 +53,7 @@ var SettingsDialog = function(writer, config) {
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
 	'<label>Schema</label><select name="schema">'+
-	'<option value="common">Common Schema</option>'+
+	'<option value="cwrcbasic">CWRC Basic TEI Schema</option>'+
 	'<option value="events">Events Schema</option>'+
 	'</select>'+
 	'</div>'+
@@ -73,7 +73,7 @@ var SettingsDialog = function(writer, config) {
 	
 	$('#helpLink').click(function() {
 		if ($('#helpDialog iframe').length == 0) {
-			$('#helpDialog').html('<iframe src="http://docs.google.com/document/d/1Y8u_wtQT9vLWyUjmd5AV77iBhTL3o9H6S1UJeLX6Q3M/edit"/>');
+			$('#helpDialog').html('<iframe src="https://sites.google.com/site/cwrcwriterhelp/home"/>');
 		}
 		$('#helpDialog').dialog('open');
 	});

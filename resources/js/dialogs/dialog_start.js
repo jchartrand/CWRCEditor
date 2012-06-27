@@ -2,9 +2,8 @@ var StartDialog = function(config) {
 	$(document.body).append(''+
 		'<div id="startDialog"><div class="buttonsParent">'+
 			'<button>Load an Existing Document</button>'+
-			'<button>Start a CWRC-TEI Document</button>'+
-			'<button>Start a CWRC-EVENTS Document</button>'+
-			'<button>Create a Letter with CWRC-TEI</button>'+
+			'<button>Create a Letter</button>'+
+			'<button>Create an Event</button>'+
 		'</div></div>');
 	
 	var start = $('#startDialog');
@@ -17,7 +16,7 @@ var StartDialog = function(config) {
 		open: function(event, ui) {
 			$('#startDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 255,
+		height: 205,
 		width: 340,
 		autoOpen: false
 	});
@@ -27,13 +26,10 @@ var StartDialog = function(config) {
 		window.location = 'editor.htm#load';
 	});
 	buttons.eq(1).click(function() {
-		window.location = 'editor.htm#tei';
+		window.location = 'editor.htm#letter';
 	});
 	buttons.eq(2).click(function() {
-		window.location = 'editor.htm#events';
-	});
-	buttons.eq(3).click(function() {
-		window.location = 'editor.htm#letter';
+		window.location = 'editor.htm#event';
 	});
 	
 	start.dialog('option', 'position', 'center');

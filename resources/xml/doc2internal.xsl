@@ -10,6 +10,7 @@
 <xsl:template match="*" mode="root">
 <xsl:copy>
 	<xsl:copy-of select="@*" />
+	<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#"></rdf:RDF>
 	<xsl:apply-templates mode="children"/>
 </xsl:copy>
 </xsl:template>

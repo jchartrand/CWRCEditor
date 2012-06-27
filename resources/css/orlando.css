@@ -1,258 +1,237 @@
-DIV0, DIV1 {
-	display: block;
-}
-
 EVENTS {
-    font-family: "Times New Roman", Times, serif;
+    font-family : Georgia, serif;
+    line-height : 1.5;
+    color : #333;
+    margin : 10px 25px;
 }
-
 ORLANDOHEADER {
-    display: block;
-    font-family: Verdana, Geneva, sans-serif;
-    font-size: small;
+    font-size : 16px;
+    display : block;
+    background : #EEE;
+    margin-bottom: 1.5em;
+    padding: .5em;
 }
-
 FILEDESC {
-    background-color: #990000;
-    color: #FFF;
-    font-weight: bold;
+    /*    content : url(img/orlando/CWRC_logo.png);*/
+    background-color : #FFF;
+    color : gray;
 }
-
-FILEDESC:before {
-    content: url(../img/orlando/theorlandoproject.gif);
-}
-
 DOCTITLE {
-    font-variant: small-caps;
-    font-size: x-large;
-    font-weight: normal;
+    font-weight : normal;
+    color : black;
+    color:gray;
+    font-weight:bold;
 }
-
-FILEDESC, DOCAUTHOR, DOCEDITOR, DOCEXTENT, PUBLICATIONSTMT, TITLESTMT, PUBPLACE {
-    display: list-item;
+DOCAUTHOR,
+DOCEDITOR,
+DOCEXTENT,
+PUBLICATIONSTMT,
+TITLESTMT,
+PUBPLACE {
+    display : block;
 }
-
 RESPONSIBILITY {
-    font-family: Verdana, Geneva, sans-serif;
-    font-size: small;
-    background-color: #F0EDFC;
-    display: list-item;
+    font-family : Verdana, Geneva, sans-serif;
+    font-size : small;
+    background-color : #F0EDFC;
+    display : list-item;
 }
-
 EMPH {
-    font-style: italic;
+    font-style : italic;
 }
-
 FOREIGN {
-    font-style: italic;
+    font-style : italic;
 }
-
-TITLE[TITLETYPE = "MONOGRAPHIC"], TITLE[TITLETYPE = "JOURNAL"] {
-    font-style: italic;
-    font-weight: bold;
-    color: #336699;
+TITLE[TITLETYPE = "MONOGRAPHIC"],
+TITLE[TITLETYPE = "JOURNAL"] {
+    font-style : italic;
+    color : #336699;
 }
-
 TITLE[TITLETYPE = "SERIES"] {
-    font-style: normal;
-    font-weight: bold;
-    color: #336699;
+    font-style : normal;
+    color : #336699;
 }
-
-TITLE[TITLETYPE = "ANALYTIC"], TITLE[TITLETYPE = "UNPUBLISHED"] {
-    font-style: normal;
-    font-weight: bold;
-    color: #336699;
+TITLE[TITLETYPE = "ANALYTIC"],
+TITLE[TITLETYPE = "UNPUBLISHED"] {
+    font-style : normal;
+    color : #336699;
 }
-
-TITLE[TITLETYPE = "ANALYTIC"]:before, TITLE[TITLETYPE = "UNPUBLISHED"]:before {
-    content: open-quote;
+TITLE[TITLETYPE = "ANALYTIC"]:before,
+TITLE[TITLETYPE = "UNPUBLISHED"]:before {
+    content : open-quote;
 }
-
-TITLE[TITLETYPE = "ANALYTIC"]:after, TITLE[TITLETYPE = "UNPUBLISHED"]:after {
-    content: close-quote;
+TITLE[TITLETYPE = "ANALYTIC"]:after,
+TITLE[TITLETYPE = "UNPUBLISHED"]:after {
+    content : close-quote;
 }
-
 ADDRLINE {
-    display: list-item;
+    display : list-item;
 }
-
 IDNO {
-    display: list-item;
+    display : list-item;
 }
-
 AVAILABILITY {
-    display: inline;
+    display : inline;
 }
-
-P, LB {
-    display: block;
+P {
+    display : block;
 }
-
 RESEARCHNOTE {
-    background-color: #FBEFEF;
-    color: #663366;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: smaller;
-    display: list-item;
+    background-color : #FBEFEF;
+    color : #663366;
+    font-family : Arial, Helvetica, sans-serif;
+    font-size : smaller;
+    display : list-item;
 }
-
-HEADING {
-    display: list-item;
-    font-weight: bold;
-    font-size: x-large;
-    color: #039;
+DIV0 HEADING {
+    display : list-item;
+    font-weight : bold;
+    font-size : x-large;
+    color : #039;
+    margin : 25px 0 0 0;
 }
-
+DIV1 {
+    margin : 20px 0 0 0;
+}
+DIV1 HEADING {
+    display : block;
+    font-weight : bold;
+    font-size : large;
+    color : #039;
+}
+CHRONEVENT {
+    display : block;
+    margin : 15px 0;
+}
 CHRONSTRUCT {
-    display: list-item;
+    display : block;
+    padding : 0 0 0 30px;
 }
-
 CHRONSTRUCT DATE {
-    font-weight: bold;
+    font-weight : bold;
+    display : inline;
 }
-
+CHRONSTRUCT DATE:after {
+    content : ": ";
+}
+CHRONSTRUCT[CHRONCOLUMN = "WOMENWRITERS"] {
+    background-image : url(img/orlando/pen1.gif);
+    background-repeat : no-repeat;
+}
 /*
-CHRONSTRUCT[CHRONCOLUMN = "BRITISHWOMENWRITERS"] {
-    content: url(../img/orlando/pen1.gif);
-}
-
-
- CHRONSTRUCT[CHRONCOLUMN1="BRITISHWOMENWRITERS1"]{
- content:url(../img/orlando/pen1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN2="BRITISHWOMENWRITERS2"]{
- content:url(../img/orlando/pen1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN3="BRITISHWOMENWRITERS3"]{
- content:url(../img/orlando/pen1.gif);
- }
- /
- CHRONSTRUCT[CHRONCOLUMN="NATIONALINTERNATIONAL"] {
- content: url(../img/orlando/earth1.gif);
- }
- /
- CHRONSTRUCT[CHRONCOLUMN1="NATIONALINTERNATIONAL1"]{
- content:url(../img/orlando/earth1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN2="NATIONALINTERNATIONAL2"]{
- content:url(../img/orlando/earth1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN3="NATIONALINTERNATIONAL3"]{
- content:url(../img/orlando/earth1.gif);
- }
- /
- CHRONSTRUCT[CHRONCOLUMN="SOCIALCLIMATE"] {
- content: url(../img/orlando/people1.gif);
- }
- /
- CHRONSTRUCT[CHRONCOLUMN1="SOCIALCLIMATE1"]{
- content:url(../img/orlando/people1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN2="SOCIALCLIMATE2"]{
- content:url(../img/orlando/people1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN3="SOCIALCLIMATE3"]{
- content:url(../img/orlando/people1.gif);
- }
- /
- CHRONSTRUCT[CHRONCOLUMN="WRITINGCLIMATE"] {
- content: url(../img/orlando/book1.gif);
- }
- /
- CHRONSTRUCT[CHRONCOLUMN1="WRITINGCLIMATE1"]{
- content:url(../img/orlando/book1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN2="WRITINGCLIMATE2"]{
- content:url(../img/orlando/book1.gif);
- }
- CHRONSTRUCT[CHRONCOLUMN3="WRITINGCLIMATE3"]{
- content:url(../img/orlando/book1.gif);
- }
+  CHRONSTRUCT[CHRONCOLUMN1="BRITISHWOMENWRITERS1"]{
+  content:url(img/orlando/pen1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN2="BRITISHWOMENWRITERS2"]{
+  content:url(img/orlando/pen1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN3="BRITISHWOMENWRITERS3"]{
+  content:url(img/orlando/pen1.gif);
+  }
  */
-SHORTPROSE {
-    padding-left: 4em;
+CHRONSTRUCT[CHRONCOLUMN = "NATIONALINTERNATIONAL"] {
+    background-image : url(img/orlando/earth1.gif);
+    background-repeat : no-repeat;
 }
-
+/*
+  CHRONSTRUCT[CHRONCOLUMN1="NATIONALINTERNATIONAL1"]{
+  content:url(img/orlando/earth1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN2="NATIONALINTERNATIONAL2"]{
+  content:url(img/orlando/earth1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN3="NATIONALINTERNATIONAL3"]{
+  content:url(img/orlando/earth1.gif);
+  }
+ */
+CHRONSTRUCT[CHRONCOLUMN = "SOCIALCLIMATE"] {
+    background-image : url(img/orlando/people1.gif);
+    background-repeat : no-repeat;
+}
+/*
+  CHRONSTRUCT[CHRONCOLUMN1="SOCIALCLIMATE1"]{
+  content:url(img/orlando/people1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN2="SOCIALCLIMATE2"]{
+  content:url(img/orlando/people1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN3="SOCIALCLIMATE3"]{
+  content:url(img/orlando/people1.gif);
+  }
+ */
+CHRONSTRUCT[CHRONCOLUMN = "WRITINGCLIMATE"] {
+    background-image : url(img/orlando/book1.gif);
+    background-repeat : no-repeat;
+}
+/*
+  CHRONSTRUCT[CHRONCOLUMN1="WRITINGCLIMATE1"]{
+  content:url(img/orlando/book1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN2="WRITINGCLIMATE2"]{
+  content:url(img/orlando/book1.gif);
+  }
+  CHRONSTRUCT[CHRONCOLUMN3="WRITINGCLIMATE3"]{
+  content:url(img/orlando/book1.gif);
+  }
+ */
+SHORTPROSE P {
+    padding-left : 4em;
+    margin : 10px 0 0 0;
+}
+BIBCIT {
+    /*    content : url(img/orlando/bibcit.gif);*/
+}
 BIBCIT:before {
-    content: url(../img/orlando/bibcit.gif);
+    content : "(";
 }
-
-BIBCIT:before {
-    content: "(";
-}
-
 BIBCIT:after {
-    content: ")";
+    content : ")";
 }
-
-BIBCITS {
-    background-color: #FFC;
-}
-
 SCHOLARNOTE P {
-    background-color: #E0E0F8;
+    content : url(img/orlando/note.gif);
+    background-color : #E0E0F8;
 }
-
-SCHOLARNOTE P:before {
-    content: url(../img/orlando/note.gif);
-}
-
 NAME {
-    font-weight: bold;
-    color: #336699;
+    color : #336699;
 }
-
 ORGNAME {
-    font-weight: bold;
-    color: #336699;
+    color : #336699;
 }
-
 SETTLEMENT {
-    font-weight: bold;
-    color: #336699;
+    font-weight : bold;
+    color : #336699;
 }
-
 REGION {
-    font-weight: bold;
-    color: #336699;
+    font-weight : bold;
+    color : #336699;
 }
-
 GEOG {
-    font-weight: bold;
-    color: #336699;
+    font-weight : bold;
+    color : #336699;
 }
-
 AREA {
-    font-weight: bold;
-    color: #336699;
+    font-weight : bold;
+    color : #336699;
 }
-
 TOPIC {
-    font-weight: bold;
-    color: #336699;
+    font-weight : bold;
+    color : #336699;
 }
-
 QUOTE:before {
-    content: open-quote;
+    content : open-quote;
 }
-
 QUOTE:after {
-    content: close-quote;
+    content : close-quote;
 }
-
 QUOTE[DIRECT = "N"]:before {
-    content: "'";
+    content : "'";
 }
-
 QUOTE[DIRECT = "N"]:after {
-    content: "'";
+    content : "'";
 }
-
 SOCALLED:before {
-    content: "'";
+    content : "'";
 }
-
 SOCALLED:after {
-    content: "'";
+    content : "'";
 }
