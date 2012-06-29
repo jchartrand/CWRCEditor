@@ -139,7 +139,11 @@ var FileManager = function(config) {
 			dataType: 'json',
 			success: [function(data, status, xhr) {
 				docNames = data;
-			}, callback]
+			}, callback],
+			error: function() {
+				var doc = $.parseXML('<?xml version="1.0" encoding="UTF-8"?><TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="struct_11"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#"></rdf:RDF><teiHeader xmlns="http://www.tei-c.org/ns/1.0" xml:id="struct_12"> <fileDesc xml:id="struct_13"> <titleStmt xml:id="struct_14"> <title xml:id="struct_15">Put title here.</title> </titleStmt> <publicationStmt xml:id="struct_16"> <p xml:id="struct_17">Put publication statement here.</p> </publicationStmt> <sourceDesc xml:id="struct_18"> <p xml:id="struct_19">Put description of source here.</p> </sourceDesc> </fileDesc> </teiHeader> <text xmlns="http://www.tei-c.org/ns/1.0" xml:id="struct_20"> <body xml:id="struct_21"> <div type="letter" xml:id="struct_22"> <opener xml:id="struct_23"> Put any opening text here. <dateline xml:id="struct_25"> <date xml:id="struct_26">Put dateline here.</date> </dateline> <salute xml:id="struct_27">Put opening salutation here.</salute> </opener> <p xml:id="struct_28">Put text of letter here. Press return for more paragraphs. Place an pb element for page breaks.</p> <closer xml:id="struct_29"> <salute xml:id="struct_30">Put closing salutation here.</salute> <signed xml:id="struct_31"> <persName xml:id="struct_32">Signature here.</persName> </signed> </closer> </div> </body> </text></TEI>');
+				_loadDocumentHandler(doc);
+			}
 		});
 //		var data = {
 //			response: []
@@ -766,6 +770,7 @@ var FileManager = function(config) {
 				} else {
 					w.root = $('define[name="'+rootName+'"]', w.schemaXML).find('element').first().attr('name');
 				}
+				w.editor.settings.forced_root_block = w.root;
 				w.editor.schema.addCustomElements(w.root);
 			    w.editor.schema.addCustomElements(w.root.toLowerCase());
 			    

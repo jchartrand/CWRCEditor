@@ -3,6 +3,8 @@ var StructureTree = function(config) {
 	var w = config.writer;
 	
 	var tree = {};
+	
+	var ignoreSelect = false; // used when we want to highlight a node without selecting it's counterpart in the editor
 
 	$(config.parentId).append('<div id="structure"><div id="tree"></div></div>');
 	$(document.body).append('<div id="tree_popup"></div>');
@@ -36,9 +38,10 @@ var StructureTree = function(config) {
 				var parentInfo = w.structs[parentNode.attr('name')];
 				
 				var validKeys = w.editor.execCommand('getChildrenForTag', {tag: info._tag, type: 'element', returnType: 'object'});
-				var parentKeys = {};
+				var parentKeys = w.editor.execCommand('getParentsForTag', info._tag);
+				var siblingKeys = {};
 				if (parentInfo) {
-					parentKeys = w.editor.execCommand('getChildrenForTag', {tag: parentInfo._tag, type: 'element', returnType: 'object'});
+					siblingKeys = w.editor.execCommand('getChildrenForTag', {tag: parentInfo._tag, type: 'element', returnType: 'object'});
 				}
 				
 				function getSubmenu(keys) {
@@ -84,6 +87,7 @@ var StructureTree = function(config) {
 				
 				var submenu = getSubmenu(validKeys);
 				var parentSubmenu = getSubmenu(parentKeys);
+				var siblingSubmenu = getSubmenu(siblingKeys);
 				
 
 				var items = {
@@ -91,13 +95,13 @@ var StructureTree = function(config) {
 						label: 'Insert Tag Before',
 						icon: 'img/tag_blue_add.png',
 						_class: 'submenu',
-						submenu: parentSubmenu
+						submenu: siblingSubmenu
 					},
 					'after': {
 						label: 'Insert Tag After',
 						icon: 'img/tag_blue_add.png',
 						_class: 'submenu',
-						submenu: parentSubmenu
+						submenu: siblingSubmenu
 					},
 					'around': {
 						label: 'Insert Tag Around',
@@ -116,7 +120,7 @@ var StructureTree = function(config) {
 						label: 'Change Tag',
 						icon: 'img/tag_blue_edit.png',
 						_class: 'submenu',
-						submenu: parentSubmenu
+						submenu: siblingSubmenu
 					},
 					'edit': {
 						label: 'Edit Tag',
@@ -164,15 +168,18 @@ var StructureTree = function(config) {
 		$('#tree_popup').offset({left: e.pageX+15, top: e.pageY+5});
 	});
 	$('#tree').bind('select_node.jstree', function(event, data) {
-		var node = data.rslt.obj;
-		var id = node.attr('name');
-		if (id) {
-			if (w.structs[id]._tag == 'teiHeader') {
-				w.d.show('teiheader');
-			} else {
-				w.selectStructureTag(id);
+		if (!ignoreSelect) {
+			var node = data.rslt.obj;
+			var id = node.attr('name');
+			if (id) {
+				if (w.structs[id]._tag == 'teiHeader') {
+					w.d.show('teiheader');
+				} else {
+					w.selectStructureTag(id);
+				}
 			}
 		}
+		ignoreSelect = false;
 	});
 	$('#tree').bind('hover_node.jstree', function(event, data) {
 		if ($('#vakata-contextmenu').css('visibility') == 'visible') return;
@@ -271,6 +278,13 @@ var StructureTree = function(config) {
 		});
 	};
 	
+	tree.selectNode = function(id) {
+		if (id) {
+			ignoreSelect = true;
+			var result = $('#tree').jstree('select_node', $('#tree [name="'+id+'"]'), true);
+			if (result.attr('id') == 'tree') ignoreSelect = false;
+		}
+	};
 	
 	var _showPopup = function(content) {
 		$('#tree_popup').html(content).show();

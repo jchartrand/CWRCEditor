@@ -372,7 +372,7 @@
 		result: function() {
 			var t = this;
 			var attributes = {};
-			$('#attsContainer > div > div:visible').children('input, select').each(function(index, el) {
+			$('#attsContainer > div > div:visible').children('input[type!="hidden"], select').each(function(index, el) {
 				attributes[$(this).attr('name')] = $(this).val();
 			});
 			

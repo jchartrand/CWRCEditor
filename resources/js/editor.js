@@ -95,6 +95,7 @@ var Writer = function(config) {
 		ed.addCommand('exportDocument', w.fm.exportDocument);
 		ed.addCommand('loadDocument', w.fm.loadDocument);
 		ed.addCommand('getChildrenForTag', w.getChildrenForTag);
+		ed.addCommand('getParentsForTag', w.getParentsForTag);
 		
 		// used in conjunction with the paste plugin
 		// needs to be false in order for paste postprocessing to function properly
@@ -235,6 +236,7 @@ var Writer = function(config) {
 				ed.currentNode = e;
 			}
 		}
+		w.tree.selectNode(ed.currentNode.id);
 	};
 	
 	var _onPasteHandler = function(ed, event) {
@@ -873,16 +875,16 @@ var Writer = function(config) {
 		}
 	};
 	
-	var _getParentElementsFromDef = function(defName, defHits, parents) {
+	var _getParentElementsFromDef = function(defName, defHits, level, parents) {
 		$('define:has(ref[name="'+defName+'"])', writer.schemaXML).each(function(index, el) {
 			var name = $(el).attr('name');
 			if (!defHits[name]) {
 				defHits[name] = true;
 				var element = $(el).find('element').first();
 				if (element.length == 1) {
-					parents[element.attr('name')] = true;
+					parents[element.attr('name')] = {name: element.attr('name'), level: level+0};
 				} else {
-					_getParentElementsFromDef(name, defHits, parents);
+					_getParentElementsFromDef(name, defHits, level+1, parents);
 				}
 			}
 		});
@@ -893,7 +895,8 @@ var Writer = function(config) {
 		var defName = element.parents('define').attr('name');
 		var parents = {};
 		var defHits = {};
-		_getParentElementsFromDef(defName, defHits, parents);
+		var level = 0;
+		_getParentElementsFromDef(defName, defHits, level, parents);
 		return parents;
 	};
 	
