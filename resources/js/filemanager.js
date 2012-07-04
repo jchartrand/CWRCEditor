@@ -890,6 +890,8 @@ var FileManager = function(config) {
 			_loadTemplate('xml/event_template.xml');
 		} else if (start.match('letter')) {
 			_loadTemplate('xml/letter_template.xml');
+		} else if (start.match('sample')) {
+			_loadTemplate('xml/sample_letter.xml');
 		}
 	};
 	

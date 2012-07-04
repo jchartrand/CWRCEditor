@@ -161,7 +161,6 @@
 					{
 						text: 'Help',
 						'class': 'left',
-						disabled: true,
 						click: function() {
 							t.showHelpDialog();
 						}
@@ -287,11 +286,7 @@
 			$('#schemaDialog ins').click(function() {
 				var label = $(this).prev('label').text();
 				var msg = $(this).next('input:hidden').val();
-				t.editor.writer.d.show('message', {
-					title: label+' help',
-					msg: msg,
-					modal: false
-				});
+				t.showHelpDialog(label, msg);
 			});
 			
 			$('#schemaDialog input, #schemaDialog select, #schemaDialog option').change(function(event) {
@@ -317,57 +312,30 @@
 			$('#schemaOkButton').focus();
 			$('#schemaDialog input, #schemaDialog select').first().focus();
 		},
-		showHelpDialog: function() {
-			var key = this.currentKey;
-			$.ajax({
-				url: this.editor.writer.baseUrl+'documentation/glossary_item_xml.php?KEY_VALUE_STR='+key,
-				success: function(data, status, xhr) {
-					if (typeof data == 'string') {
-						data = $.parseJSON(data);
-					}
-					$('#schemaHelpDialog').empty();
-					if (data.GLOSSITEM) {
-						$('#schemaHelpDialog').dialog('option', 'title', key+' Help');
-						
-						var entryString = '';
-						for (var glossKey in data.GLOSSITEM) {
-							if (glossKey != 'GLOSSITEMTYPE' && glossKey != 'HEADING') {
-								var entry = data.GLOSSITEM[glossKey];
-								entryString += '<div><h2>'+entry.HEADING+'</h2>';
-								for (var entryKey in entry) {
-									if (entryKey != 'HEADING' && entryKey != 'DOCUMENTTYPE') {
-										var subEntry = entry[entryKey];
-										if (subEntry.P) subEntry = subEntry.P;
-										subEntry = subEntry.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-										entryString += '<p>'+subEntry+'</p>';
-									}
-								}
-							}
-						}
-						$('#schemaHelpDialog').append(entryString);
-						
-						var dialogOffset = $('#schemaDialog').offset();
-						var x = dialogOffset.left + $('#schemaDialog').width() + 30;
-						if (x > $(document).width()) {
-							x = dialogOffset.left - 315;
-						}
-						var pos = [];
-						pos[0] = x;
-						pos[1] = dialogOffset.top - 31;
-						$('#schemaHelpDialog').dialog('option', 'position', pos);
-						$('#schemaHelpDialog').dialog('open');
-					} else {
-						$('#schemaHelpDialog').dialog('option', 'title', 'Help Error');
-						$('#schemaHelpDialog').append('<p>There\'s no help available for '+key+'.</p>');
-						$('#schemaHelpDialog').dialog('open');
-					}
-				},
-				error: function(xhr, status, error) {
-					$('#schemaHelpDialog').dialog('option', 'title', 'Help Error');
-					$('#schemaHelpDialog p').html(status);
-					$('#schemaHelpDialog').dialog('open');
+		showHelpDialog: function(key, helpText) {
+			$('#schemaHelpDialog').empty();
+			key = key || this.currentKey;
+			if (!helpText) helpText = this.editor.execCommand('getDocumentationForTag', key);
+			if (helpText != '') {
+				$('#schemaHelpDialog').dialog('option', 'title', key+' Help');
+				
+				$('#schemaHelpDialog').append(helpText);
+				
+				var dialogOffset = $('#schemaDialog').offset();
+				var x = dialogOffset.left + $('#schemaDialog').width() + 30;
+				if (x > $(document).width()) {
+					x = dialogOffset.left - 315;
 				}
-			});
+				var pos = [];
+				pos[0] = x;
+				pos[1] = dialogOffset.top - 31;
+				$('#schemaHelpDialog').dialog('option', 'position', pos);
+				$('#schemaHelpDialog').dialog('open');
+			} else {
+				$('#schemaHelpDialog').dialog('option', 'title', 'Help Error');
+				$('#schemaHelpDialog').append('<p>There\'s no help available for '+key+'.</p>');
+				$('#schemaHelpDialog').dialog('open');
+			}
 		},
 		result: function() {
 			var t = this;

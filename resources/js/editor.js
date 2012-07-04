@@ -96,6 +96,7 @@ var Writer = function(config) {
 		ed.addCommand('loadDocument', w.fm.loadDocument);
 		ed.addCommand('getChildrenForTag', w.getChildrenForTag);
 		ed.addCommand('getParentsForTag', w.getParentsForTag);
+		ed.addCommand('getDocumentationForTag', w.getDocumentationForTag);
 		
 		// used in conjunction with the paste plugin
 		// needs to be false in order for paste postprocessing to function properly
@@ -898,6 +899,12 @@ var Writer = function(config) {
 		var level = 0;
 		_getParentElementsFromDef(defName, defHits, level, parents);
 		return parents;
+	};
+	
+	w.getDocumentationForTag = function(tag) {
+		var element = $('element[name="'+tag+'"]', writer.schemaXML);
+		var doc = $('a\\:documentation, documentation', element).first().text();
+		return doc;
 	};
 	
 	w.escapeHTMLString = function(value) {

@@ -4,6 +4,7 @@ var StartDialog = function(config) {
 			'<button>Load an Existing Document</button>'+
 			'<button>Create a Letter</button>'+
 			'<button>Create an Event</button>'+
+			'<button>See a Sample Letter</button>'+
 		'</div></div>');
 	
 	var start = $('#startDialog');
@@ -16,7 +17,7 @@ var StartDialog = function(config) {
 		open: function(event, ui) {
 			$('#startDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 205,
+		height: 255,
 		width: 340,
 		autoOpen: false
 	});
@@ -30,6 +31,9 @@ var StartDialog = function(config) {
 	});
 	buttons.eq(2).click(function() {
 		window.location = 'editor.htm#event';
+	});
+	buttons.eq(3).click(function() {
+		window.location = 'editor.htm#sample';
 	});
 	
 	start.dialog('option', 'position', 'center');
