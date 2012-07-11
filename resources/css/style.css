@@ -95,19 +95,6 @@ label {
 	background-image: url('../img/arrow_right.gif');
 }
 
-.buttonsParent {
-	text-align: center;
-}
-
-.buttonsParent button {
-	margin: 10px;
-	width: 300px;
-}
-
-#startDialog button .ui-button-text {
-	font-size: 14px !important;
-}
-
 #sortBy {
 	padding: 3px 10px;
 }
@@ -656,19 +643,80 @@ label {
 	text-align: left;
 }
 
-#teiHeaderDialog h1, #teiHeaderDialog h2, #teiHeaderDialog h3 {
+#headerDialog h1, #headerDialog h2, #headerDialog h3 {
 	margin: 5px 0;
 }
 
-#teiHeaderDialog label {
+#headerDialog label {
 	display: inline-block;
     text-align: right;
     width: 120px;
 }
 
-#teiHeaderDialog input {
+#headerDialog input {
 	width: 200px;
 	vertical-align: top;
+}
+ /*
+#headerDialog ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: block;
+}
+
+#headerDialog li.root {
+	margin-left: 0;
+}
+
+#headerDialog li {
+	padding: 0;
+	margin-left: 16px;
+	min-height: 26px;
+	line-height: 26px;
+	background-color: #fff;
+	display: block;
+}
+
+#headerDialog li.over {
+
+}
+
+#headerDialog li > button {
+	display: none;
+}
+
+#headerDialog li.over > button {
+	display: inline-block;
+	float: right;
+}
+
+#headerDialog .ui-widget {
+	font-size: 0.8em;
+}
+
+#headerDialog label {
+	font-weight: bold;
+}
+
+#headerDialog input {
+	width: 200px;
+	vertical-align: top;
+}
+*/
+
+#headerAddDialog select {
+	width: 150px;
+}
+
+#headerAddDialog textarea {
+	width: 98%;
+	height: 100px;
+}
+
+#headerDoc {
+	float: right;
+	width: 150px;
 }
 
 /* tinymce style overrides */

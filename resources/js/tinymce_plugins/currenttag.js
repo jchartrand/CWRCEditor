@@ -53,7 +53,7 @@
 			
 			ed.addCommand('closeCurrentTag', function() {
 				var node = t.editor.currentNode;
-				if (node.getAttribute('_struct')) {
+				if (node.getAttribute('_tag')) {
 					if ($(node).text() == '') {
 						var id = node.getAttribute('id');
 						t.editor.execCommand('removeTag', id);

@@ -104,11 +104,12 @@ var FileManager = function(config) {
 		autoOpen: false,
 		buttons: {
 			'Ok': function() {
-				var newDocString = $('textarea', edit).val();
-				$('#editDocLoader').contents().find('html').html(newDocString);
-				w.entities = {};
-				w.structs = {};
-				_loadDocumentHandler($('#editDocLoader').contents()[0]);
+				// TODO can't get doc by setting string in iframe as it doesn't preserve xml properties
+//				var newDocString = $('textarea', edit).val();
+//				$('#editDocLoader').contents().find('html').html(newDocString);
+//				w.entities = {};
+//				w.structs = {};
+//				_loadDocumentHandler($('#editDocLoader').contents()[0]);
 				edit.dialog('close');
 			},
 			'Cancel': function() {
@@ -295,7 +296,7 @@ var FileManager = function(config) {
 		// remove highlights
 		w.highlightEntity();
 		
-		var idName = w.validationSchema == 'cwrcbasic' ? 'xml:id' : 'id';
+		var idName = w.validationSchema == 'cwrcbasic' ? 'xml:id' : 'ID';
 		
 		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
 		
@@ -308,14 +309,14 @@ var FileManager = function(config) {
 			var array = [];
 			var tag = node.attr('_tag') || node.attr('_type');
 			var openingTag = '<'+tag;
-			var id = idName;
-			$(node[0].attributes).each(function(index, att) {
-				var attName = att.name;
-				if (attName.indexOf('_') != 0) {
-					if (attName == 'id' && attName != id) attName = id;
-					openingTag += ' '+attName+'="'+att.value+'"';
+			var structEntry = w.structs[node.attr('id')];
+			for (var key in structEntry) {
+				if (key.indexOf('_') != 0) {
+					var attName = key;
+					if (attName == 'id') attName = idName;
+					openingTag += ' '+attName+'="'+structEntry[key]+'"';
 				}
-			});
+			}
 			openingTag += '>';
 			array.push(openingTag);
 			
@@ -342,7 +343,7 @@ var FileManager = function(config) {
 			var head = '';
 			if (includeRDF) {
 				var offsets = [];
-				_getNodeOffsets(body, offsets);
+				_getNodeOffsets(body, offsets, 'id');
 				body.find('[_entity]').remove();
 				head = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
 				
@@ -377,6 +378,10 @@ var FileManager = function(config) {
 			}
 			
 			var root = body.children(w.root);
+			// make sure TEI has the right namespace for validation purposes
+			if (w.root == 'TEI') {
+				root.attr('xmlns','http://www.tei-c.org/ns/1.0');
+			}
 			var tags = nodeToStringArray(root);
 			xmlString += tags[0];
 			xmlString += head;
@@ -431,26 +436,26 @@ var FileManager = function(config) {
 		});
 	};
 	
-	var _getNodeOffsets = function(parent, offsets) {
+	var _getNodeOffsets = function(parent, offsets, idName) {
 		var currentOffset = 0;
 		parent.contents().each(function(index, element) {
 			if (this.nodeType == Node.TEXT_NODE) {
 				currentOffset += this.length;
-			} else if ($(this).is(w.root) || $(this).attr('_struct')) {
-				_getNodeOffsets($(this), offsets);
+			} else if ($(this).is(w.root) || $(this).attr('_tag')) {
+				_getNodeOffsets($(this), offsets, idName);
 			} else if ($(this).attr('_entity') && $(this).hasClass('start')) {
 				var id = $(this).attr('name');
 				offsets.push({
 					id: id,
-					parent: $(parent).attr('id'),
+					parent: $(parent).attr(idName),
 					offset: currentOffset,
 					length: w.entities[id].props.content.length
 				});
 			} else if (w.titles[this.nodeName.toLowerCase()] != null) {
-				var id = $(this).attr('id');
+				var id = $(this).attr(idName);
 				offsets.push({
 					id: id,
-					parent: $(parent).attr('id'),
+					parent: $(parent).attr(idName),
 					offset: currentOffset,
 					length: $(this).text().length
 				});
@@ -485,7 +490,7 @@ var FileManager = function(config) {
 		var isEvents = doc.getElementsByTagName('EVENTS').length > 0;
 		if (isEvents) {
 			rootName = 'events';
-			idName = 'id';
+			idName = 'ID';
 		} else {
 			rootName = 'tei';
 			idName = 'xml:id';
@@ -589,7 +594,7 @@ var FileManager = function(config) {
 				});
 				$(doc).find('rdf\\:RDF, RDF').remove();
 			} else {
-				_getNodeOffsets($(doc.body), offsets);
+				_getNodeOffsets($(doc.body), offsets, idName);
 				
 				var entsQuery = '';
 				for (var key in w.titles) {
@@ -599,7 +604,7 @@ var FileManager = function(config) {
 				var ents = $(doc).find(entsQuery);
 				ents.each(function(index, el) {
 					var ent = $(el);
-					var id = ent.attr('id');
+					var id = ent.attr(idName);
 					var content = ent.text();
 					w.entities[id] = {
 						props: {
@@ -627,11 +632,28 @@ var FileManager = function(config) {
 				} else {
 					editorString += '<span';
 				}
-				editorString += ' _struct="true" _tag="'+tag+'"';
+				editorString += ' _tag="'+tag+'"';
+				
+				// create structs entries while we build the string
+				var id = $(currentNode).attr(idName);
+				if (id == null) {
+					id = tinymce.DOM.uniqueId('struct_');
+					editorString += ' id="'+id+'"';
+				}
+				var idNum = parseInt(id.split('_')[1]);
+				if (idNum > maxId) maxId = idNum;
+				
+				w.structs[id] = {
+					id: id,
+					_tag: tag
+				};
 				$(currentNode.attributes).each(function(index, att) {
 					var attName = att.name;
 					if (attName == idName) attName = 'id';
-					editorString += ' '+attName+'="'+att.value+'"';
+					w.structs[id][attName] = att.value;
+					if (attName == 'id' || attName.match(/^_/) != null) {
+						editorString += ' '+attName+'="'+att.value+'"';
+					}
 				});
 				editorString += '>';
 				
@@ -652,7 +674,6 @@ var FileManager = function(config) {
 			
 			var root = doc.getElementsByTagName(w.root)[0];
 			buildEditorString(root);
-//			console.log(editorString);
 			w.editor.setContent(editorString);
 			
 			var id, o, range, parent, contents, lengthCount, match, startOffset, endOffset, startNode, endNode;
@@ -703,23 +724,6 @@ var FileManager = function(config) {
 				range.setEnd(endNode, endOffset);
 				w.insertBoundaryTags(id, w.entities[id].props.type, range);
 			}
-			
-			w.editor.$(w.editor.getBody()).find('[_struct]').each(function(index, element) {
-				var id = this.getAttribute('id');
-				
-				// if id is null, an empty paragraph snuck in. it'll be dealt with when the structure tree gets updated.
-				if (id != null) {
-					var idNum = parseInt(id.split('_')[1]);
-					if (idNum > maxId) maxId = idNum;
-					
-					w.structs[id] = {};
-					for (var i = 0; i < this.attributes.length; i++) {
-						var key = this.attributes[i].nodeName;
-						var value = this.attributes[i].nodeValue;
-						w.structs[id][key] = value;
-					}
-				}
-			});
 			
 			// set the id counter so we don't get duplicate ids
 			tinymce.DOM.counter = maxId+1;
@@ -778,9 +782,11 @@ var FileManager = function(config) {
 			    if (w.root.toLowerCase() == 'events') {
 			    	cssUrl = 'css/orlando.css';
 			    	w.validationSchema = 'events';
+			    	w.header = 'ORLANDOHEADER';
 			    } else {
 			    	cssUrl = 'css/tei.css';
 			    	w.validationSchema = 'cwrcbasic';
+			    	w.header = 'teiHeader';
 			    }
 			    fm.loadSchemaCSS(cssUrl);
 			    
@@ -801,6 +807,9 @@ var FileManager = function(config) {
 						schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
 					}
 				});
+				// hide the header
+				schemaTags += 'span[_tag='+w.header+'] { display: none !important; }';
+				
 				$('#schemaTags', w.editor.dom.doc).text(schemaTags);
 			    
 				w.schema.elements = elements;
@@ -812,6 +821,8 @@ var FileManager = function(config) {
 				w.entitiesList.update();
 				w.tree.update(true);
 				w.relations.update();
+				
+				w.initHeader();
 				
 				if (callback) callback();
 			},
@@ -901,7 +912,13 @@ var FileManager = function(config) {
 			dataType: 'xml',
 			success: function(data, status, xhr) {
 				var rdf = data.createElement('rdf:RDF');
-				$(data.firstChild).prepend(rdf);
+				var root;
+				if (data.childNodes) {
+					root = data.childNodes[data.childNodes.length-1];
+				} else {
+					root = data.firstChild;
+				}
+				$(root).prepend(rdf);
 				_loadDocumentHandler(data);
 			}
 		});

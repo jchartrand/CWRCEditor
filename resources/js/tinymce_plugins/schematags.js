@@ -40,8 +40,7 @@
 					}
 					
 					var validKeys = {};
-					// TODO add handling for orlando header
-					if (filterKey != 'teiHeader') {
+					if (filterKey != t.editor.writer.header) {
 						validKeys = t.editor.execCommand('getChildrenForTag', {tag: filterKey, returnType: 'object'});
 					}
 					var item;
@@ -93,9 +92,9 @@
 				var key = params.key;
 				var pos = params.pos;
 				t.action = params.action;
-				if (key == 'teiHeader') {
-					t.editor.execCommand('addStructureTag', {bookmark: t.editor.currentBookmark, attributes: {_struct: true, _tag: key}, action: t.action});
-					t.editor.writer.d.show('teiheader');
+				if (key == t.editor.writer.header) {
+					t.editor.execCommand('addStructureTag', {bookmark: t.editor.currentBookmark, attributes: {_tag: key}, action: t.action});
+					t.editor.writer.d.show('header');
 					return;
 				}
 				
@@ -124,8 +123,8 @@
 			
 			t.editor.addCommand('editSchemaTag', function(tag, pos) {
 				var key = tag.attr('_tag');
-				if (key == 'teiHeader') {
-					t.editor.writer.d.show('teiheader');
+				if (key == t.editor.writer.header) {
+					t.editor.writer.d.show('header');
 					return;
 				}
 				t.currentKey = key;
@@ -189,6 +188,13 @@
 		},
 		showDialog: function(key, pos) {
 			var t = this;
+			var w = t.editor.writer;
+			
+			var structsEntry = null;
+			if (t.mode == t.EDIT) {
+				structsEntry = w.structs[$(t.tag).attr('id')];
+			}
+			
 			t.currentKey = key;
 			
 			t.isDirty = false;
@@ -216,10 +222,10 @@
 				}
 				
 				var attName = attDef.attr('name');
-				if (attName.toLowerCase() != 'id') {
+				if (attName.toLowerCase() != 'id' && attName.toLowerCase() != 'xml:id') {
 					var display = 'block';
 					var requiredClass = required ? ' required' : '';
-					if (isLevel1 || (t.mode == t.EDIT && $(t.tag).attr(attName) != undefined)) {
+					if (isLevel1 || (t.mode == t.EDIT && structsEntry[attName])) {
 						display = 'block';
 						attributeSelector += '<li id="select_'+attName+'" class="selected'+requiredClass+'">'+attName+'</li>';
 					} else {
@@ -233,7 +239,7 @@
 					}
 					currAttString += '<br/>';
 					var defaultVal = $('a\\:defaultValue', attDef).first().text();
-					if (t.mode == t.EDIT) defaultVal = $(t.tag).attr(attName) || '';
+					if (t.mode == t.EDIT) defaultVal = structsEntry[attName] || '';
 					// TODO add list support
 //					if ($('list', attDef).length > 0) {
 //						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
@@ -362,7 +368,6 @@
 			}
 			
 			attributes._tag = t.currentKey;
-			attributes._struct = true;
 			
 			switch (t.mode) {
 				case t.ADD:

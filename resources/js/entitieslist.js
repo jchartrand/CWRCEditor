@@ -43,7 +43,15 @@ var EntitiesList = function(config) {
 			entityTags.each(function(index, el) {
 				id = $(el).attr('name');
 				if (w.entities[id] == null) {
-					entry = _createEntityFromTag(el);
+					var deleted = w.deletedEntities[id];
+					if (deleted != null) {
+						w.entities[id] = deleted;
+						entry = deleted;
+						delete w.deletedEntities[id];
+					} else {
+						w.removeEntity(id);
+						return;
+					}
 				} else {
 					entry = w.entities[id];
 				}
@@ -64,7 +72,15 @@ var EntitiesList = function(config) {
 			entityTags.each(function(index, el) {
 				id = $(this).attr('name');
 				if (w.entities[id] == null) {
-					entry = _createEntityFromTag(el);
+					var deleted = w.deletedEntities[id];
+					if (deleted != null) {
+						w.entities[id] = deleted;
+						entry = deleted;
+						delete w.deletedEntities[id];
+					} else {
+						w.removeEntity(id);
+						return;
+					}
 				} else {
 					entry = w.entities[id];
 				}
@@ -122,35 +138,6 @@ var EntitiesList = function(config) {
 				border: 'none'
 			}
 		});
-	};
-	
-	var _createEntityFromTag = function(tag) {
-		var tagEnd = w.getCorrespondingEntityTag(tag);
-		
-		var id = tinymce.DOM.uniqueId('ent_');
-		w.entities[id] = {
-			props: {
-				id: id,
-				type: $(tag).attr('_type'),
-				// TODO add title and content
-				title: '',
-				content: ''
-			},
-			info: {}
-		};
-		var attsToIgnore = ['class', 'name', '_entity', '_type'];
-		var att;
-		for (var i = 0; i < tag.attributes.length; i++) {
-			att = tag.attributes.item(i);
-			if (attsToIgnore.indexOf(att.name) == -1) {
-				w.entities[id]['info'][att.name] = att.value;
-			}
-		}
-		
-		$(tag).attr('name', id);
-		$(tagEnd).attr('name', id);
-		
-		return w.entities[id];
 	};
 	
 	var _buildEntity = function(entity) {

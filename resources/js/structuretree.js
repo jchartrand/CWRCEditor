@@ -33,7 +33,7 @@ var StructureTree = function(config) {
 				
 				var info = w.structs[node.attr('name')];
 
-				if (info._tag == 'teiHeader') return {};
+				if (info._tag == w.root || info._tag == w.header) return {};
 				
 				var parentInfo = w.structs[parentNode.attr('name')];
 				
@@ -172,8 +172,8 @@ var StructureTree = function(config) {
 			var node = data.rslt.obj;
 			var id = node.attr('name');
 			if (id) {
-				if (w.structs[id]._tag == 'teiHeader') {
-					w.d.show('teiheader');
+				if (w.structs[id]._tag == w.header) {
+					w.d.show('header');
 				} else {
 					w.selectStructureTag(id);
 				}
@@ -221,9 +221,10 @@ var StructureTree = function(config) {
 		children.each(function(index, el) {
 			var newChildren = $(this).children();
 			var newNodeParent = nodeParent;
-			if ($(this).attr('_struct') || $(this).is(w.root)) {
+			if ($(this).attr('_tag') || $(this).is(w.root)) {
 				var id = $(this).attr('id');
-				var isLeaf = $(this).find('[_struct]').length > 0 ? 'open' : null;
+				var isLeaf = $(this).find('[_tag]').length > 0 ? 'open' : null;
+				if ($(this).attr('_tag') == w.header) isLeaf = false;
 				
 				// new struct check
 				if (id == '' || id == null) {
@@ -231,7 +232,7 @@ var StructureTree = function(config) {
 					var tag = $(this).attr('_tag');
 					if (tag == null && $(this).is(w.root)) tag = w.root;
 					if (w.schema.elements.indexOf(tag) != -1) {
-						$(this).attr('id', id).attr('_tag', tag).attr('_struct', true);
+						$(this).attr('id', id).attr('_tag', tag).attr('_tag', true);
 						w.structs[id] = {
 							id: id,
 							_tag: tag
@@ -239,11 +240,10 @@ var StructureTree = function(config) {
 					}
 				// redo/undo re-added a struct check
 				} else if (w.structs[id] == null) {
-					w.structs[id] = {};
-					var att;
-					for (var i = 0; i < this.attributes.length; i++) {
-						att = this.attributes.item(i);
-						w.structs[id][att.name] = att.value;
+					var deleted = w.deletedStructs[id];
+					if (deleted != null) {
+						w.structs[id] = deleted;
+						delete w.deletedStructs[id];
 					}
 				// duplicate struct check
 				} else {
@@ -274,7 +274,9 @@ var StructureTree = function(config) {
 					});
 				}
 			}
-			_doUpdate(newChildren, newNodeParent);
+			if ($(this).attr('_tag') != w.header) {
+				_doUpdate(newChildren, newNodeParent);
+			}
 		});
 	};
 	

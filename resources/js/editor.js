@@ -6,6 +6,10 @@ var Writer = function(config) {
 		entities: {}, // entities store
 		structs: {}, // structs store
 		triples: [], // triples store
+		// store deleted tags in case of undo
+		// TODO add garbage collection for this
+		deletedEntities: {},
+		deletedStructs: {},
 
 		schemaXML: null, // a cached copy of the loaded schema
 		schema: {elements: []}, // stores a list of all the elements of the loaded schema
@@ -38,6 +42,8 @@ var Writer = function(config) {
 		
 		// root block element, should come from schema
 		root: '',
+		// header element: hidden in editor view, can only edit from structure tree
+		header: '',
 		
 		// possible editor modes
 		XMLRDF: 0, // allows for overlapping elements, i.e. entities
@@ -120,6 +126,16 @@ var Writer = function(config) {
 				$('#entities li[name="'+ed.currentEntity+'"] > span[class="entityTitle"]').html(entity.title);
 			}
 			
+			if (w.fixEmptyStructTag && ed.currentStruct) {
+				w.fixEmptyStructTag = false;
+				var bm = ed.selection.getBookmark();
+				ed.$('#'+ed.currentStruct).find('#remove_me').contents().unwrap();
+				w.editor.selection.moveToBookmark(bm);
+				var range = ed.selection.getRng(true);
+				range.selectNodeContents(ed.$('#'+ed.currentStruct)[0]);
+				range.collapse(false);
+			}
+			
 			// delete keys check
 			// need to do this here instead of in onchangehandler because that one doesn't update often enough
 			if (evt.which == 8 || evt.which == 46) {
@@ -132,7 +148,7 @@ var Writer = function(config) {
 				if (ed.currentNode) {
 					var node = ed.currentNode;
 					if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
-					ed.$(node).find('br').replaceWith('<span _tag="lb" _struct="true"></span>');
+					ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
 				}
 			}
 		});
@@ -143,15 +159,6 @@ var Writer = function(config) {
 				_findDeletedTags();
 				w.entitiesList.update();
 				w.tree.update();
-			}
-			if (w.fixEmptyStructTag && ed.currentStruct) {
-				ed.$('#'+ed.currentStruct).contents().each(function(index, el) {
-					if (el.nodeValue && el.nodeValue.charCodeAt(0) == 65279) {
-						el.nodeValue = '';
-						w.fixEmptyStructTag = false;
-						return false;
-					}
-				});
 			}
 		});
 		
@@ -166,18 +173,21 @@ var Writer = function(config) {
 			var nodes = w.editor.dom.select('span[name="'+id+'"]');
 			switch (nodes.length) {
 				case 0:
-					delete w.entities[id];
 					w.entitiesList.remove(id);
+					w.deletedEntities[id] = w.entities[id];
+					delete w.entities[id];
 					break;
 				case 1:
 					w.editor.dom.remove(nodes[0]);
-					delete w.entities[id];
 					w.entitiesList.remove(id);
+					w.deletedEntities[id] = w.entities[id];
+					delete w.entities[id];
 			}
 		}
 		for (var id in w.structs) {
 			var nodes = w.editor.dom.select('#'+id);
 			if (nodes.length == 0) {
+				w.deletedStructs[id] = w.structs[id];
 				delete w.structs[id];
 			}
 		}
@@ -237,7 +247,9 @@ var Writer = function(config) {
 				ed.currentNode = e;
 			}
 		}
-		w.tree.selectNode(ed.currentNode.id);
+		if (ed.currentNode) {
+			w.tree.selectNode(ed.currentNode.id);
+		}
 	};
 	
 	var _onPasteHandler = function(ed, event) {
@@ -257,7 +269,7 @@ var Writer = function(config) {
 		if (entityEnd == null || entityStart == null) {
 			w.highlightEntity();
 			var parentNode = ed.$(ed.selection.getNode());
-			if (parentNode.attr('_struct')) {
+			if (parentNode.attr('_tag')) {
 				var id = parentNode.attr('id');
 				w.editor.currentStruct = id;
 			}
@@ -570,7 +582,7 @@ var Writer = function(config) {
 	w.editTag = function(id, pos) {
 		var tag = _getCurrentTag(id);
 		if (tag.struct) {
-			if (w.editor.$(tag.struct).attr('_struct')) {
+			if (w.editor.$(tag.struct).attr('_tag')) {
 				w.editor.execCommand('editSchemaTag', tag.struct, pos);
 			} else {
 				w.editor.execCommand('editCustomTag', tag.struct, pos);
@@ -585,7 +597,7 @@ var Writer = function(config) {
 	w.changeTag = function(params) {
 		var tag = _getCurrentTag(params.id);
 		if (tag.struct) {
-			if (w.editor.$(tag.struct).attr('_struct')) {
+			if (w.editor.$(tag.struct).attr('_tag')) {
 				w.editor.execCommand('changeSchemaTag', {tag: tag.struct, pos: params.pos, key: params.key});
 			}
 		} else if (tag.entity) {
@@ -714,14 +726,15 @@ var Writer = function(config) {
 		var tag = 'span';
 		var open_tag = '<'+tag;
 		for (var key in attributes) {
-			open_tag += ' '+key+'="'+w.escapeHTMLString(attributes[key])+'"';
+			if (key == 'id' || key.match(/^_/) != null) {
+				open_tag += ' '+key+'="'+attributes[key]+'"';
+			}
 		}
 		open_tag += '>';
 		var close_tag = '</'+tag+'>';
 		
-		var selection = '&#65279;';
+		var selection = '<span id="remove_me">&#65279;</span>';
 		var content = open_tag + selection + close_tag;
-		
 		if (action == 'before') {
 			$(node).before(content);
 		} else if (action == 'after') {
@@ -735,17 +748,15 @@ var Writer = function(config) {
 			selection = w.editor.selection.getContent();
 			// add zero width no-break space, required for proper cursor positioning inside tag
 			// doesn't work in IE
-			if (selection == '') selection = '&#65279;';
+			if (selection == '') selection = '<span id="remove_me">&#65279;</span>';
 
 			content = open_tag + selection + close_tag;
 			w.editor.execCommand('mceReplaceContent', false, content);
 		}
-		
-		if (selection == '&#65279;') {
+		if (selection == '<span id="remove_me">&#65279;</span>') {
 			w.fixEmptyStructTag = true;
 			var range = w.editor.selection.getRng(true);
-			range.selectNodeContents(w.editor.$('#'+id)[0]);
-			range.collapse(true);
+			range.selectNode(w.editor.$('#remove_me')[0]);
 		}
 		
 		w.tree.update();
@@ -760,7 +771,9 @@ var Writer = function(config) {
 			}
 		});
 		for (var key in attributes) {
-			tag.attr(key, attributes[key]);
+			if (key.match(/^_/) != null) {
+				tag.attr(key, attributes[key]);
+			}
 		}
 		w.structs[id] = attributes;
 		w.tree.update();
@@ -1011,9 +1024,9 @@ var Writer = function(config) {
 				
 				function replaceTags(index, node) {
 					if (node.nodeName.toLowerCase() == 'p') {
-						$(node).contents().unwrap().wrapAll('<span _struct="true" _tag="p"></span>').not(':text').each(replaceTags);
+						$(node).contents().unwrap().wrapAll('<span _tag="p"></span>').not(':text').each(replaceTags);
 					} else if (node.nodeName.toLowerCase() == 'br') {
-						$(node).replaceWith('<span _struct="true" _tag="lb"></span>');
+						$(node).replaceWith('<span _tag="lb"></span>');
 					}
 				}
 				

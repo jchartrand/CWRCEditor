@@ -52,7 +52,8 @@ var SettingsDialog = function(writer, config) {
 	'</select>'+
 	'</div>'+
 	'<div style="margin-top: 10px;">'+
-	'<label>Schema</label><select name="schema">'+
+	// schema selection is disabled for now, as changing this would require loading the new schema
+	'<label>Schema</label><select name="schema" disabled="disabled">'+
 	'<option value="cwrcbasic">CWRC Basic TEI Schema</option>'+
 	'<option value="events">Events Schema</option>'+
 	'</select>'+
