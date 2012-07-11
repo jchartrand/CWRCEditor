@@ -165,9 +165,10 @@ var DateDialog = function(config) {
 		} else {
 			data = null;
 		}
-		
-		if (!(mode == EDIT && data == null)) {
-			w.finalizeEntity(w.editor.currentEntity, data);
+		if (mode == EDIT && data != null) {
+			w.editEntity(w.editor.currentEntity, data);
+		} else {
+			w.finalizeEntity('date', data);
 		}
 		date.dialog('close');
 	};

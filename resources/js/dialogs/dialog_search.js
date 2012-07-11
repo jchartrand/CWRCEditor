@@ -20,10 +20,10 @@ var SearchDialog = function(config) {
 			    '<h3><a href="#">Results from '+w.project+' Project</a></h3>'+
 			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
 			    '</div>'+
-			    '<div id="lookup_orca">'+
-			    '<h3><a href="#">Results from ORCA</a></h3>'+
-			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
-			    '</div>'+
+//			    '<div id="lookup_orca">'+
+//			    '<h3><a href="#">Results from ORCA</a></h3>'+
+//			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
+//			    '</div>'+
 			    '<div id="lookup_viaf">'+
 			    '<h3><a href="#">Results from Web</a></h3>'+
 			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
