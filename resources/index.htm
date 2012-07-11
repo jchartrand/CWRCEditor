@@ -4,15 +4,106 @@
 		<title>CWRCWriter</title>
 		<link type="text/css" rel="stylesheet" href="css/style.css" />
 		<link type="text/css" rel="stylesheet" href="smoothness/jquery-ui-1.8.13.custom.css" />
+		<style type="text/css">
+			h1 {
+				font-size: 24px;
+				text-align: center;
+			}
+			h2 {
+				font-size: 16px;
+				text-align: center;
+			}
+			hr {
+				border: none;
+				border-top: 1px solid #ccc;
+			}
+			img {
+				border: none;
+			}
+			#contentParent {
+				position: absolute;
+				top: 50%;
+				left: 0px;
+				width: 100%;
+				margin-top: -250px;
+				text-align: center;
+				min-width: 550px;
+			}
+			#content {
+				position: absolute;
+				position: relative;
+				text-align: left;
+				width: 550px;
+				height: 400px;
+				margin: 0px auto;
+				font-size: 12px;
+			}
+			#start {
+				width: 320px;
+				margin: 0 auto;
+			}
+			#buttonsParent {
+				text-align: center;
+			}
+			
+			#buttonsParent button {
+				margin: 10px;
+				width: 300px;
+			}
+			#start button .ui-button-text {
+				font-size: 14px !important;
+			}
+			#logos {
+				width: 100%;
+				position: absolute;
+				bottom: 10px;
+			}
+		</style>
 		<script type="text/javascript" src="js/jquery/jquery-1.6.1.js"></script>
 		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.13.custom.min.js"></script>
 		<script type="text/javascript" src="js/dialogs/dialog_start.js"></script>
 		<script type="text/javascript">
 			$(function() {
-				var s = new StartDialog();
+				$('#start').append(''+
+					'<div id="buttonsParent">'+
+						'<button>Load an Existing Document</button>'+
+						'<button>Create a Letter</button>'+
+						'<button>Create an Event</button>'+
+						'<button>See a Sample Letter</button>'+
+					'</div>');
+				
+				var buttons = $('button').button();
+				buttons.eq(0).click(function() {
+					window.location = 'editor.htm#load';
+				});
+				buttons.eq(1).click(function() {
+					window.location = 'editor.htm#letter';
+				});
+				buttons.eq(2).click(function() {
+					window.location = 'editor.htm#event';
+				});
+				buttons.eq(3).click(function() {
+					window.location = 'editor.htm#sample';
+				});
 			});
 		</script>
 	</head>
 	<body>
+		<div id="contentParent">
+			<div id="content">
+				<h1>CWRC-Writer</h1>
+				<h2>an open-source editor for online digital scholarship</h2>
+				<p>This is an early prototype for demonstration purposes:
+				certain features are not yet functional and there are many bugs.
+				The editor current works best with the current version of the Firefox browser (available <a href="http://www.mozilla.org/en-US/firefox/new/" target="_blank">here</a>).</p>
+				<p>For more information or to help with testing CWRC-Writer, visit <a href="http://www.cwrc.ca/projects/infrastructure-projects/technical-projects/cwrc-writer/" target="_blank">here</a>.</p>
+				<hr/>
+				<div id="start"></div>
+			</div>
+		</div>
+		<div id="logos">
+			<a href="http://www.cwrc.ca/en/" target="_blank"><img src="img/CWRC_logo_text_web.png" style="float: left; margin-left: 10px;" /></a>
+			<a href="http://innovation.ca/" target="_blank"><img src="img/en.png" style="float: right; margin-right: 10px;" /></a>
+		</div>
 	</body>
 </html>
