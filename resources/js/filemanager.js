@@ -676,6 +676,9 @@ var FileManager = function(config) {
 			buildEditorString(root);
 			w.editor.setContent(editorString);
 			
+			// editor needs focus in order for entities to be properly inserted
+			w.editor.focus();
+			
 			var id, o, range, parent, contents, lengthCount, match, startOffset, endOffset, startNode, endNode;
 			for (var i = 0; i < offsets.length; i++) {
 				o = offsets[i];
@@ -788,10 +791,12 @@ var FileManager = function(config) {
 			    	w.validationSchema = 'cwrcbasic';
 			    	w.header = 'teiHeader';
 			    }
+			    
+			    $('#schemaTags', w.editor.dom.doc).remove();
+			    $('#schemaRules', w.editor.dom.doc).remove();
 			    fm.loadSchemaCSS(cssUrl);
 			    
 			    // create css to display schema tags
-				$('#schemaTags', w.editor.dom.doc).remove();
 				$('head', w.editor.dom.doc).append('<style id="schemaTags" type="text/css" />');
 				var tag = w.root;
 				// xhtml only allows lower case elements
@@ -843,13 +848,15 @@ var FileManager = function(config) {
 			var stylesheets = w.editor.getDoc().styleSheets;
 			for (var i = 0; i < stylesheets.length; i++) {
 				var s = stylesheets[i];
-				if (s.href.indexOf(name) != -1) {
+				if (s.href && s.href.indexOf(name) != -1) {
 					stylesheet = s;
 					break;
 				}
 			}
 			if (stylesheet) {
 				try {
+					$('#schemaRules', w.editor.dom.doc).remove();
+					
 					var rules = stylesheet.cssRules;
 					var newRules = '';
 					// adapt the rules to our format, should only modify element names in selectors
@@ -862,15 +869,8 @@ var FileManager = function(config) {
 						var newCss = css.replace(selector, newSelector);
 						newRules += newCss+'\n';
 					}
-					
-					var doc = w.editor.getDoc();
-					var styleEl = doc.createElement('style');
-					var styleType = doc.createAttribute('type');
-					styleType.value = 'text/css';
-					styleEl.setAttributeNode(styleType);
-					var styleText = doc.createTextNode(newRules);
-					styleEl.appendChild(styleText);
-					doc.head.appendChild(styleEl);
+					$('head', w.editor.dom.doc).append('<style id="schemaRules" type="text/css" />');
+					$('#schemaRules', w.editor.dom.doc).text(newRules);
 					stylesheet.disabled = true;
 				} catch (e) {
 					setTimeout(parseCss, 25);
