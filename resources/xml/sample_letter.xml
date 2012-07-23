@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TEI xmlns="http://www.tei-c.org/ns/1.0">
-    <text>
+	<teiHeader>
+        <fileDesc>
+               <titleStmt>
+                   <title>Sample Document Title</title>
+               </titleStmt>
+               <publicationStmt>
+                   <p></p>
+              </publicationStmt>
+              <sourceDesc sameAs="http://www.cwrc.ca">
+                  <p>Created from original research by members of CWRC/CSÉC unless otherwise
+                      noted.</p>
+              </sourceDesc>
+        </fileDesc>
+	</teiHeader>    
+ 	<text>
         <body>
             <div type="letter">
                 <head><title>Sample Letter - Bertrand Russell to Patricia Spence - October 21, 1935</title></head>
