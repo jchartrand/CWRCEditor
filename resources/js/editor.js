@@ -847,17 +847,6 @@ var Writer = function(config) {
 				defHits[name] = true;
 				var def = $('define[name="'+name+'"]', writer.schemaXML);
 				_getChildren(def, defHits, level+1, type, children);
-//				var child = $(type, def).first();
-//				if (type == 'attribute' && child.parents('element').length > 0 && level > 0) {
-//					return; // don't get attributes from other elements
-//				}
-//				if (child.length == 1) {
-//					var childObj = {name: child.attr('name'), level: level+0};
-//					childObj[type] = child;
-//					children.push(childObj);
-//				} else {
-//					_getChildren(def, defHits, level+1, type, children);
-//				}
 			}
 		});
 	};
