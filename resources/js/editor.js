@@ -438,7 +438,14 @@ var Writer = function(config) {
 			}
 		}
 		
-		if (range.startContainer.parentNode != range.endContainer.parentNode) return w.NO_COMMON_PARENT;
+		if (range.startContainer.parentNode != range.endContainer.parentNode) {
+			if (range.endOffset == 0 && range.endContainer.previousSibling == range.startContainer.parentNode) {
+				// fix for when the user double-clicks a word that's already been tagged
+				range.setEnd(range.startContainer, range.startContainer.length);
+			} else {
+				return w.NO_COMMON_PARENT;
+			}
+		}
 		
 		// extra check to make sure we're not overlapping with an entity
 		if (isStructTag || w.mode == w.XML) {
