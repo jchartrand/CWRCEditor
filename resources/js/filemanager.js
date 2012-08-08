@@ -469,7 +469,7 @@ var FileManager = function(config) {
 		var offsets = [];
 		function getOffsets(parent) {
 			parent.contents().each(function(index, element) {
-				if (this.nodeType == Node.TEXT_NODE) {
+				if (this.nodeType == Node.TEXT_NODE && this.data != ' ') {
 					currentOffset += this.length;
 				} else if ($(this).is(w.root) || $(this).attr('_tag')) {
 					getOffsets($(this));
@@ -757,7 +757,7 @@ var FileManager = function(config) {
 					var currentOffset = 0;
 					function getNodes(parent) {
 						parent.contents().each(function(index, element) {
-							if (this.nodeType == Node.TEXT_NODE) {
+							if (this.nodeType == Node.TEXT_NODE && this.data != ' ') {
 								currentOffset += this.length;
 								
 								if (currentOffset > o.offset && startNode == null) {
