@@ -142,19 +142,15 @@ var FileManager = function(config) {
 				docNames = data;
 			}, callback],
 			error: function() {
-				var doc = $.parseXML('<?xml version="1.0" encoding="UTF-8"?><TEI xmlns="http://www.tei-c.org/ns/1.0" xml:id="struct_11"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#"></rdf:RDF><teiHeader xmlns="http://www.tei-c.org/ns/1.0" xml:id="struct_12"> <fileDesc xml:id="struct_13"> <titleStmt xml:id="struct_14"> <title xml:id="struct_15">Put title here.</title> </titleStmt> <publicationStmt xml:id="struct_16"> <p xml:id="struct_17">Put publication statement here.</p> </publicationStmt> <sourceDesc xml:id="struct_18"> <p xml:id="struct_19">Put description of source here.</p> </sourceDesc> </fileDesc> </teiHeader> <text xmlns="http://www.tei-c.org/ns/1.0" xml:id="struct_20"> <body xml:id="struct_21"> <div type="letter" xml:id="struct_22"> <opener xml:id="struct_23"> Put any opening text here. <dateline xml:id="struct_25"> <date xml:id="struct_26">Put dateline here.</date> </dateline> <salute xml:id="struct_27">Put opening salutation here.</salute> </opener> <p xml:id="struct_28">Put text of letter here. Press return for more paragraphs. Place an pb element for page breaks.</p> <closer xml:id="struct_29"> <salute xml:id="struct_30">Put closing salutation here.</salute> <signed xml:id="struct_31"> <persName xml:id="struct_32">Signature here.</persName> </signed> </closer> </div> </body> </text></TEI>');
-				_loadDocumentHandler(doc);
+				alert('Error getting documents.');
+//				$.ajax({
+//					url: 'xml/test.xml',
+//					success: function(data, status, xhr) {
+//						_loadDocumentHandler(data);
+//					}
+//				});
 			}
 		});
-//		var data = {
-//			response: []
-//		};
-//		var length = Math.ceil(Math.random()*10);
-//		for (var i = 0; i < length; i++) {
-//			data.response.push('Random Doc '+i);
-//		}
-//		docNames = data.response;
-//		if (callback) callback();
 	};
 	
 	var _populateLoader = function() {
@@ -342,8 +338,7 @@ var FileManager = function(config) {
 		if (w.mode == w.XMLRDF) {
 			var head = '';
 			if (includeRDF) {
-				var offsets = [];
-				_getNodeOffsets(body, offsets, 'id');
+				var offsets = _getNodeOffsetsFromRoot(body);
 				body.find('[_entity]').remove();
 				head = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
 				
@@ -436,31 +431,61 @@ var FileManager = function(config) {
 		});
 	};
 	
-	var _getNodeOffsets = function(parent, offsets, idName) {
+	var _getNodeOffsets = function(parent, idName) {
 		var currentOffset = 0;
-		parent.contents().each(function(index, element) {
-			if (this.nodeType == Node.TEXT_NODE) {
-				currentOffset += this.length;
-			} else if ($(this).is(w.root) || $(this).attr('_tag')) {
-				_getNodeOffsets($(this), offsets, idName);
-			} else if ($(this).attr('_entity') && $(this).hasClass('start')) {
-				var id = $(this).attr('name');
-				offsets.push({
-					id: id,
-					parent: $(parent).attr(idName),
-					offset: currentOffset,
-					length: w.entities[id].props.content.length
-				});
-			} else if (w.titles[this.nodeName.toLowerCase()] != null) {
-				var id = $(this).attr(idName);
-				offsets.push({
-					id: id,
-					parent: $(parent).attr(idName),
-					offset: currentOffset,
-					length: $(this).text().length
-				});
-			}
-		});
+		var offsets = [];
+		function getOffsets(parent, idName) {
+			parent.contents().each(function(index, element) {
+				if (this.nodeType == Node.TEXT_NODE) {
+					currentOffset += this.length;
+				} else if ($(this).is(w.root) || $(this).attr('_tag')) {
+					getOffsets($(this), idName);
+				} else if ($(this).attr('_entity') && $(this).hasClass('start')) {
+					var id = $(this).attr('name');
+					offsets.push({
+						id: id,
+						parent: $(parent).attr(idName),
+						offset: currentOffset,
+						length: w.entities[id].props.content.length
+					});
+				} else if (w.titles[this.nodeName.toLowerCase()] != null) {
+					var id = $(this).attr(idName);
+					offsets.push({
+						id: id,
+						parent: $(parent).attr(idName),
+						offset: currentOffset,
+						length: $(this).text().length
+					});
+				}
+			});
+		}
+		
+		getOffsets(parent);
+		return offsets;
+	};
+	
+	var _getNodeOffsetsFromRoot = function(root) {
+		var currentOffset = 0;
+		var offsets = [];
+		function getOffsets(parent) {
+			parent.contents().each(function(index, element) {
+				if (this.nodeType == Node.TEXT_NODE) {
+					currentOffset += this.length;
+				} else if ($(this).is(w.root) || $(this).attr('_tag')) {
+					getOffsets($(this));
+				} else if ($(this).attr('_entity') && $(this).hasClass('start')) {
+					var id = $(this).attr('name');
+					offsets.push({
+						id: id,
+						offset: currentOffset,
+						length: w.entities[id].props.content.length
+					});
+				}
+			});
+		}
+		
+		getOffsets(root);
+		return offsets;
 	};
 	
 	fm.loadDocument = function(docName) {
@@ -594,7 +619,7 @@ var FileManager = function(config) {
 				});
 				$(doc).find('rdf\\:RDF, RDF').remove();
 			} else {
-				_getNodeOffsets($(doc.body), offsets, idName);
+				offsets = _getNodeOffsets($(doc.body), idName);
 				
 				var entsQuery = '';
 				for (var key in w.titles) {
@@ -679,50 +704,84 @@ var FileManager = function(config) {
 			// editor needs focus in order for entities to be properly inserted
 			w.editor.focus();
 			
-			var id, o, range, parent, contents, lengthCount, match, startOffset, endOffset, startNode, endNode;
+			var id, o, parent, contents, lengthCount, match, startOffset, endOffset, startNode, endNode;
 			for (var i = 0; i < offsets.length; i++) {
+				startNode = null;
+				endNode = null;
+				startOffset = 0;
+				endOffset = 0;
+				
 				o = offsets[i];
 				id = o.id;
-				parent = w.editor.$('#'+o.parent);
-				
-				// get all text nodes
-				contents = parent.contents().filter(function() {
-					return this.nodeType == Node.TEXT_NODE;
-				});
-				
-				startOffset = o.offset;
-				lengthCount = 0;
-				match = false;
-				startNode = contents.filter(function() {
-					if (!match) {
-						lengthCount += this.length;
-						if (lengthCount > o.offset) {
-							match = true;
-							return true;
-						} else {
-							startOffset -= this.length;
+				if (o.parent != '') {
+					parent = w.editor.$('#'+o.parent);
+					
+					// get all text nodes
+					contents = parent.contents().filter(function() {
+						return this.nodeType == Node.TEXT_NODE;
+					});
+					
+					startOffset = o.offset;
+					lengthCount = 0;
+					match = false;
+					startNode = contents.filter(function() {
+						if (!match) {
+							lengthCount += this.length;
+							if (lengthCount > o.offset) {
+								match = true;
+								return true;
+							} else {
+								startOffset -= this.length;
+							}
 						}
-					}
-					return false;
-				})[0];
-				
-				endOffset = o.offset+o.length;
-				lengthCount = 0;
-				match = false;
-				endNode = contents.filter(function() {
-					if (!match) {
-						lengthCount += this.length;
-						if (lengthCount >= o.offset+o.length) {
-							match = true;
-							return true;
-						} else {
-							endOffset -= this.length;
+						return false;
+					})[0];
+					
+					endOffset = o.offset+o.length;
+					lengthCount = 0;
+					match = false;
+					endNode = contents.filter(function() {
+						if (!match) {
+							lengthCount += this.length;
+							if (lengthCount >= o.offset+o.length) {
+								match = true;
+								return true;
+							} else {
+								endOffset -= this.length;
+							}
 						}
+						return false;
+					})[0];
+				} else {
+					parent = $(w.editor.getDoc().body);
+					var currentOffset = 0;
+					function getNodes(parent) {
+						parent.contents().each(function(index, element) {
+							if (this.nodeType == Node.TEXT_NODE) {
+								currentOffset += this.length;
+								
+								if (currentOffset > o.offset && startNode == null) {
+									startNode = this;
+									startOffset = o.offset - (currentOffset - this.length);
+								}
+								
+								if (currentOffset >= o.offset + o.length && endNode == null) {
+									endNode = this;
+									endOffset = startOffset + o.length;
+								}
+							} else if ($(this).is(w.root) || $(this).attr('_tag')) {
+								getNodes($(this));
+							}
+							if (startNode != null && endNode != null) {
+								return false;
+							}
+						});
 					}
-					return false;
-				})[0];
+					
+					getNodes(parent);
+				}
 				
-				range = w.editor.selection.getRng(true);
+				var range = w.editor.selection.getRng(true);
 				range.setStart(startNode, startOffset);
 				range.setEnd(endNode, endOffset);
 				w.insertBoundaryTags(id, w.entities[id].props.type, range);
