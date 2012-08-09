@@ -55,6 +55,7 @@ var Writer = function(config) {
 		VALID: 2,
 		
 		fixEmptyStructTag: false, // whether to check the current empty struct tag for the &#65279; we inserted and then remove it
+		emptyTagId: null, // stores the id of the entities tag to be added
 		
 		fm: null, // filemanager
 		entitiesList: null, // entities list
@@ -134,6 +135,27 @@ var Writer = function(config) {
 				var range = ed.selection.getRng(true);
 				range.selectNodeContents(ed.$('#'+ed.currentStruct)[0]);
 				range.collapse(false);
+			}
+			
+			if (w.emptyTagId) {
+				if (evt.which >= 48 || evt.which <= 90) {
+					var range = ed.selection.getRng(true);
+					range.setStart(range.commonAncestorContainer, range.startOffset-1);
+					range.setEnd(range.commonAncestorContainer, range.startOffset+1);
+					w.insertBoundaryTags(w.emptyTagId, w.entities[w.emptyTagId].props.type, range);
+					
+					// TODO get working in IE
+					var tags = ed.$('[name='+w.emptyTagId+']');
+					range = ed.selection.getRng(true);
+					range.setStartAfter(tags[0]);
+					range.setEndBefore(tags[1]);
+					range.collapse(false);
+					
+					w.entitiesList.update();
+				} else {
+					delete w.entities[w.emptyTagId];
+				}
+				w.emptyTagId = null;
 			}
 			
 			// delete keys check
@@ -250,6 +272,10 @@ var Writer = function(config) {
 		if (ed.currentNode) {
 			w.tree.selectNode(ed.currentNode.id);
 		}
+		if (w.emptyTagId) {
+			delete w.entities[w.emptyTagId];
+			w.emptyTagId = null;
+		}
 	};
 	
 	var _onPasteHandler = function(ed, event) {
@@ -279,8 +305,7 @@ var Writer = function(config) {
 		var id = entityStart.getAttribute('name');
 		if (id == ed.currentEntity) return;
 		
-		var bm = ed.selection.getBookmark(1);
-		w.highlightEntity(id, bm);
+		w.highlightEntity(id, ed.selection.getBookmark());
 	};
 	
 	/**
@@ -395,10 +420,6 @@ var Writer = function(config) {
 	// checks the user selection and potential entity markers
 	w.isSelectionValid = function(isStructTag) {
 		var sel = w.editor.selection;
-		if (!isStructTag) {
-			if (sel.isCollapsed()) return w.NO_SELECTION;
-			if (sel.getContent() == '') return w.NO_SELECTION;
-		}
 		
 		// check for numerous overlap possibilities
 		var range = sel.getRng(true);
@@ -497,7 +518,6 @@ var Writer = function(config) {
 		var result = w.isSelectionValid();
 		if (result == w.VALID) {
 			w.editor.currentBookmark = w.editor.selection.getBookmark(1);
-//			w.editor.currentEntity = _addEntityTag(type);
 			w.d.show(type, {type: type, title: w.titles[type], pos: w.editor.contextMenuPos});
 		} else {
 			w.showError(result);
@@ -525,6 +545,7 @@ var Writer = function(config) {
 		var title = w.getTitleFromContent(content);
 		
 		var id = tinymce.DOM.uniqueId('ent_');
+		w.editor.currentEntity = id;
 		
 		w.entities[id] = {
 			props: {
@@ -536,7 +557,11 @@ var Writer = function(config) {
 			info: {}
 		};
 		
-		w.insertBoundaryTags(id, type, range);
+		if (content != '') {
+			w.insertBoundaryTags(id, type, range);
+		} else {
+			w.emptyTagId = id;
+		}
 		
 		return id;
 	};
@@ -571,6 +596,7 @@ var Writer = function(config) {
 			w.highlightEntity(id);
 		}
 		w.editor.currentBookmark = null;
+		w.editor.focus();
 	};
 	
 	var _getCurrentTag = function(id) {
@@ -712,7 +738,7 @@ var Writer = function(config) {
 			range.setEndBefore(marker);
 		}
 		w.editor.selection.setRng(range);
-		w.highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark(1));
+		w.highlightEntity(marker.getAttribute('name'), w.editor.selection.getBookmark());
 	};
 	
 	w.addStructureTag = function(params) {
