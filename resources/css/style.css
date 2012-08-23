@@ -46,6 +46,7 @@ label {
 
 #header h1 {
 	float: left;
+	cursor: pointer;
 }
 
 #settingsLink, #helpLink, #headerLink {

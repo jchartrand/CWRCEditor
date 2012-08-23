@@ -985,8 +985,12 @@ var Writer = function(config) {
 	 * Begin init functions
 	 */
 	w.init = function() {
-		var title = 'CWRCWriter v0.3';
+		var title = 'CWRC-Writer v0.3';
 		$(document.body).append('<div id="wrap"><div id="header"><h1>'+title+'</h1></div><div id="leftcol"><div id="tabs"><ul><li><a href="#entities">Entities</a></li><li><a href="#structure">Structure</a></li><li><a href="#relations">Relations</a></li></ul></div><div id="separator" class="arrowLeft" title="Click to expand/contract"></div></div><div id="main"><form method="post" action=""><textarea id="editor" name="editor" class="tinymce"></textarea></form></div></div>');
+		
+		$('#header h1').click(function() {
+			window.location = 'index.htm';
+		});
 		
 		if (w.mode != null && w.mode == 'xml') {
 			w.mode = w.XML;
