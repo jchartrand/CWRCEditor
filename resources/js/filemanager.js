@@ -63,13 +63,15 @@ var FileManager = function(config) {
 				if (!_isNameValid(name)) {
 					w.d.show('message', {
 						title: 'Invalid Name',
-						msg: 'You may only enter upper or lowercase letters; no numbers, spaces, or punctuation.'
+						msg: 'You may only enter upper or lowercase letters; no numbers, spaces, or punctuation.',
+						type: 'error'
 					});
 					return;
 				} else if (name == 'info') {
 					w.d.show('message', {
 						title: 'Invalid Name',
-						msg: 'This name is reserved, please choose a different one.'
+						msg: 'This name is reserved, please choose a different one.',
+						type: 'error'
 					});
 					return;
 				}
@@ -78,7 +80,8 @@ var FileManager = function(config) {
 					// TODO add overwrite confirmation
 					w.d.show('message', {
 						title: 'Invalid Name',
-						msg: 'This name already exists, please choose a different one.'
+						msg: 'This name already exists, please choose a different one.',
+						type: 'error'
 					});
 					return;
 				} else {
@@ -142,7 +145,11 @@ var FileManager = function(config) {
 				docNames = data;
 			}, callback],
 			error: function() {
-				alert('Error getting documents.');
+				w.d.show('message', {
+					title: 'Error',
+					msg: 'Error getting documents.',
+					type: 'error'
+				});
 //				$.ajax({
 //					url: 'xml/test.xml',
 //					success: function(data, status, xhr) {
@@ -210,7 +217,8 @@ var FileManager = function(config) {
 			error: function() {
 				w.d.show('message', {
 					title: 'Error',
-					msg: 'An error occurred while trying to validate '+currentDoc+'.'
+					msg: 'An error occurred while trying to validate '+currentDoc+'.',
+					type: 'error'
 				});
 			}
 		});
@@ -238,7 +246,8 @@ var FileManager = function(config) {
 			} else {
 				w.d.show('message', {
 					title: 'Document Invalid',
-					msg: doc+' is not valid.<br/>'+errors
+					msg: doc+' is not valid.<br/>'+errors,
+					type: 'error'
 				});
 			}
 		} else {
@@ -255,7 +264,8 @@ var FileManager = function(config) {
 				}
 				w.d.show('message', {
 					title: 'Document Valid',
-					msg: doc+' is valid.<br/>'+warnings
+					msg: doc+' is valid.<br/>'+warnings,
+					type: 'info'
 				});
 			}
 		}
@@ -281,7 +291,8 @@ var FileManager = function(config) {
 				error: function() {
 					w.d.show('message', {
 						title: 'Error',
-						msg: 'An error occurred and '+currentDoc+' was not saved.'
+						msg: 'An error occurred and '+currentDoc+' was not saved.',
+						type: 'error'
 					});
 				}
 			});
@@ -303,21 +314,30 @@ var FileManager = function(config) {
 		
 		function nodeToStringArray(node) {
 			var array = [];
+			var id = node.attr('id');
 			var tag = node.attr('_tag') || node.attr('_type');
+			
 			var openingTag = '<'+tag;
-			var structEntry = w.structs[node.attr('id')];
-			for (var key in structEntry) {
-				if (key.indexOf('_') != 0) {
-					var attName = key;
-					if (attName == 'id') attName = idName;
-					openingTag += ' '+attName+'="'+structEntry[key]+'"';
+			
+			var structEntry = w.structs[id];
+			var entityEntry = w.entities[id];
+			if (structEntry) {
+				for (var key in structEntry) {
+					if (key.indexOf('_') != 0) {
+						var attName = key;
+						if (attName == 'id') attName = idName;
+						openingTag += ' '+attName+'="'+structEntry[key]+'"';
+					}
+				}
+			} else if (entityEntry) {
+				for (var key in entityEntry.info) {
+					openingTag += ' '+key+'="'+entityEntry.info[key]+'"';
 				}
 			}
+			
 			openingTag += '>';
 			array.push(openingTag);
-			
-			var closingTag = '</'+tag+'>';
-			array.push(closingTag);
+			array.push('</'+tag+'>');
 			
 			return array;
 		}
@@ -404,13 +424,13 @@ var FileManager = function(config) {
 				}
 				
 				var attributes = ' id="'+id+'" _type="'+w.entities[id].props.type+'"';
-				for (var key in w.entities[id].info) {
-					attributes += ' '+key+'="'+w.entities[id].info[key]+'"';
-				}
 				
 				w.editor.$(nodes).wrapAll('<entity'+attributes+'/>');
 				w.editor.$(markers).remove();
 			}
+			
+			// TODO add triples
+			
 			buildXMLString(w.editor.$(w.root));
 		}
 		body.replaceWith(clone);
@@ -429,39 +449,6 @@ var FileManager = function(config) {
 				_entitiesToUnicode(el);
 			}
 		});
-	};
-	
-	var _getNodeOffsets = function(parent, idName) {
-		var currentOffset = 0;
-		var offsets = [];
-		function getOffsets(parent, idName) {
-			parent.contents().each(function(index, element) {
-				if (this.nodeType == Node.TEXT_NODE) {
-					currentOffset += this.length;
-				} else if ($(this).is(w.root) || $(this).attr('_tag')) {
-					getOffsets($(this), idName);
-				} else if ($(this).attr('_entity') && $(this).hasClass('start')) {
-					var id = $(this).attr('name');
-					offsets.push({
-						id: id,
-						parent: $(parent).attr(idName),
-						offset: currentOffset,
-						length: w.entities[id].props.content.length
-					});
-				} else if (w.titles[this.nodeName.toLowerCase()] != null) {
-					var id = $(this).attr(idName);
-					offsets.push({
-						id: id,
-						parent: $(parent).attr(idName),
-						offset: currentOffset,
-						length: $(this).text().length
-					});
-				}
-			});
-		}
-		
-		getOffsets(parent);
-		return offsets;
 	};
 	
 	var _getNodeOffsetsFromRoot = function(root) {
@@ -488,6 +475,29 @@ var FileManager = function(config) {
 		return offsets;
 	};
 	
+	fm.loadDocumentFromUrl = function(docUrl) {
+		currentDoc = docUrl;
+		
+		w.entities = {};
+		w.structs = {};
+		w.triples = [];
+		
+		$.ajax({
+			url: docUrl,
+			type: 'GET',
+			success: _loadDocumentHandler,
+			error: function(xhr, status, error) {
+				currentDoc = null;
+				w.d.show('message', {
+					title: 'Error',
+					msg: 'An error ('+status+') occurred and '+docUrl+' was not loaded.',
+					type: 'error'
+				});
+			},
+			dataType: 'xml'
+		});
+	};
+	
 	fm.loadDocument = function(docName) {
 		currentDoc = docName;
 		
@@ -503,7 +513,8 @@ var FileManager = function(config) {
 				currentDoc = null;
 				w.d.show('message', {
 					title: 'Error',
-					msg: 'An error ('+status+') occurred and '+docName+' was not loaded.'
+					msg: 'An error ('+status+') occurred and '+docName+' was not loaded.',
+					type: 'error'
 				});
 			},
 			dataType: 'xml'
@@ -547,8 +558,9 @@ var FileManager = function(config) {
 				var editorModeStr = w.mode == w.XML ? 'XML only' : 'XML & RDF';
 				var docModeStr = docMode == w.XML ? 'XML only' : 'XML & RDF';
 				w.d.show('message', {
-					title: 'Warning',
-					msg: 'The Editor Mode ('+editorModeStr+') has been changed to match the Document Mode ('+docModeStr+').'
+					title: 'Editor Mode changed',
+					msg: 'The Editor Mode ('+editorModeStr+') has been changed to match the Document Mode ('+docModeStr+').',
+					type: 'info'
 				});
 				
 				w.mode = docMode;
@@ -619,33 +631,45 @@ var FileManager = function(config) {
 				});
 				$(doc).find('rdf\\:RDF, RDF').remove();
 			} else {
-				offsets = _getNodeOffsets($(doc.body), idName);
-				
-				var entsQuery = '';
-				for (var key in w.titles) {
-					entsQuery += key+',';
-				}
-				entsQuery = entsQuery.substr(0, entsQuery.length-1);
-				var ents = $(doc).find(entsQuery);
-				ents.each(function(index, el) {
-					var ent = $(el);
-					var id = ent.attr(idName);
-					var content = ent.text();
-					w.entities[id] = {
-						props: {
-							id: id,
-							type: el.nodeName.toLowerCase(),
-							content: content,
-							title: w.getTitleFromContent(content)
-						},
-						info: {}
-					};
-					$(el.attributes).each(function(index, att) {
-						w.entities[id].info[att.name] = att.value;
+				function processEntities(parent, idName, offsets) {
+					var currentOffset = 0;
+					parent.contents().each(function(index, element) {
+						if (this.nodeType == Node.TEXT_NODE) {
+							currentOffset += this.length;
+						} else if (w.titles[this.nodeName.toLowerCase()] != null) {
+							var ent = $(this);
+							var id = ent.attr(idName);
+							if (id == null) {
+								id = tinymce.DOM.uniqueId('ent_');
+							}
+							offsets.push({
+								id: id,
+								parent: $(parent).attr(idName),
+								offset: currentOffset,
+								length: ent.text().length
+							});
+							
+							var content = ent.text();
+							w.entities[id] = {
+								props: {
+									id: id,
+									type: this.nodeName.toLowerCase(),
+									content: content,
+									title: w.getTitleFromContent(content)
+								},
+								info: {}
+							};
+							$(this.attributes).each(function(index, att) {
+								w.entities[id].info[att.name] = att.value;
+							});
+							
+							ent.contents().unwrap();
+						} else {
+							processEntities($(this), idName, offsets);
+						}
 					});
-					
-					ent.contents().unwrap();
-				});
+				}
+				processEntities($(doc.firstChild), idName, offsets);
 			}
 			
 			var editorString = '';
@@ -769,7 +793,7 @@ var FileManager = function(config) {
 									endNode = this;
 									endOffset = startOffset + o.length;
 								}
-							} else if ($(this).is(w.root) || $(this).attr('_tag')) {
+							} else {//if ($(this).is(w.root) || $(this).attr('_tag')) {
 								getNodes($(this));
 							}
 							if (startNode != null && endNode != null) {
@@ -781,10 +805,12 @@ var FileManager = function(config) {
 					getNodes(parent);
 				}
 				
-				var range = w.editor.selection.getRng(true);
-				range.setStart(startNode, startOffset);
-				range.setEnd(endNode, endOffset);
-				w.insertBoundaryTags(id, w.entities[id].props.type, range);
+				if (startNode != null && endNode != null) {
+					var range = w.editor.selection.getRng(true);
+					range.setStart(startNode, startOffset);
+					range.setEnd(endNode, endOffset);
+					w.insertBoundaryTags(id, w.entities[id].props.type, range);
+				}
 			}
 			
 			// set the id counter so we don't get duplicate ids
@@ -891,7 +917,7 @@ var FileManager = function(config) {
 				if (callback) callback();
 			},
 			error: function(xhr, status, error) {
-				w.d.show('message', {title: 'Error', msg: 'Error loading schema: '+error});
+				w.d.show('message', {title: 'Error', msg: 'Error loading schema: '+error, type: 'error'});
 			}
 		});
 	};
