@@ -82,7 +82,8 @@ var HeaderDialog = function(config) {
 					} else {
 						w.d.show('message', {
 							title: 'Error',
-							msg: 'Please select a tag to add.'
+							msg: 'Please select a tag to add.',
+							type: 'error'
 						});
 					}
 				} else {

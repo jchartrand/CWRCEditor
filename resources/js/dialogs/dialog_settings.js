@@ -123,7 +123,8 @@ var SettingsDialog = function(writer, config) {
 					doModeChange = false;
 					w.d.show('message', {
 						title: 'Error',
-						msg: 'You have overlapping entities and are trying to change to XML mode (which doesn\'t permit overlaps).  Please remove the overlapping entities and try again.'
+						msg: 'You have overlapping entities and are trying to change to XML mode (which doesn\'t permit overlaps).  Please remove the overlapping entities and try again.',
+						type: 'error'
 					});
 				}
 			}

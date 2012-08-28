@@ -3,7 +3,11 @@ var MessageDialog = function(config) {
 	
 	$(document.body).append(''+
 	'<div id="messageDialog">'+
-	    '<p></p>'+
+	    '<p>'+
+	    '<span class="ui-state-highlight" style="border: none;"><span style="float: left; margin-right: 4px;" class="ui-icon ui-icon-info"></span></span>'+
+	    '<span class="ui-state-error" style="border: none;"><span style="float: left; margin-right: 4px;" class="ui-icon ui-icon-alert"></span></span>'+
+	    '<span></span>'+
+	    '</p>'+
 	'</div>');
 	
 	var message = $('#messageDialog');
@@ -21,6 +25,14 @@ var MessageDialog = function(config) {
 			var title = config.title;
 			var msg = config.msg;
 			var modal = config.modal == null ? true : config.modal;
+			var type = config.type;
+			
+			$('#messageDialog > p > span[class]').hide();
+			if (type == 'info') {
+				$('#messageDialog > p > span[class=ui-state-highlight]').show();
+			} else if (type == 'error') {
+				$('#messageDialog > p > span[class=ui-state-error]').show();
+			}
 			
 			message.dialog('option', 'title', title);
 			message.dialog('option', 'modal', modal);
@@ -29,7 +41,7 @@ var MessageDialog = function(config) {
 					message.dialog('close');
 				}
 			});
-			$('#messageDialog > p').html(msg);
+			$('#messageDialog > p > span').last().html(msg);
 			
 			message.dialog('open');
 		},

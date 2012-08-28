@@ -503,13 +503,15 @@ var Writer = function(config) {
 		case w.NO_SELECTION:
 			w.d.show('message', {
 				title: 'Error',
-				msg: 'Please select some text before adding an entity or tag.'
+				msg: 'Please select some text before adding an entity or tag.',
+				type: 'error'
 			});
 			break;
 		case w.NO_COMMON_PARENT:
 			w.d.show('message', {
 				title: 'Error',
-				msg: 'Please ensure that the beginning and end of your selection have a common parent.<br/>For example, your selection cannot begin in one paragraph and end in another, or begin in bolded text and end outside of that text.'
+				msg: 'Please ensure that the beginning and end of your selection have a common parent.<br/>For example, your selection cannot begin in one paragraph and end in another, or begin in bolded text and end outside of that text.',
+				type: 'error'
 			});
 		}
 	};
@@ -650,7 +652,8 @@ var Writer = function(config) {
 		} else {
 			w.d.show('message', {
 				title: 'Error',
-				msg: 'Cannot copy structural tags.'
+				msg: 'Cannot copy structural tags.',
+				type: 'error'
 			});
 		}
 	};
@@ -659,7 +662,8 @@ var Writer = function(config) {
 		if (w.editor.entityCopy == null) {
 			w.d.show('message', {
 				title: 'Error',
-				msg: 'No entity to copy!'
+				msg: 'No entity to copy!',
+				type: 'error'
 			});
 		} else {
 			var newEntity = jQuery.extend(true, {}, w.editor.entityCopy);
