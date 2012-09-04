@@ -232,7 +232,7 @@ var StructureTree = function(config) {
 					var tag = $(this).attr('_tag');
 					if (tag == null && $(this).is(w.root)) tag = w.root;
 					if (w.schema.elements.indexOf(tag) != -1) {
-						$(this).attr('id', id).attr('_tag', tag).attr('_tag', true);
+						$(this).attr('id', id).attr('_tag', tag);
 						w.structs[id] = {
 							id: id,
 							_tag: tag
