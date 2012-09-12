@@ -994,6 +994,7 @@ var FileManager = function(config) {
 	var _loadTemplate = function(url) {
 		$.ajax({
 			url: url,
+			cache: false,
 			dataType: 'xml',
 			success: function(data, status, xhr) {
 				var rdf = data.createElement('rdf:RDF');
