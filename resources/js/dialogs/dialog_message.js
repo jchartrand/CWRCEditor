@@ -6,7 +6,7 @@ var MessageDialog = function(config) {
 	    '<p>'+
 	    '<span class="ui-state-highlight" style="border: none;"><span style="float: left; margin-right: 4px;" class="ui-icon ui-icon-info"></span></span>'+
 	    '<span class="ui-state-error" style="border: none;"><span style="float: left; margin-right: 4px;" class="ui-icon ui-icon-alert"></span></span>'+
-	    '<span></span>'+
+	    '<span class="message"></span>'+
 	    '</p>'+
 	'</div>');
 	
@@ -27,7 +27,7 @@ var MessageDialog = function(config) {
 			var modal = config.modal == null ? true : config.modal;
 			var type = config.type;
 			
-			$('#messageDialog > p > span[class]').hide();
+			$('#messageDialog > p > span[class^=ui-state]').hide();
 			if (type == 'info') {
 				$('#messageDialog > p > span[class=ui-state-highlight]').show();
 			} else if (type == 'error') {
@@ -41,7 +41,7 @@ var MessageDialog = function(config) {
 					message.dialog('close');
 				}
 			});
-			$('#messageDialog > p > span').last().html(msg);
+			$('#messageDialog > p > span[class=message]').html(msg);
 			
 			message.dialog('open');
 		},
@@ -49,6 +49,8 @@ var MessageDialog = function(config) {
 			var title = config.title;
 			var msg = config.msg;
 			var callback = config.callback;
+			
+			$('#messageDialog > p > span[class^=ui-state]').hide();
 			
 			message.dialog('option', 'title', title);
 			message.dialog('option', 'buttons', {
@@ -61,7 +63,7 @@ var MessageDialog = function(config) {
 					message.dialog('close');
 				}
 			});
-			$('#messageDialog > p').html(msg);
+			$('#messageDialog > p > span[class=message]').html(msg);
 			
 			message.dialog('open');
 		},
