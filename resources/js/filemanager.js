@@ -980,14 +980,20 @@ var FileManager = function(config) {
 	fm.loadInitialDocument = function(start) {
 		if (start.match('load')) {
 			fm.openLoader();
-		} else if (start == '') {
-			fm.loadSchema('xml/CWRCBasicTEI.xml', true);
+		} else if (start.match('sample_letter')) {
+			_loadTemplate('xml/sample_letter.xml');
+		} else if (start.match('sample_poem')) {
+			_loadTemplate('xml/sample_poem.xml');
 		} else if (start.match('event')) {
 			_loadTemplate('xml/event_template.xml');
 		} else if (start.match('letter')) {
 			_loadTemplate('xml/letter_template.xml');
-		} else if (start.match('sample')) {
-			_loadTemplate('xml/sample_letter.xml');
+		} else if (start.match('poem')) {
+			_loadTemplate('xml/poem_template.xml');
+		} else if (start.match('prose')) {
+			_loadTemplate('xml/prose_template.xml');
+		} else {
+			fm.loadSchema('xml/CWRCBasicTEI.xml', true);
 		}
 	};
 	

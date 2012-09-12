@@ -33,24 +33,23 @@
 				position: absolute;
 				position: relative;
 				text-align: left;
-				width: 550px;
+				width: 640px;
 				height: 400px;
 				margin: 0px auto;
 				font-size: 12px;
 			}
-			#start {
-				width: 320px;
-				margin: 0 auto;
-			}
 			#buttonsParent {
 				text-align: center;
 			}
-			
+			#buttonsParent .column {
+				float: left;
+				width: 320px;
+			}
 			#buttonsParent button {
 				margin: 10px;
 				width: 300px;
 			}
-			#start button .ui-button-text {
+			#buttonsParent button .ui-button-text {
 				font-size: 14px !important;
 			}
 			#logos {
@@ -63,26 +62,35 @@
 		<script type="text/javascript" src="js/jquery/jquery-ui-1.8.13.custom.min.js"></script>
 		<script type="text/javascript">
 			$(function() {
-				$('#start').append(''+
-					'<div id="buttonsParent">'+
-						'<button>Load an Existing Document</button>'+
-						'<button>Create a Letter</button>'+
-						'<button>Create an Event</button>'+
-						'<button>See a Sample Letter</button>'+
-					'</div>');
-				
 				var buttons = $('button').button();
-				buttons.eq(0).click(function() {
-					window.location = 'editor.htm#load';
-				});
-				buttons.eq(1).click(function() {
-					window.location = 'editor.htm#letter';
-				});
-				buttons.eq(2).click(function() {
-					window.location = 'editor.htm#event';
-				});
-				buttons.eq(3).click(function() {
-					window.location = 'editor.htm#sample';
+				buttons.each(function(index, el) {
+					var url = 'editor.htm#';
+					switch (index) {
+						case 0:
+							url += 'load';
+							break;
+						case 1:
+							url += 'letter';
+							break;
+						case 2:
+							url += 'poem';
+							break;
+						case 3:
+							url += 'prose';
+							break;
+						case 4:
+							url += 'event';
+							break;
+						case 5:
+							url += 'sample_letter';
+							break;
+						case 6:
+							url += 'sample_poem';
+							break;
+					}
+					$(el).click(function() {
+						window.location = url;
+					});
 				});
 			});
 		</script>
@@ -97,7 +105,21 @@
 				The editor works best with the current version of the Firefox browser (available <a href="http://www.mozilla.org/en-US/firefox/new/" target="_blank">here</a>).</p>
 				<p>For more information or to help with testing CWRC-Writer, visit <a href="http://www.cwrc.ca/projects/infrastructure-projects/technical-projects/cwrc-writer/" target="_blank">here</a>.</p>
 				<hr/>
-				<div id="start"></div>
+				<div id="buttonsParent">
+					<div class="column" style="width: 640px;">
+						<button>Load an Existing Document</button>
+					</div>
+					<div class="column">
+						<button>Create a Letter</button>
+						<button>Create a Poem</button>
+						<button>Create Prose</button>
+						<button>Create an Event</button>
+					</div>
+					<div class="column">
+						<button>See a Sample Letter</button>
+						<button>See a Sample Poem</button>
+					</div>
+				</div>
 			</div>
 		</div>
 		<div id="logos">
