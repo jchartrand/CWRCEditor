@@ -923,8 +923,6 @@ var FileManager = function(config) {
 				w.tree.update(true);
 				w.relations.update();
 				
-				w.initHeader();
-				
 				if (callback) callback();
 			},
 			error: function(xhr, status, error) {
@@ -1011,11 +1009,6 @@ var FileManager = function(config) {
 	var _loadTemplate = function(url) {
 		$.ajax({
 			url: url,
-			cache: false,
-			headers: {
-				'Cache-Control': 'no-cache',
-				'Pragma': 'no-cache'
-			},
 			dataType: 'xml',
 			success: function(data, status, xhr) {
 				var rdf = data.createElement('rdf:RDF');
