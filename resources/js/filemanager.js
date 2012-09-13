@@ -310,6 +310,8 @@ var FileManager = function(config) {
 		var body = $(w.editor.getDoc().body);
 		var clone = body.clone(false, true); // make a copy, don't clone body events, but clone child events
 		
+		var offsets = _getNodeOffsetsFromRoot(body);
+		
 		_entitiesToUnicode(body);
 		
 		function nodeToStringArray(node) {
@@ -355,61 +357,44 @@ var FileManager = function(config) {
 			xmlString += tags[1];
 		}
 		
-		if (w.mode == w.XMLRDF) {
-			var head = '';
-			if (includeRDF) {
-				var offsets = _getNodeOffsetsFromRoot(body);
-				body.find('[_entity]').remove();
-				head = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
-				
-				// entities
-				for (var i = 0; i < offsets.length; i++) {
-					var o = offsets[i];
-					head += '\n<rdf:Description rdf:ID="'+o.id+'">';
-					var key;
-					for (key in o) {
-						head += '\n<w:'+key+' type="offset">'+o[key]+'</w:'+key+'>';
-					}
+		// rdf
+		var rdfString = '';
+		if (includeRDF) {
+			rdfString = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
+			
+			for (var i = 0; i < offsets.length; i++) {
+				var o = offsets[i];
+				rdfString += '\n<rdf:Description rdf:ID="'+o.id+'">';
+				var key;
+				for (key in o) {
+					rdfString += '\n<w:'+key+' type="offset">'+o[key]+'</w:'+key+'>';
+				}
+				if (o.entity) {
 					var entry = w.entities[o.id];
-					head += '\n<w:type type="props">'+entry.props.type+'</w:type>';
-					head += '\n<w:content type="props">'+entry.props.content+'</w:content>';
+					rdfString += '\n<w:type type="props">'+entry.props.type+'</w:type>';
+					rdfString += '\n<w:content type="props">'+entry.props.content+'</w:content>';
 					for (key in entry.info) {
-						head += '\n<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
+						rdfString += '\n<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
 					}
-					head += '\n</rdf:Description>';
 				}
-				
-				// triples
-				for (var i = 0; i < w.triples.length; i++) {
-					var t = w.triples[i];
-					head += '\n<rdf:Description rdf:about="'+t.subject.uri+'" w:external="'+t.subject.external+'">'+
-					'\n<w:'+t.predicate.name+' w:text="'+t.predicate.text+'" w:external="'+t.predicate.external+'">'+
-					'\n<rdf:Description rdf:about="'+t.object.uri+'" w:external="'+t.object.external+'" />'+
-					'\n</w:'+t.predicate.name+'>'+
-					'\n</rdf:Description>';
-				}
-				
-				head += '</rdf:RDF>';
+				rdfString += '\n</rdf:Description>';
 			}
 			
-			var root = body.children(w.root);
-			// make sure TEI has the right namespace for validation purposes
-			if (w.root == 'TEI') {
-				root.attr('xmlns','http://www.tei-c.org/ns/1.0');
+			// triples
+			for (var i = 0; i < w.triples.length; i++) {
+				var t = w.triples[i];
+				rdfString += '\n<rdf:Description rdf:about="'+t.subject.uri+'" w:external="'+t.subject.external+'">'+
+				'\n<w:'+t.predicate.name+' w:text="'+t.predicate.text+'" w:external="'+t.predicate.external+'">'+
+				'\n<rdf:Description rdf:about="'+t.object.uri+'" w:external="'+t.object.external+'" />'+
+				'\n</w:'+t.predicate.name+'>'+
+				'\n</rdf:Description>';
 			}
-			var tags = nodeToStringArray(root);
-			xmlString += tags[0];
-			xmlString += head;
 			
-			root.contents().each(function(index, el) {
-				if (el.nodeType == 1) {
-					buildXMLString($(el));
-				} else if (el.nodeType == 3) {
-					xmlString += el.data;
-				}
-			});
-			
-			xmlString += tags[1];
+			rdfString += '</rdf:RDF>';
+		}
+		
+		if (w.mode == w.XMLRDF) {
+			if (includeRDF) body.find('[_entity]').remove();
 		} else {
 			for (var id in w.entities) {
 				var markers = w.editor.dom.select('[name="'+id+'"]');
@@ -428,11 +413,28 @@ var FileManager = function(config) {
 				w.editor.$(nodes).wrapAll('<entity'+attributes+'/>');
 				w.editor.$(markers).remove();
 			}
-			
-			// TODO add triples
-			
-			buildXMLString(w.editor.$(w.root));
 		}
+		
+		var root = body.children(w.root);
+		// make sure TEI has the right namespace for validation purposes
+		if (w.root == 'TEI') {
+			root.attr('xmlns','http://www.tei-c.org/ns/1.0');
+		}
+		var tags = nodeToStringArray(root);
+		xmlString += tags[0];
+		
+		xmlString += rdfString;
+		
+		root.contents().each(function(index, el) {
+			if (el.nodeType == 1) {
+				buildXMLString($(el));
+			} else if (el.nodeType == 3) {
+				xmlString += el.data;
+			}
+		});
+		
+		xmlString += tags[1];
+		
 		body.replaceWith(clone);
 		return xmlString;
 	};
@@ -456,16 +458,24 @@ var FileManager = function(config) {
 		var offsets = [];
 		function getOffsets(parent) {
 			parent.contents().each(function(index, element) {
+				var el = $(this);
 				if (this.nodeType == Node.TEXT_NODE && this.data != ' ') {
 					currentOffset += this.length;
-				} else if ($(this).is(w.root) || $(this).attr('_tag')) {
-					getOffsets($(this));
-				} else if ($(this).attr('_entity') && $(this).hasClass('start')) {
-					var id = $(this).attr('name');
+				} else if (el.is(w.root) || el.attr('_tag')) {
+					var id = el.attr('id');
 					offsets.push({
 						id: id,
 						offset: currentOffset,
-						length: w.entities[id].props.content.length
+						length: el.text().length
+					});
+					getOffsets(el);
+				} else if (el.attr('_entity') && el.hasClass('start')) {
+					var id = el.attr('name');
+					offsets.push({
+						id: id,
+						offset: currentOffset,
+						length: w.entities[id].props.content.length,
+						entity: true
 					});
 				}
 			});
@@ -545,6 +555,7 @@ var FileManager = function(config) {
 			var offsets = [];
 			var maxId = 0; // track what the largest id num is
 			
+			// TODO add way of detecting what mode doc was saved as, since xml now also has rdf in header
 			var rdfs = $(doc).find('rdf\\:RDF, RDF');
 			
 			var docMode;
@@ -1001,6 +1012,10 @@ var FileManager = function(config) {
 		$.ajax({
 			url: url,
 			cache: false,
+			headers: {
+				'Cache-Control': 'no-cache',
+				'Pragma': 'no-cache'
+			},
 			dataType: 'xml',
 			success: function(data, status, xhr) {
 				var rdf = data.createElement('rdf:RDF');
