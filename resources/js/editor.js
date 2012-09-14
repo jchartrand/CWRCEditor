@@ -54,6 +54,7 @@ var Writer = function(config) {
 		NO_COMMON_PARENT: 1,
 		VALID: 2,
 		
+		fixStructSelect: false, // whether to check for and remove a node inserted on struct select 
 		fixEmptyStructTag: false, // whether to check the current empty struct tag for the &#65279; we inserted and then remove it
 		emptyTagId: null, // stores the id of the entities tag to be added
 		
@@ -127,10 +128,16 @@ var Writer = function(config) {
 				$('#entities li[name="'+ed.currentEntity+'"] > span[class="entityTitle"]').html(entity.title);
 			}
 			
+			if (w.fixStructSelect) {
+				w.fixStructSelect = false;
+				var hits = ed.$('[class="select_struct_remove_me"]');
+				hits.remove();
+			}
+			
 			if (w.fixEmptyStructTag && ed.currentStruct) {
 				w.fixEmptyStructTag = false;
 				var bm = ed.selection.getBookmark();
-				ed.$('#'+ed.currentStruct).find('#remove_me').contents().unwrap();
+				ed.$('#'+ed.currentStruct).find('#empty_tag_remove_me').contents().unwrap();
 				w.editor.selection.moveToBookmark(bm);
 				var range = ed.selection.getRng(true);
 				range.selectNodeContents(ed.$('#'+ed.currentStruct)[0]);
@@ -770,7 +777,7 @@ var Writer = function(config) {
 		open_tag += '>';
 		var close_tag = '</'+tag+'>';
 		
-		var selection = '<span id="remove_me">&#65279;</span>';
+		var selection = '<span id="empty_tag_remove_me">&#65279;</span>';
 		var content = open_tag + selection + close_tag;
 		if (action == 'before') {
 			$(node).before(content);
@@ -785,15 +792,16 @@ var Writer = function(config) {
 			selection = w.editor.selection.getContent();
 			// add zero width no-break space, required for proper cursor positioning inside tag
 			// doesn't work in IE
-			if (selection == '') selection = '<span id="remove_me">&#65279;</span>';
+			if (selection == '') selection = '<span id="empty_tag_remove_me">&#65279;</span>';
 
 			content = open_tag + selection + close_tag;
 			w.editor.execCommand('mceReplaceContent', false, content);
 		}
-		if (selection == '<span id="remove_me">&#65279;</span>') {
+		if (selection == '<span id="empty_tag_remove_me">&#65279;</span>') {
+			// TODO inserting empty struct isn't working
 			w.fixEmptyStructTag = true;
 			var range = w.editor.selection.getRng(true);
-			range.selectNode(w.editor.$('#remove_me')[0]);
+			range.selectNode(w.editor.$('#empty_tag_remove_me')[0]);
 		}
 		
 		w.tree.update();
@@ -835,19 +843,29 @@ var Writer = function(config) {
 	
 	w.selectStructureTag = function(id) {
 		w.editor.currentStruct = id;
-		var node = w.editor.dom.select('#'+id)[0];
-//		w.editor.selection.select(node);
-		w.editor.getWin().getSelection().selectAllChildren(node); // not supported until IE 9
+		var node = w.editor.$('#'+id);
+		var nodeEl = node[0];
+		
+		if (tinymce.isWebKit) {
+			w.editor.getWin().getSelection().selectAllChildren(nodeEl);
+		} else {
+			w.fixStructSelect = true;
+			node.append('<span class="select_struct_remove_me"></span>');
+			var range = w.editor.selection.getRng(true);
+			range.setStart(nodeEl.firstChild, 0);
+			range.setEnd(nodeEl.lastChild, nodeEl.lastChild.length);
+			w.editor.getWin().getSelection().addRange(range);
+		}		
 		
 		// fire the onNodeChange event
 		w.editor.parents = [];
-		w.editor.dom.getParent(node, function(n) {
+		w.editor.dom.getParent(nodeEl, function(n) {
 			if (n.nodeName == 'BODY')
 				return true;
 
 			w.editor.parents.push(n);
 		});
-		w.editor.onNodeChange.dispatch(w.editor, w.editor.controlManager, node, false, w.editor);
+		w.editor.onNodeChange.dispatch(w.editor, w.editor.controlManager, nodeEl, false, w.editor);
 		
 		w.editor.focus();
 	};
