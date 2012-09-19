@@ -44,6 +44,8 @@ var Writer = function(config) {
 		root: '',
 		// header element: hidden in editor view, can only edit from structure tree
 		header: '',
+		// id attribute name, based on schema
+		idName: '',
 		
 		// possible editor modes
 		XMLRDF: 0, // allows for overlapping elements, i.e. entities

@@ -43,8 +43,6 @@ var DialogManager = function(config) {
 		dialogs.place = dialogs.search;
 		dialogs.event = dialogs.search;
 		dialogs.org = dialogs.search;
-		
-		w.initHeader();
 	};
 	
 	return {
