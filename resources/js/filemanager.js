@@ -113,6 +113,11 @@ var FileManager = function(config) {
 //				w.entities = {};
 //				w.structs = {};
 //				_loadDocumentHandler($('#editDocLoader').contents()[0]);
+				w.d.show('message', {
+					title: 'Edit Source',
+					msg: 'Edit Source does not currently modify the underlying document.',
+					type: 'info'
+				});
 				edit.dialog('close');
 			},
 			'Cancel': function() {
@@ -305,7 +310,7 @@ var FileManager = function(config) {
 		
 		var idName = w.validationSchema == 'cwrcbasic' ? 'xml:id' : 'ID';
 		
-		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>';
+		var xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n';
 		
 		var body = $(w.editor.getDoc().body);
 		var clone = body.clone(false, true); // make a copy, don't clone body events, but clone child events
@@ -360,21 +365,25 @@ var FileManager = function(config) {
 		// rdf
 		var rdfString = '';
 		if (includeRDF) {
-			rdfString = '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
+			rdfString = '\n<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:w="http://cwrctc.artsrn.ualberta.ca/#">';
+			
+			// xml mode
+			var uri = w.baseUrl+'editor/documents/'+currentDoc;
+			rdfString += '\n<rdf:Description rdf:about="'+uri+'">\n\t<w:mode>'+w.mode+'</w:mode>\n</rdf:Description>';
 			
 			for (var i = 0; i < offsets.length; i++) {
 				var o = offsets[i];
 				rdfString += '\n<rdf:Description rdf:ID="'+o.id+'">';
 				var key;
 				for (key in o) {
-					rdfString += '\n<w:'+key+' type="offset">'+o[key]+'</w:'+key+'>';
+					rdfString += '\n\t<w:'+key+' type="offset">'+o[key]+'</w:'+key+'>';
 				}
 				if (o.entity) {
 					var entry = w.entities[o.id];
-					rdfString += '\n<w:type type="props">'+entry.props.type+'</w:type>';
-					rdfString += '\n<w:content type="props">'+entry.props.content+'</w:content>';
+					rdfString += '\n\t<w:type type="props">'+entry.props.type+'</w:type>';
+					rdfString += '\n\t<w:content type="props">'+entry.props.content+'</w:content>';
 					for (key in entry.info) {
-						rdfString += '\n<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
+						rdfString += '\n\t<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
 					}
 				}
 				rdfString += '\n</rdf:Description>';
@@ -384,13 +393,13 @@ var FileManager = function(config) {
 			for (var i = 0; i < w.triples.length; i++) {
 				var t = w.triples[i];
 				rdfString += '\n<rdf:Description rdf:about="'+t.subject.uri+'" w:external="'+t.subject.external+'">'+
-				'\n<w:'+t.predicate.name+' w:text="'+t.predicate.text+'" w:external="'+t.predicate.external+'">'+
-				'\n<rdf:Description rdf:about="'+t.object.uri+'" w:external="'+t.object.external+'" />'+
-				'\n</w:'+t.predicate.name+'>'+
+				'\n\t<w:'+t.predicate.name+' w:text="'+t.predicate.text+'" w:external="'+t.predicate.external+'">'+
+				'\n\t\t<rdf:Description rdf:about="'+t.object.uri+'" w:external="'+t.object.external+'" />'+
+				'\n\t</w:'+t.predicate.name+'>'+
 				'\n</rdf:Description>';
 			}
 			
-			rdfString += '</rdf:RDF>';
+			rdfString += '\n</rdf:RDF>\n';
 		}
 		
 		if (w.mode == w.XMLRDF) {
@@ -555,14 +564,14 @@ var FileManager = function(config) {
 			var offsets = [];
 			var maxId = 0; // track what the largest id num is
 			
-			// TODO add way of detecting what mode doc was saved as, since xml now also has rdf in header
 			var rdfs = $(doc).find('rdf\\:RDF, RDF');
 			
 			var docMode;
-			if (rdfs.length > 0) {
-				docMode = w.XMLRDF;
-			} else {
+			var mode = parseInt(rdfs.find('w\\:mode, mode').first().text());
+			if (mode == w.XML) {
 				docMode = w.XML;
+			} else {
+				docMode = w.XMLRDF;
 			}
 			
 			if (w.mode != docMode) {
