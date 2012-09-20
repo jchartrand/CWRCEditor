@@ -370,8 +370,6 @@ var FileManager = function(config) {
 		var body = $(w.editor.getBody());
 		var clone = body.clone(false, true); // make a copy, don't clone body events, but clone child events
 		
-		var offsets = _getNodeOffsetsFromRoot(body);
-		
 		_entitiesToUnicode(body);
 		
 		// rdf
@@ -383,6 +381,10 @@ var FileManager = function(config) {
 			var uri = w.baseUrl+'editor/documents/'+currentDoc;
 			rdfString += '\n<rdf:Description rdf:about="'+uri+'">\n\t<w:mode>'+w.mode+'</w:mode>\n</rdf:Description>';
 			
+			var offsets = _getNodeOffsetsFromRoot(body);
+			var relationships = _determineOffsetRelationships(offsets);
+			
+			// entity and struct listings
 			for (var i = 0; i < offsets.length; i++) {
 				var o = offsets[i];
 				rdfString += '\n<rdf:Description rdf:ID="'+o.id+'">';
@@ -396,6 +398,14 @@ var FileManager = function(config) {
 					rdfString += '\n\t<w:content type="props">'+entry.props.content+'</w:content>';
 					for (key in entry.info) {
 						rdfString += '\n\t<w:'+key+' type="info">'+entry.info[key]+'</w:'+key+'>';
+					}
+					
+					var r = relationships[o.id];
+					for (var j = 0; j < r.contains.length; j++) {
+						rdfString += '\n\t<w:contains>'+r.contains[j]+'</w:contains>';
+					}
+					for (var j = 0; j < r.overlaps.length; j++) {
+						rdfString += '\n\t<w:overlaps>'+r.overlaps[j]+'</w:overlaps>';
 					}
 				}
 				rdfString += '\n</rdf:Description>';
@@ -504,6 +514,43 @@ var FileManager = function(config) {
 		
 		getOffsets(root);
 		return offsets;
+	};
+	
+	var _determineOffsetRelationships = function(offsets) {
+		var relationships = {};
+		var entityOffsets = [];
+		for (var i = 0; i < offsets.length; i++) {
+			var o = offsets[i];
+			if (o.entity) {
+				entityOffsets.push(o);
+				relationships[o.id] = {
+					contains: [],
+					overlaps: []
+				};
+			}
+		}
+		
+		var ol = entityOffsets.length;
+		for (var i = 0; i < ol; i++) {
+			var o1 = entityOffsets[i];
+			var span1 = o1.offset + o1.length;
+			var r = relationships[o1.id];
+			for (var j = 0; j < ol; j++) {
+				var o2 = entityOffsets[j];
+				var span2 = o2.offset + o2.length;
+				if (o1.offset < o2.offset && span1 > span2) {
+					r.contains.push(o2.id);
+				} else if (o1.offset < o2.offset && span1 > o2.offset && span1 < span2) {
+					r.overlaps.push(o2.id);
+				} else if (o1.offset > o2.offset && span1 > span2 && span2 > o1.offset) {
+					r.overlaps.push(o2.id);
+				} else if (o1.offset < o2.offset && span1 < span2 && span1 > o2.offset) {
+					r.overlaps.push(o2.id);
+				}
+			}
+		}
+		
+		return relationships;
 	};
 	
 	fm.loadDocumentFromUrl = function(docUrl) {
