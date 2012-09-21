@@ -298,8 +298,8 @@ var Writer = function(config) {
 	var _doHighlightCheck = function(ed, evt) {
 		var range = ed.selection.getRng(true);
 		
-		var entityStart = _findEntityBoundary('start', range.startContainer, null, [range.startContainer.parentNode]);
-		var entityEnd = _findEntityBoundary('end', range.endContainer, null, [range.endContainer.parentNode]);
+		var entityStart = _findEntityBoundary('start', range.startContainer);
+		var entityEnd = _findEntityBoundary('end', range.endContainer);
 		
 		if (entityEnd == null || entityStart == null) {
 			w.highlightEntity();
@@ -325,9 +325,9 @@ var Writer = function(config) {
 		tag = $(tag);
 		var corrTag;
 		if (tag.hasClass('start')) {
-			corrTag = _findEntityBoundary('end', tag[0].nextSibling, null, [tag[0].parentNode]);
+			corrTag = _findEntityBoundary('end', tag[0].nextSibling);
 		} else {
-			corrTag = _findEntityBoundary('start', tag[0].previousSibling, null, [tag[0].parentNode]);
+			corrTag = _findEntityBoundary('start', tag[0].previousSibling);
 		}
 		return corrTag;
 	};
@@ -336,50 +336,68 @@ var Writer = function(config) {
 	 * Searches for an entity boundary containing the current node.
 	 * @param boundaryType Either 'start' or 'end'.
 	 * @param currentNode The node that is currently being examined.
-	 * @param currentId The id of an entity that is also contained within the entity we're looking for.  Used to prevent false positives.
-	 * @param levels An array to track the levels of node depth in order to prevent endless recursion.
 	 */
-	var _findEntityBoundary = function(boundaryType, currentNode, currentId, levels) {
-		if (w.editor.dom.hasClass(currentNode, 'entity')) {
-			if (w.editor.dom.hasClass(currentNode, boundaryType)) {
-				if (currentId == null || currentId != currentNode.getAttribute('name')) {
-					return currentNode;
-				} else if (currentId == currentNode.getAttribute('name')) {
-					currentId = null;
+	var _findEntityBoundary = function(boundaryType, currentNode) {
+		
+		/**
+		 * @param entIds An array of entity ids that are encountered.  Used to prevent false positives.
+		 * @param levels An array to track the levels of node depth in order to prevent endless recursion.
+		 * @param structIds An object to track the node ids that we've already encountered.
+		 */
+		function doFind(boundaryType, currentNode, entIds, levels, structIds) {
+			if (currentNode.id) {
+				if (structIds[currentNode.id]) {
+					return null;
+				} else {
+					structIds[currentNode.id] = true;
 				}
-			} else {
-				currentId = currentNode.getAttribute('name');
 			}
-		}
-		
-		if (boundaryType == 'start' && currentNode.lastChild) {
-			levels.push(currentNode);
-			return _findEntityBoundary(boundaryType, currentNode.lastChild, currentId, levels);
-		} else if (boundaryType == 'end' && currentNode.firstChild) {
-			levels.push(currentNode);
-			return _findEntityBoundary(boundaryType, currentNode.firstChild, currentId, levels);
-		}
-		
-		if (boundaryType == 'start' && currentNode.previousSibling) {
-			return _findEntityBoundary(boundaryType, currentNode.previousSibling, currentId, levels);
-		} else if (boundaryType == 'end' && currentNode.nextSibling) {
-			return _findEntityBoundary(boundaryType, currentNode.nextSibling, currentId, levels);
-		}
-		
-		if (currentNode.parentNode) {
-			if (currentNode.parentNode == levels[levels.length-1]) {
-				levels.pop();
-				if (boundaryType == 'start' && currentNode.parentNode.previousSibling) {
-					return _findEntityBoundary(boundaryType, currentNode.parentNode.previousSibling, currentId, levels);
-				} else if (boundaryType == 'end' && currentNode.parentNode.nextSibling) {
-					return _findEntityBoundary(boundaryType, currentNode.parentNode.nextSibling, currentId, levels);
-				} else return null;
-			} else {
-				return _findEntityBoundary(boundaryType, currentNode.parentNode, currentId, levels);
+			
+			if (w.editor.dom.hasClass(currentNode, 'entity')) {
+				var nodeId = currentNode.getAttribute('name');
+				if (w.editor.dom.hasClass(currentNode, boundaryType)) {
+					if (entIds.indexOf(nodeId) == -1) {
+						return currentNode;
+					} else if (entIds[0] == nodeId) {
+						entIds.shift();
+					}
+				} else {
+					entIds.push(nodeId);
+				}
 			}
-		}
+			
+			if (boundaryType == 'start' && currentNode.lastChild) {
+				levels.push(currentNode);
+				return doFind(boundaryType, currentNode.lastChild, entIds, levels, structIds);
+			} else if (boundaryType == 'end' && currentNode.firstChild) {
+				levels.push(currentNode);
+				return doFind(boundaryType, currentNode.firstChild, entIds, levels, structIds);
+			}
+			
+			if (boundaryType == 'start' && currentNode.previousSibling) {
+				return doFind(boundaryType, currentNode.previousSibling, entIds, levels, structIds);
+			} else if (boundaryType == 'end' && currentNode.nextSibling) {
+				return doFind(boundaryType, currentNode.nextSibling, entIds, levels, structIds);
+			}
+			
+			if (currentNode.parentNode) {
+				if (currentNode.parentNode == levels[levels.length-1]) {
+					levels.pop();
+					if (boundaryType == 'start' && currentNode.parentNode.previousSibling) {
+						return doFind(boundaryType, currentNode.parentNode.previousSibling, entIds, levels, structIds);
+					} else if (boundaryType == 'end' && currentNode.parentNode.nextSibling) {
+						return doFind(boundaryType, currentNode.parentNode.nextSibling, entIds, levels, structIds);
+					} else return null;
+				} else {
+					return doFind(boundaryType, currentNode.parentNode, entIds, levels, structIds);
+				}
+			}
+			
+			return null;
+		};
 		
-		return null;
+		var match = doFind(boundaryType, currentNode, [], [currentNode.parentNode], {});
+		return match;
 	};
 	
 	w.highlightEntity = function(id, bm, doScroll) {
