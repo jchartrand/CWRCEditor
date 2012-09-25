@@ -460,21 +460,27 @@ var Writer = function(config) {
 			range.setEndAfter(root.lastChild);
 		}
 		
+		function findTextNode(currNode, direction, reps) {
+			if (reps > 20) return null; // prevent infinite recursion
+			else {
+				var newNode;
+				if (direction == 'back') {
+					newNode = currNode.lastChild || currNode.previousSibling || currNode.parentNode.previousSibling;
+				} else {
+					newNode = currNode.firstChild || currNode.nextSibling || currNode.parentNode.nextSibling;
+				}
+				if (newNode == null) return null;
+				if (newNode.nodeType == Node.TEXT_NODE) return newNode;
+				return findTextNode(newNode, direction, reps++);
+			}
+		}
+		
 		// fix for when start and/or end containers are element nodes (should always be text nodes for entities)
 		if (!isStructTag) {
 			if (range.startContainer.nodeType == Node.ELEMENT_NODE) {
 				var end = range.endContainer;
 				if (end.nodeType != Node.TEXT_NODE || range.endOffset == 0) {
-					var findTextNode = function(currNode, reps) {
-						if (reps > 10) return null; // prevent infinite recursion
-						else {
-							var prevNode = currNode.previousSibling || currNode.parentNode.previousSibling.lastChild;
-							if (prevNode == null) return null;
-							if (prevNode.nodeType == Node.TEXT_NODE) return prevNode;
-							return findTextNode(prevNode, reps++);
-						}
-					};
-					end = findTextNode(range.endContainer, 0);
+					end = findTextNode(range.endContainer, 'back', 0);
 					if (end == null) return w.NO_COMMON_PARENT;
 					range.setEnd(end, end.length);
 				}
@@ -485,6 +491,62 @@ var Writer = function(config) {
 				range.setEnd(range.startContainer, range.startContainer.length);
 			}
 		}
+		
+		/**
+		 * Removes whitespace surrounding the range.
+		 * Also fixes cases where the range spans adjacent text nodes with different parents.
+		 */
+		function fixRange(range) {
+			var content = range.toString();
+			var match = content.match(/^\s+/);
+			var leadingSpaces = 0, trailingSpaces = 0;
+			if (match != null) {
+				leadingSpaces = match[0].length;
+			}
+			match = content.match(/\s+$/);
+			if (match != null) {
+				trailingSpaces = match[0].length;
+			}
+			
+			function shiftRangeForward(range, count, reps) {
+				if (count > 0 && reps < 20) {
+					if (range.startOffset < range.startContainer.length) {
+						range.setStart(range.startContainer, range.startOffset+1);
+						count--;
+					}
+					if (range.startOffset == range.startContainer.length) {
+						var nextTextNode = findTextNode(range.startContainer, 'forward', 0);
+						if (nextTextNode != null) {
+							range.setStart(nextTextNode, 0);
+						}
+					}
+					shiftRangeForward(range, count, reps++);
+				}
+			}
+			
+			function shiftRangeBackward(range, count, reps) {
+				if (count > 0 && reps < 20) {
+					if (range.endOffset > 0) {
+						range.setEnd(range.endContainer, range.endOffset-1);
+						count--;
+					}
+					if (range.endOffset == 0) {
+						var prevTextNode = findTextNode(range.endContainer, 'back', 0);
+						if (prevTextNode != null) {
+							range.setEnd(prevTextNode, prevTextNode.length);
+						}
+					}
+					shiftRangeBackward(range, count, reps++);
+				}
+			}
+			
+			shiftRangeForward(range, leadingSpaces, 0);
+			shiftRangeBackward(range, trailingSpaces, 0);
+			
+			sel.setRng(range);
+		}
+		
+		fixRange(range);
 		
 		if (range.startContainer.parentNode != range.endContainer.parentNode) {
 			if (range.endOffset == 0 && range.endContainer.previousSibling == range.startContainer.parentNode) {
