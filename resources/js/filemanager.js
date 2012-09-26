@@ -728,7 +728,7 @@ var FileManager = function(config) {
 						$(this).children('[type="props"]').each(function(i2, el2) {
 							var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
 							if (key == 'content') {
-								var title = w.getTitleFromContent($(this).text());
+								var title = w.u.getTitleFromContent($(this).text());
 								w.entities[id]['props']['title'] = title;
 							}
 							w.entities[id]['props'][key] = $(this).text();
@@ -793,7 +793,7 @@ var FileManager = function(config) {
 									id: id,
 									type: this.nodeName.toLowerCase(),
 									content: content,
-									title: w.getTitleFromContent(content)
+									title: w.u.getTitleFromContent(content)
 								},
 								info: {}
 							};
