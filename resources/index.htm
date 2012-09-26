@@ -6,40 +6,28 @@
 		<link type="text/css" rel="stylesheet" href="smoothness/jquery-ui-1.8.13.custom.css" />
 		<style type="text/css">
 			h1 {
-				font-size: 24px;
+				font-size: 38px;
 				text-align: center;
 			}
 			h2 {
 				font-size: 16px;
 				text-align: center;
 			}
-			hr {
-				border: none;
-				border-top: 1px solid #ccc;
-			}
 			img {
 				border: none;
 			}
-			#contentParent {
-				position: absolute;
-				top: 50%;
-				left: 0px;
-				width: 100%;
-				margin-top: -250px;
-				text-align: center;
-				min-width: 550px;
-			}
 			#content {
-				position: absolute;
-				position: relative;
 				text-align: left;
 				width: 640px;
-				height: 400px;
-				margin: 0px auto;
+				margin: 50px auto 0;
 				font-size: 12px;
 			}
 			#buttonsParent {
 				text-align: center;
+				border-top: 1px solid #ccc;
+				border-bottom: 1px solid #ccc;
+				padding: 10px 0;
+				margin: 10px 0;
 			}
 			#buttonsParent .column {
 				float: left;
@@ -53,9 +41,9 @@
 				font-size: 14px !important;
 			}
 			#logos {
-				width: 100%;
-				position: absolute;
-				bottom: 10px;
+				padding-top: 20px;
+				margin: 0px auto;
+				width: 760px;
 			}
 		</style>
 		<script type="text/javascript" src="js/jquery/jquery-1.6.1.js"></script>
@@ -96,35 +84,33 @@
 		</script>
 	</head>
 	<body>
-		<div id="contentParent">
-			<div id="content">
-				<h1>CWRC-Writer</h1>
-				<h2>an open-source editor for online digital scholarship</h2>
-				<p>This is an early prototype for demonstration purposes:
-				certain features are not yet functional and there are many bugs.
-				The editor works best with the current version of the Firefox browser (available <a href="http://www.mozilla.org/en-US/firefox/new/" target="_blank">here</a>).</p>
-				<p>For more information or to help with testing CWRC-Writer, visit <a href="http://www.cwrc.ca/projects/infrastructure-projects/technical-projects/cwrc-writer/" target="_blank">here</a>.</p>
-				<hr/>
-				<div id="buttonsParent">
-					<div class="column" style="width: 640px;">
-						<button>Load an Existing Document</button>
-					</div>
-					<div class="column">
-						<button>Create a Letter</button>
-						<button>Create a Poem</button>
-						<button>Create Prose</button>
-						<button>Create an Event</button>
-					</div>
-					<div class="column">
-						<button>See a Sample Letter</button>
-						<button>See a Sample Poem</button>
-					</div>
+		<div id="content">
+			<h1>CWRC-Writer</h1>
+			<h2>an open-source editor for online digital scholarship</h2>
+			<p>This is an early prototype for demonstration purposes:
+			certain features are not yet functional and there are many bugs.
+			The editor works best with the current version of the Firefox browser (available <a href="http://www.mozilla.org/en-US/firefox/new/" target="_blank">here</a>).</p>
+			<p>For more information or to help with testing CWRC-Writer, visit <a href="http://www.cwrc.ca/projects/infrastructure-projects/technical-projects/cwrc-writer/" target="_blank">here</a>.</p>
+			<div id="buttonsParent">
+				<div class="column" style="width: 640px;">
+					<button>Load an Existing Document</button>
 				</div>
+				<div class="column">
+					<button>Create a Letter</button>
+					<button>Create a Poem</button>
+					<button>Create Prose</button>
+					<button>Create an Event</button>
+				</div>
+				<div class="column">
+					<button>See a Sample Letter</button>
+					<button>See a Sample Poem</button>
+				</div>
+				<div style="clear: both;"></div>
 			</div>
 		</div>
 		<div id="logos">
-			<a href="http://www.cwrc.ca/en/" target="_blank"><img src="img/CWRC_logo_text_web.png" style="float: left; margin-left: 10px;" /></a>
-			<a href="http://innovation.ca/" target="_blank"><img src="img/en.png" style="float: right; margin-right: 10px;" /></a>
+			<a href="http://www.cwrc.ca/en/" target="_blank"><img src="img/CWRC_logo_text_web_small.png" /></a>
+			<a href="http://innovation.ca/" target="_blank" style="margin-left: 20px;"><img src="img/en.png" /></a>
 		</div>
 	</body>
 </html>
