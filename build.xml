@@ -1,0 +1,98 @@
+<?xml version="1.0"?>
+<project basedir="." default="compile">
+
+	<property name="jsroot" location="resources/js"/>
+	
+	<taskdef name="jscomp" classname="com.google.javascript.jscomp.ant.CompileTask"
+           classpath="build/compiler.jar"/>
+
+	<target name="cleanup">
+		<delete file="${jsroot}/dialogs/all_dialogs.js"/>
+		<delete file="${jsroot}/libs.js"/>
+	</target>
+	
+	<target name="concat_libs" depends="cleanup">
+        <concat destfile="${jsroot}/dialogs/all_dialogs.js">
+       		<fileset dir="${jsroot}/dialogs">
+				<include name="*.js"/>
+			</fileset>
+        </concat>
+        	
+    	<concat destfile="${jsroot}/libs.js">
+       		<filelist dir="${jsroot}">
+       			<file name="jquery/jquery-1.6.1.js"/>
+				<file name="jquery/jquery-ui-1.8.13.custom.min.js"/>
+       			<file name="jquery/jquery.contextmenu.js"/>
+       			<file name="jquery/jquery.watermark.min.js"/>
+       			<file name="tinymce/jscripts/tiny_mce/jquery.tinymce.js"/>
+       			<file name="jstree/jquery.hotkeys.js"/>
+       			<file name="jstree/jquery.jstree.js"/>
+       			<file name="snippet/jquery.snippet.min.js"/>
+			</filelist>
+        </concat>
+	</target>
+	
+	<target name="concat" depends="concat_libs">
+		<delete file="${jsroot}/cwrcwriter_src.js"/>
+		
+		<concat destfile="${jsroot}/cwrcwriter_src.js">
+			<filelist dir="${jsroot}">
+				<file name="editor.js"/>
+				<file name="dialogs/all_dialogs.js"/>
+				<file name="dialog.js"/>
+				<file name="utilities.js"/>
+				<file name="filemanager.js"/>
+				<file name="structuretree.js"/>
+				<file name="entitieslist.js"/>
+				<file name="relations.js"/>
+			</filelist>
+		</concat>
+	</target>
+	
+	<target name="compile" depends="concat_libs">
+		<jscomp compilationLevel="simple" warning="quiet" 
+            debug="false" output="${jsroot}/cwrcwriter.js">
+
+			<externs dir="${jsroot}/jquery">
+				<file name="jquery-1.6.1.js"/>
+				<file name="jquery-ui-1.8.13.custom.min.js"/>
+				<file name="jquery.contextmenu.js"/>
+				<file name="jquery.watermark.min.js"/>
+			</externs>
+
+			<externs dir="${jsroot}/tinymce/jscripts/tiny_mce">
+				<file name="tiny_mce.js"/>
+				<file name="jquery.tinymce.js"/>
+			</externs>
+
+			<externs dir="${jsroot}/jstree">
+				<file name="jquery.jstree.js"/>
+				<file name="jquery.hotkeys.js"/>
+			</externs>
+
+			<externs dir="${jsroot}/snippet">
+				<file name="jquery.snippet.min.js"/>
+			</externs>
+
+			<sources dir="${jsroot}">
+				<file name="editor.js"/>
+				<file name="dialogs/all_dialogs.js"/>
+				<file name="dialog.js"/>
+				<file name="utilities.js"/>
+				<file name="filemanager.js"/>
+				<file name="structuretree.js"/>
+				<file name="entitieslist.js"/>
+				<file name="relations.js"/>
+			</sources>
+
+		</jscomp>
+		
+		<concat destfile="${jsroot}/cwrcwriter_and_libs.js">
+			<filelist dir=".">
+				<file name="${jsroot}/libs.js"/>
+				<file name="${jsroot}/cwrcwriter.js"/>
+			</filelist>
+		</concat>
+	</target>
+
+</project>
