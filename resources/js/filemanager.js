@@ -424,27 +424,8 @@ var FileManager = function(config) {
 			rdfString += '\n</rdf:RDF>\n';
 		}
 		
-		if (w.mode == w.XMLRDF) {
-			if (includeRDF) body.find('[_entity]').remove();
-		} else {
-			for (var id in w.entities) {
-				var markers = w.editor.dom.select('[name="'+id+'"]');
-				var start = markers[0];
-				var end = markers[1];
-				
-				var nodes = [start];
-				var currentNode = start;
-				while (currentNode != end  && currentNode != null) {
-					currentNode = currentNode.nextSibling;
-					nodes.push(currentNode);
-				}
-				
-				var attributes = ' id="'+id+'" _type="'+w.entities[id].props.type+'"';
-				
-				w.editor.$(nodes).wrapAll('<entity'+attributes+'/>');
-				w.editor.$(markers).remove();
-			}
-		}
+		// remove all entities so text will validate
+		body.find('[_entity]').remove();
 		
 		var root = body.children(w.root);
 		// make sure TEI has the right namespace for validation purposes
@@ -706,44 +687,52 @@ var FileManager = function(config) {
 			
 			if (docMode == w.XMLRDF) {
 				rdfs.children().each(function(i1, el1) {
-					// entity
-					if ($(this).attr('rdf:ID')) {
-						var id = $(this).find('w\\:id, id').text();
+					var rdf = $(this);
+
+					if (rdf.attr('rdf:ID')) {
+						var id = rdf.find('w\\:id, id').text();
 						
-						var idNum = parseInt(id.split('_')[1]);
-						if (idNum > tinymce.DOM.counter) tinymce.DOM.counter = idNum;
-						
-						offsets.push({
-							id: id,
-							parent: $(this).find('w\\:parent, parent').text(),
-							offset: parseInt($(this).find('w\\:offset, offset').text()),
-							length: parseInt($(this).find('w\\:length, length').text())
-						});
-						w.entities[id] = {
-							props: {
-								id: id
-							},
-							info: {}
-						};
-						$(this).children('[type="props"]').each(function(i2, el2) {
-							var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
-							if (key == 'content') {
-								var title = w.u.getTitleFromContent($(this).text());
-								w.entities[id]['props']['title'] = title;
-							}
-							w.entities[id]['props'][key] = $(this).text();
-						});
-						$(this).children('[type="info"]').each(function(i2, el2) {
-							var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
-							w.entities[id]['info'][key] = $(this).text();
-						});
+						var entity = rdf.find('w\\:entity, entity').text();
+						// entity
+						if (entity != '') {
+							var idNum = parseInt(id.split('_')[1]);
+							if (idNum > tinymce.DOM.counter) tinymce.DOM.counter = idNum;
+							
+							offsets.push({
+								id: id,
+								parent: rdf.find('w\\:parent, parent').text(),
+								offset: parseInt(rdf.find('w\\:offset, offset').text()),
+								length: parseInt(rdf.find('w\\:length, length').text())
+							});
+							w.entities[id] = {
+								props: {
+									id: id
+								},
+								info: {}
+							};
+							rdf.children('[type="props"]').each(function(i2, el2) {
+								var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
+								var prop = $(this).text();
+								if (key == 'content') {
+									var title = w.u.getTitleFromContent(prop);
+									w.entities[id]['props']['title'] = title;
+								}
+								w.entities[id]['props'][key] = prop;
+							});
+							rdf.children('[type="info"]').each(function(i2, el2) {
+								var key = $(this)[0].nodeName.split(':')[1].toLowerCase();
+								w.entities[id]['info'][key] = $(this).text();
+							});
+						} else {
+							// struct
+						}
 						
 					// triple
-					} else {
+					} else if (rdf.attr('rdf:about')){
 						var subject = $(this);
 						var subjectUri = subject.attr('rdf:about');
-						var predicate = $(this).children().first();
-						var object = $(this).find('rdf\\:Description, Description');
+						var predicate = rdf.children().first();
+						var object = rdf.find('rdf\\:Description, Description');
 						var objectUri = object.attr('rdf:about');
 						
 						var triple = {
@@ -872,7 +861,6 @@ var FileManager = function(config) {
 						parent.contents().each(function(index, element) {
 							if (this.nodeType == Node.TEXT_NODE && this.data != ' ') {
 								currentOffset += this.length;
-								
 								if (currentOffset > o.offset && startNode == null) {
 									startNode = this;
 									startOffset = o.offset - (currentOffset - this.length);
@@ -896,9 +884,13 @@ var FileManager = function(config) {
 				
 				if (startNode != null && endNode != null) {
 					var range = w.editor.selection.getRng(true);
-					range.setStart(startNode, startOffset);
-					range.setEnd(endNode, endOffset);
-					w.insertBoundaryTags(id, w.entities[id].props.type, range);
+					try {
+						range.setStart(startNode, startOffset);
+						range.setEnd(endNode, endOffset);
+						w.insertBoundaryTags(id, w.entities[id].props.type, range);
+					} catch (e) {
+						
+					}
 				}
 			}
 			
