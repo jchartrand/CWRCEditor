@@ -840,7 +840,7 @@ var Writer = function(config) {
 	 * Begin init functions
 	 */
 	w.init = function() {
-		var cssFiles = ['css/style.css', 'smoothness/jquery-ui-1.8.13.custom.css', 'js/snippet/jquery.snippet.css'];
+		var cssFiles = ['css/style.css', 'smoothness/jquery-ui-1.9.0.custom.css', 'js/snippet/jquery.snippet.css'];
 		for (var i = 0; i < cssFiles.length; i++) {
 			var css = $('<link />');
 			css.attr({
@@ -1951,11 +1951,11 @@ var Writer = function(config) {
 	'<div id="keywordDialog">'+
 		'<div id="keyword_choice">'+
 			'<div id="keyword_key">'+
-			    '<h3><a href="#">Keyword</a></h3>'+
+			    '<h3>Keyword</h3>'+
 			    '<div><label for="keyword_input">Keyword</label><input type="text" id="keyword_input" /></div>'+
 		    '</div>'+
 		    '<div id="keyword_index">'+
-			    '<h3><a href="#">Index Term</a></h3>'+
+			    '<h3>Index Term</h3>'+
 			    '<div>'+
 				    '<label for="keyword_lookup">OCLC Lookup</label><input type="text" id="keyword_lookup" />'+
 				    '<ul class="searchResults" style="overflow: auto; border: 1px solid #fff;"></ul>'+
@@ -2315,11 +2315,11 @@ var Writer = function(config) {
 	var note = $('#noteDialog');
 	note.dialog({
 		modal: true,
-		resizable: false,
-		closeOnEscape: false,
-		open: function(event, ui) {
-			$('#noteDialog').parent().find('.ui-dialog-titlebar-close').hide();
-		},
+		resizable: true,
+		closeOnEscape: true,
+//		open: function(event, ui) {
+//			$('#noteDialog').parent().find('.ui-dialog-titlebar-close').hide();
+//		},
 		height: 450,
 		width: 405,
 		autoOpen: false,
@@ -2421,19 +2421,19 @@ var Writer = function(config) {
 	    '<div style="position: absolute; top: 41px; left: 10px; right: 10px; bottom: 70px;">'+
 		    '<div id="lookupServices">'+
 		    	'<div id="lookup_project">'+
-			    '<h3><a href="#">Results from '+w.project+' Project</a></h3>'+
+			    '<h3>Results from '+w.project+' Project</h3>'+
 			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
 			    '</div>'+
 //			    '<div id="lookup_orca">'+
-//			    '<h3><a href="#">Results from ORCA</a></h3>'+
+//			    '<h3>Results from ORCA</h3>'+
 //			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
 //			    '</div>'+
 			    '<div id="lookup_viaf">'+
-			    '<h3><a href="#">Results from Web</a></h3>'+
+			    '<h3>Results from Web</h3>'+
 			    '<div><div class="searchResultsParent"><ul class="searchResults"></ul></div></div>'+
 			    '</div>'+
 			    '<div id="lookup_alternate">'+
-				    '<h3><a href="#">Alternate Identifier</a></h3>'+
+				    '<h3>Alternate Identifier</h3>'+
 				    '<div>'+
 					    '<div><input type="radio" name="altLookup" /><label for="search_name">Name</label><ins name="name" class="ui-icon ui-icon-help">&nbsp;</ins><br/><input type="text" name="name" id="search_name" /></div>'+
 					    '<div><input type="radio" name="altLookup" /><label for="search_localid">Local Identifier</label><ins name="localid" class="ui-icon ui-icon-help">&nbsp;</ins><br/><input type="text" name="localid" id="search_localid" /></div>'+
@@ -2471,8 +2471,8 @@ var Writer = function(config) {
 	$('#lookupServices').accordion({
 		header: 'div > h3',
 		fillSpace: true,
-		change: function(event, ui) {
-			if (ui.options.active < 3) doQuery();
+		activate: function(event, ui) {
+			if ($('#lookupServices').accordion('option', 'active') < 2) doQuery();
 		}
 	});
 	
@@ -2721,7 +2721,7 @@ var Writer = function(config) {
 			if (mode == EDIT) {
 				$('#certainty input[value="'+config.entry.info.certainty+'"]').click();
 				if (config.entry.info.type && config.entry.info.type == 'alt_id') {
-					$('#lookupServices').accordion('activate', 3);
+					$('#lookupServices').accordion('activate', 2);
 					$('#lookup_alternate input[name="'+config.entry.info.typeName+'"]').val(config.entry.info.value).prevAll('input').click();
 				} else {
 					$('#lookupServices').accordion('activate', 0);

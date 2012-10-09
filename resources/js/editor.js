@@ -840,7 +840,7 @@ var Writer = function(config) {
 	 * Begin init functions
 	 */
 	w.init = function() {
-		var cssFiles = ['css/style.css', 'smoothness/jquery-ui-1.8.13.custom.css', 'js/snippet/jquery.snippet.css'];
+		var cssFiles = ['css/style.css', 'smoothness/jquery-ui-1.9.0.custom.css', 'js/snippet/jquery.snippet.css'];
 		for (var i = 0; i < cssFiles.length; i++) {
 			var css = $('<link />');
 			css.attr({

@@ -11,11 +11,11 @@ var KeywordDialog = function(config) {
 	'<div id="keywordDialog">'+
 		'<div id="keyword_choice">'+
 			'<div id="keyword_key">'+
-			    '<h3><a href="#">Keyword</a></h3>'+
+			    '<h3>Keyword</h3>'+
 			    '<div><label for="keyword_input">Keyword</label><input type="text" id="keyword_input" /></div>'+
 		    '</div>'+
 		    '<div id="keyword_index">'+
-			    '<h3><a href="#">Index Term</a></h3>'+
+			    '<h3>Index Term</h3>'+
 			    '<div>'+
 				    '<label for="keyword_lookup">OCLC Lookup</label><input type="text" id="keyword_lookup" />'+
 				    '<ul class="searchResults" style="overflow: auto; border: 1px solid #fff;"></ul>'+
