@@ -311,11 +311,10 @@ var FileManager = function(config) {
 		var id = node.attr('id');
 		var tag = node.attr('_tag') || node.attr('_type');
 		
-		var openingTag = '<'+tag;
-		
 		var structEntry = w.structs[id];
 		var entityEntry = w.entities[id];
 		if (structEntry) {
+			var openingTag = '<'+tag;
 			for (var key in structEntry) {
 				if (key.indexOf('_') != 0) {
 					var attName = key;
@@ -323,17 +322,39 @@ var FileManager = function(config) {
 					openingTag += ' '+attName+'="'+structEntry[key]+'"';
 				}
 			}
+			openingTag += '>';
+			array.push(openingTag);
+			array.push('</'+tag+'>');
 		} else if (entityEntry) {
-			for (var key in entityEntry.info) {
-				openingTag += ' '+key+'="'+entityEntry.info[key]+'"';
+			var tags = w.em.getMappingTags(entityEntry, w.validationSchema);
+			if (tags) {
+				array = tags;
+			} else {
+				// remove the entity if it has no mapping
+				node.replaceWith(node.contents());
 			}
 		}
 		
-		openingTag += '>';
-		array.push(openingTag);
-		array.push('</'+tag+'>');
-		
 		return array;
+	}
+	
+	// converts the opening and closing entity tag pairs to a matched set of opening and closing tags
+	function convertEntitiesToTags() {
+		for (var id in w.entities) {
+			var markers = w.editor.dom.select('[name="' + id + '"]');
+			var start = markers[0];
+			var end = markers[1];
+
+			var nodes = [ start ];
+			var currentNode = start;
+			while (currentNode != end && currentNode != null) {
+				currentNode = currentNode.nextSibling;
+				nodes.push(currentNode);
+			}
+			
+			w.editor.$(nodes).wrapAll('<entity id="'+id+'" _type="'+w.entities[id].props.type+'" />');			
+			w.editor.$(markers).remove();
+		}
 	}
 	
 	/**
@@ -424,8 +445,7 @@ var FileManager = function(config) {
 			rdfString += '\n</rdf:RDF>\n';
 		}
 		
-		// remove all entities so text will validate
-		body.find('[_entity]').remove();
+		convertEntitiesToTags();
 		
 		var root = body.children(w.root);
 		// make sure TEI has the right namespace for validation purposes
@@ -763,7 +783,7 @@ var FileManager = function(config) {
 					parent.contents().each(function(index, element) {
 						if (this.nodeType == Node.TEXT_NODE) {
 							currentOffset += this.length;
-						} else if (w.titles[this.nodeName.toLowerCase()] != null) {
+						} else if (w.em.isEntity(this.nodeName.toLowerCase())) {
 							var ent = $(this);
 							var id = ent.attr(w.idName);
 							if (id == null) {

@@ -44,6 +44,7 @@
 				<file name="filemanager.js"/>
 				<file name="structuretree.js"/>
 				<file name="entitieslist.js"/>
+				<file name="entities_model.js"/>
 				<file name="relations.js"/>
 			</filelist>
 		</concat>
@@ -82,6 +83,7 @@
 				<file name="filemanager.js"/>
 				<file name="structuretree.js"/>
 				<file name="entitieslist.js"/>
+				<file name="entities_model.js"/>
 				<file name="relations.js"/>
 			</sources>
 

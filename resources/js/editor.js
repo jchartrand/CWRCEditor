@@ -18,22 +18,6 @@ var Writer = function(config) {
 		
 		baseUrl: window.location.protocol+'//'+window.location.host+'/',
 		
-		// tag types and their titles
-		// also used to determine what tags are entities
-		titles: {
-			person: 'Person',
-			date: 'Date',
-			place: 'Place',
-			event: 'Event',
-			org: 'Organization',
-			citation: 'Citation',
-			note: 'Note',
-			correction: 'Correction',
-			keyword: 'Keyword',
-			link: 'Link',
-			title: 'Text/Title'
-		},
-		
 		// editor mode
 		mode: config.mode,
 		
@@ -467,7 +451,7 @@ var Writer = function(config) {
 		var result = w.u.isSelectionValid();
 		if (result == w.VALID) {
 			w.editor.currentBookmark = w.editor.selection.getBookmark(1);
-			w.d.show(type, {type: type, title: w.titles[type], pos: w.editor.contextMenuPos});
+			w.d.show(type, {type: type, title: w.em.getTitle(type), pos: w.editor.contextMenuPos});
 		} else {
 			w.showError(result);
 		}
@@ -571,7 +555,7 @@ var Writer = function(config) {
 			}
 		} else if (tag.entity) {
 			var type = tag.entity.props.type;
-			w.d.show(type, {type: type, title: w.titles[type], pos: pos, entry: tag.entity});
+			w.d.show(type, {type: type, title: w.em.getTitle(type), pos: pos, entry: tag.entity});
 		}
 	};
 	
@@ -869,6 +853,7 @@ var Writer = function(config) {
 		w.fm = new FileManager({writer: w});
 		w.tree = new StructureTree({writer: w, parentId: '#tabs'});
 		w.entitiesList = new EntitiesList({writer: w, parentId: '#tabs'});
+		w.em = new EntitiesModel();
 		w.relations = new Relations({writer: w, parentId: '#tabs'});
 		w.settings = new SettingsDialog(w, {
 			showEntityBrackets: true,
