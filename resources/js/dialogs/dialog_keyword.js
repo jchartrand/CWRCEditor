@@ -82,19 +82,23 @@ var KeywordDialog = function(config) {
 			list.html('<li class="unselectable last"><span>No results.</span></li>');
 		} else {
 			var ids = [];
+			var types = [];
 			var liString = '';
 			records.each(function(index, el) {
 				var label = $('skos\\:prefLabel, prefLabel', el).text();
 				var id = $('dct\\:identifier, identifier', el).first().text();
+				var type = $('dct\\:type, type', el).last().text();
 				var last = '';
 				if (index == records.length -1) last = 'last';
 				ids.push(id);
+				types.push(type);
 				liString += '<li class="unselectable '+last+'"><span>'+label+'</span></li>';
 			});
 			
 			list.html(liString);
 			$('li', list).each(function(index, el) {
 				$(this).data('id', ids[index]);
+				$(this).data('type', types[index]);
 				$(this).data('title', $(this).text());
 			});
 			
