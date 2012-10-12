@@ -966,12 +966,12 @@ var FileManager = function(config) {
 			    
 			    var cssUrl;
 			    if (w.root.toLowerCase() == 'events') {
-			    	cssUrl = 'css/orlando.css';
+			    	cssUrl = 'css/orlando_converted.css';
 			    	w.validationSchema = 'events';
 			    	w.header = 'ORLANDOHEADER';
 			    	w.idName = 'ID';
 			    } else {
-			    	cssUrl = 'css/tei.css';
+			    	cssUrl = 'css/tei_converted.css';
 			    	w.validationSchema = 'cwrcbasic';
 			    	w.header = 'teiHeader';
 			    	w.idName = 'xml:id';
@@ -1022,6 +1022,10 @@ var FileManager = function(config) {
 	
 	fm.loadSchemaCSS = function(url) {
 		w.editor.dom.loadCSS(url);
+		if (url.match('converted') != null) {
+			// already converted so exit
+			return;
+		}
 		var name = url.split('/');
 		name = name[name.length-1];
 		var numCss = w.editor.getDoc().styleSheets.length;
@@ -1044,6 +1048,7 @@ var FileManager = function(config) {
 					var newRules = '';
 					// adapt the rules to our format, should only modify element names in selectors
 					for (var i = 0; i < rules.length; i++) {
+						// chrome won't get proper selector, see: https://code.google.com/p/chromium/issues/detail?id=67782
 						var selector = rules[i].selectorText;
 						var newSelector = selector.replace(/(^|,|\s)(\w+)/g, function(str, p1, p2, offset, s) {
 							return p1+'span[_tag="'+p2+'"]';
