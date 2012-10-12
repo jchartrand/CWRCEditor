@@ -98,76 +98,12 @@ var Writer = function(config) {
 		ed.pasteAsPlainText = false;
 		
 		// highlight tracking
-		ed.onMouseUp.add(_doHighlightCheck);
-		
-		ed.onKeyUp.add(function(ed, evt) {
-			// nav keys check
-			if (evt.which >= 33 || evt.which <= 40) {
-				_doHighlightCheck(ed, evt);
-			}
-			
-			// update current entity
-			if (ed.currentEntity) {
-				var content = ed.$('#entityHighlight').text();
-				var entity = w.entities[ed.currentEntity];
-				entity.content = content;
-				entity.title = w.u.getTitleFromContent(content);
-				$('#entities li[name="'+ed.currentEntity+'"] > span[class="entityTitle"]').html(entity.title);
-			}
-			
-			if (w.fixStructSelect) {
-				w.fixStructSelect = false;
-				var hits = ed.$('[class="select_struct_remove_me"]');
-				hits.remove();
-			}
-			
-			if (w.fixEmptyStructTag && ed.currentStruct) {
-				w.fixEmptyStructTag = false;
-				var bm = ed.selection.getBookmark();
-				ed.$('#'+ed.currentStruct).find('#empty_tag_remove_me').contents().unwrap();
-				w.editor.selection.moveToBookmark(bm);
-				var range = ed.selection.getRng(true);
-				range.selectNodeContents(ed.$('#'+ed.currentStruct)[0]);
-				range.collapse(false);
-			}
-			
-			if (w.emptyTagId) {
-				if (evt.which >= 48 || evt.which <= 90) {
-					var range = ed.selection.getRng(true);
-					range.setStart(range.commonAncestorContainer, range.startOffset-1);
-					range.setEnd(range.commonAncestorContainer, range.startOffset+1);
-					w.insertBoundaryTags(w.emptyTagId, w.entities[w.emptyTagId].props.type, range);
-					
-					// TODO get working in IE
-					var tags = ed.$('[name='+w.emptyTagId+']');
-					range = ed.selection.getRng(true);
-					range.setStartAfter(tags[0]);
-					range.setEndBefore(tags[1]);
-					range.collapse(false);
-					
-					w.entitiesList.update();
-				} else {
-					delete w.entities[w.emptyTagId];
-				}
-				w.emptyTagId = null;
-			}
-			
-			// delete keys check
-			// need to do this here instead of in onchangehandler because that one doesn't update often enough
-			if (evt.which == 8 || evt.which == 46) {
-				_findDeletedTags();
-				w.tree.update();
-			}
-			
-			// replace br's inserted on shift+enter
-			if (evt.shiftKey && evt.which == 13) {
-				if (ed.currentNode) {
-					var node = ed.currentNode;
-					if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
-					ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
-				}
-			}
+		ed.onMouseUp.add(function(ed, evt) {
+			_hideContextMenus(evt);
+			_doHighlightCheck(ed, evt);
 		});
+		
+		ed.onKeyUp.add(_onKeyUpHandler);
 		
 		$(ed.dom.doc).keydown(function(e) {
 			// redo/undo listener
@@ -243,6 +179,75 @@ var Writer = function(config) {
 		}
 	};
 	
+	var _onKeyUpHandler = function(ed, evt) {
+		// nav keys check
+		if (evt.which >= 33 || evt.which <= 40) {
+			_doHighlightCheck(ed, evt);
+		}
+		
+		// update current entity
+		if (ed.currentEntity) {
+			var content = ed.$('#entityHighlight').text();
+			var entity = w.entities[ed.currentEntity];
+			entity.content = content;
+			entity.title = w.u.getTitleFromContent(content);
+			$('#entities li[name="'+ed.currentEntity+'"] > span[class="entityTitle"]').html(entity.title);
+		}
+		
+		if (w.fixStructSelect) {
+			w.fixStructSelect = false;
+			var hits = ed.$('[class="select_struct_remove_me"]');
+			hits.remove();
+		}
+		
+		if (w.fixEmptyStructTag && ed.currentStruct) {
+			w.fixEmptyStructTag = false;
+			var bm = ed.selection.getBookmark();
+			ed.$('#'+ed.currentStruct).find('#empty_tag_remove_me').contents().unwrap();
+			w.editor.selection.moveToBookmark(bm);
+			var range = ed.selection.getRng(true);
+			range.selectNodeContents(ed.$('#'+ed.currentStruct)[0]);
+			range.collapse(false);
+		}
+		
+		if (w.emptyTagId) {
+			if (evt.which >= 48 || evt.which <= 90) {
+				var range = ed.selection.getRng(true);
+				range.setStart(range.commonAncestorContainer, range.startOffset-1);
+				range.setEnd(range.commonAncestorContainer, range.startOffset+1);
+				w.insertBoundaryTags(w.emptyTagId, w.entities[w.emptyTagId].props.type, range);
+				
+				// TODO get working in IE
+				var tags = ed.$('[name='+w.emptyTagId+']');
+				range = ed.selection.getRng(true);
+				range.setStartAfter(tags[0]);
+				range.setEndBefore(tags[1]);
+				range.collapse(false);
+				
+				w.entitiesList.update();
+			} else {
+				delete w.entities[w.emptyTagId];
+			}
+			w.emptyTagId = null;
+		}
+		
+		// delete keys check
+		// need to do this here instead of in onchangehandler because that one doesn't update often enough
+		if (evt.which == 8 || evt.which == 46) {
+			_findDeletedTags();
+			w.tree.update();
+		}
+		
+		// replace br's inserted on shift+enter
+		if (evt.shiftKey && evt.which == 13) {
+			if (ed.currentNode) {
+				var node = ed.currentNode;
+				if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
+				ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
+			}
+		}
+	};
+	
 	var _onChangeHandler = function(ed, event) {
 		if (ed.isDirty()) {
 			ed.$('br[_moz_editor_bogus_node]').remove(); // FF inserts br tags on enter sometimes
@@ -278,6 +283,18 @@ var Writer = function(config) {
 			w.entitiesList.update();
 			w.tree.update();
 		}, 0);
+	};
+	
+	var _hideContextMenus = function(evt) {
+		var target = $(evt.target);
+		// hide structure tree menu
+		if ($.vakata.context.vis && target.parents('#vakata-contextmenu').length == 0) {
+			$.vakata.context.hide();
+		}
+		// hide editor menu
+		if ($('#menu_editor_contextmenu:visible').length > 0 && target.parents('#menu_editor_contextmenu').length == 0) {
+			w.editor.execCommand('hideContextMenu', w.editor, evt);
+		}
 	};
 	
 	var _doHighlightCheck = function(ed, evt) {
@@ -860,6 +877,7 @@ var Writer = function(config) {
 			showStructBrackets: false
 		});
 		
+		$(document.body).click(_hideContextMenus);
 		$('#separator').click(w.toggleSidepanel);
 		$('#tabs').tabs();
 		
