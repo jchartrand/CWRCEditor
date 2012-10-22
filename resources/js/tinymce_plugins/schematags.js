@@ -238,7 +238,7 @@
 						currAttString += '<ins class="ui-icon ui-icon-help">&nbsp;</ins><input type="hidden" name="help" value="'+doc+'"/>';
 					}
 					currAttString += '<br/>';
-					var defaultVal = $('a\\:defaultValue', attDef).first().text();
+					var defaultVal = $('a\\:defaultValue, defaultValue', attDef).first().text();
 					if (t.mode == t.EDIT) defaultVal = structsEntry[attName] || '';
 					// TODO add list support
 //					if ($('list', attDef).length > 0) {
