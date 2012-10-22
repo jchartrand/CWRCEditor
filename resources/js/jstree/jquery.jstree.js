@@ -8,7 +8,7 @@
  *   http://www.opensource.org/licenses/mit-license.php
  *   http://www.gnu.org/licenses/gpl.html
  *
- * $Date: 2011-02-09 01:17:14 +0200 (ср, 09 февр 2011) $
+ * $Date: 2011-02-09 01:17:14 +0200 $
  * $Revision: 236 $
  */
 
