@@ -333,6 +333,9 @@ var FileManager = function(config) {
 				// remove the entity if it has no mapping
 				node.replaceWith(node.contents());
 			}
+		} else {
+			// not a valid tag so return empty strings
+			array = ['', ''];
 		}
 		
 		return array;
