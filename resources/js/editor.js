@@ -926,7 +926,7 @@ var Writer = function(config) {
 			custom_elements: w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
-			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,newbutton,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
@@ -1028,6 +1028,11 @@ var Writer = function(config) {
 				ed.addButton('removeTag', {title: 'Remove Tag', image: 'img/tag_blue_delete.png', 'class': 'entityButton',
 					onclick : function() {
 						ed.execCommand('removeTag');
+					}
+				});
+				ed.addButton('newbutton', {title: 'New', image: 'img/page_white_text.png', 'class': 'entityButton',
+					onclick: function() {
+						w.fm.newDocument();
 					}
 				});
 				ed.addButton('savebutton', {title: 'Save', image: 'img/save.png',

@@ -926,7 +926,7 @@ var Writer = function(config) {
 			custom_elements: w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
-			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,savebutton,saveasbutton,loadbutton',
+			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,newbutton,savebutton,saveasbutton,loadbutton',
 			theme_advanced_buttons2: 'currenttag',
 			theme_advanced_buttons3: '',
 			theme_advanced_toolbar_location: 'top',
@@ -1028,6 +1028,11 @@ var Writer = function(config) {
 				ed.addButton('removeTag', {title: 'Remove Tag', image: 'img/tag_blue_delete.png', 'class': 'entityButton',
 					onclick : function() {
 						ed.execCommand('removeTag');
+					}
+				});
+				ed.addButton('newbutton', {title: 'New', image: 'img/page_white_text.png', 'class': 'entityButton',
+					onclick: function() {
+						w.fm.newDocument();
 					}
 				});
 				ed.addButton('savebutton', {title: 'Save', image: 'img/save.png',
@@ -3562,11 +3567,14 @@ var FileManager = function(config) {
 			'<input type="text" name="filename"/>'+
 			'<p>Please enter letters only.</p>'+
 		'</div>'+
+		'<div id="unsaved">'+
+			'<p>You have unsaved changes.  Would you like to save?</p>'+
+		'</div>'+
 		'<div id="entitiesConverter"></div>'+
 		'<div id="editSourceDialog">'+
 			'<textarea style="width: 100%; height: 98%;"></textarea>'+
-		'</div>'+
-		'<iframe id="editDocLoader" style="display: none;"></iframe>'
+		'</div>'
+		//'<iframe id="editDocLoader" style="display: none;"></iframe>'
 	);
 	
 	var loader = $('#loader');
@@ -3636,6 +3644,25 @@ var FileManager = function(config) {
 			},
 			'Cancel': function() {
 				saver.dialog('close');
+			}
+		}
+	});
+	
+	var unsaved = $('#unsaved');
+	unsaved.dialog({
+		title: 'Unsaved Changes',
+		modal: true,
+		resizable: false,
+		height: 150,
+		width: 300,
+		autoOpen: false,
+		buttons: {
+			'Save': function() {
+				unsaved.dialog('close');
+				fm.saveDocument();
+			},
+			'New Document': function() {
+				window.location = 'index.htm';
 			}
 		}
 	});
@@ -3743,6 +3770,14 @@ var FileManager = function(config) {
 			fm.loadDocument($(this).data('name'));
 			loader.dialog('close');
 		});
+	};
+	
+	fm.newDocument = function() {
+		if (w.editor.isDirty()) {
+			unsaved.dialog('open');
+		} else {
+			window.location = 'index.htm';
+		}
 	};
 	
 	var _isNameValid = function(name) {
