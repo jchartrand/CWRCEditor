@@ -923,7 +923,6 @@ var Writer = function(config) {
 			},
 			
 			valid_elements: '*[*]', // allow everything
-			custom_elements: w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
 			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,newbutton,savebutton,saveasbutton,loadbutton',

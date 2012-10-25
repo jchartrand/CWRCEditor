@@ -923,7 +923,6 @@ var Writer = function(config) {
 			},
 			
 			valid_elements: '*[*]', // allow everything
-			custom_elements: w.root,
 			
 			plugins: 'paste,-entitycontextmenu,-schematags,-currenttag,-viewsource',
 			theme_advanced_buttons1: 'schematags,|,addperson,addplace,adddate,addevent,addorg,addcitation,addnote,addtitle,addcorrection,addkeyword,addlink,|,editTag,removeTag,|,addtriple,|,viewsource,editsource,|,validate,newbutton,savebutton,saveasbutton,loadbutton',
@@ -3911,6 +3910,7 @@ var FileManager = function(config) {
 			} else {
 				// remove the entity if it has no mapping
 				node.replaceWith(node.contents());
+				array = ['', ''];
 			}
 		} else {
 			// not a valid tag so return empty strings
@@ -4546,13 +4546,21 @@ var FileManager = function(config) {
 				w.editor.schema.addCustomElements(w.root);
 			    w.editor.schema.addCustomElements(w.root.toLowerCase());
 			    
+			    var blockElements = w.editor.schema.getBlockElements();
 			    var cssUrl;
 			    if (w.root.toLowerCase() == 'events') {
+			    	blockElements['L'] = {};
+			    	blockElements['P'] = {};
+			    	
 			    	cssUrl = 'css/orlando_converted.css';
 			    	w.validationSchema = 'events';
 			    	w.header = 'ORLANDOHEADER';
 			    	w.idName = 'ID';
 			    } else {
+			    	blockElements['l'] = {};
+			    	blockElements['p'] = {};
+			    	blockElements['sp'] = {};
+			    	
 			    	cssUrl = 'css/tei_converted.css';
 			    	w.validationSchema = 'cwrcbasic';
 			    	w.header = 'teiHeader';

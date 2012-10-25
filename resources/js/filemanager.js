@@ -362,6 +362,7 @@ var FileManager = function(config) {
 			} else {
 				// remove the entity if it has no mapping
 				node.replaceWith(node.contents());
+				array = ['', ''];
 			}
 		} else {
 			// not a valid tag so return empty strings
@@ -997,13 +998,21 @@ var FileManager = function(config) {
 				w.editor.schema.addCustomElements(w.root);
 			    w.editor.schema.addCustomElements(w.root.toLowerCase());
 			    
+			    var blockElements = w.editor.schema.getBlockElements();
 			    var cssUrl;
 			    if (w.root.toLowerCase() == 'events') {
+			    	blockElements['L'] = {};
+			    	blockElements['P'] = {};
+			    	
 			    	cssUrl = 'css/orlando_converted.css';
 			    	w.validationSchema = 'events';
 			    	w.header = 'ORLANDOHEADER';
 			    	w.idName = 'ID';
 			    } else {
+			    	blockElements['l'] = {};
+			    	blockElements['p'] = {};
+			    	blockElements['sp'] = {};
+			    	
 			    	cssUrl = 'css/tei_converted.css';
 			    	w.validationSchema = 'cwrcbasic';
 			    	w.header = 'teiHeader';
