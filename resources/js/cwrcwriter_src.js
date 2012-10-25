@@ -3908,8 +3908,7 @@ var FileManager = function(config) {
 			if (tags) {
 				array = tags;
 			} else {
-				// remove the entity if it has no mapping
-				node.replaceWith(node.contents());
+				// return empty strings if the entity has no mapping
 				array = ['', ''];
 			}
 		} else {
