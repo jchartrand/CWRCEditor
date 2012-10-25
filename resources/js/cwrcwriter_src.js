@@ -3317,8 +3317,13 @@ var Writer = function(config) {
 		}
 	};
 	
-	// checks the user selection and potential entity markers
-	u.isSelectionValid = function(isStructTag) {
+	/**
+	 * checks the user selection and potential entity markers
+	 * @param isStructTag Is the tag a structure tag
+	 * @param structAction How is the tag being inserted? (before/after/around/inside)
+	 * @returns
+	 */
+	u.isSelectionValid = function(isStructTag, structAction) {
 		var sel = w.editor.selection;
 		
 		// check for numerous overlap possibilities
@@ -3419,7 +3424,9 @@ var Writer = function(config) {
 			sel.setRng(range);
 		}
 		
-		fixRange(range);
+		if (!structAction) {
+			fixRange(range);
+		}
 		
 		if (range.startContainer.parentNode != range.endContainer.parentNode) {
 			if (range.endOffset == 0 && range.endContainer.previousSibling == range.startContainer.parentNode) {

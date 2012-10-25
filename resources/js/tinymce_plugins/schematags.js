@@ -100,7 +100,7 @@
 				
 				t.editor.selection.moveToBookmark(t.editor.currentBookmark);
 				
-				var valid = t.editor.execCommand('isSelectionValid', true);
+				var valid = t.editor.execCommand('isSelectionValid', true, t.action);
 				if (valid != 2) {
 					t.editor.execCommand('showError', valid);
 					return;
