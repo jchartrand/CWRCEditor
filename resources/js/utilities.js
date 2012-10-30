@@ -260,5 +260,51 @@ var Utilities = function(config) {
 		return parents;
 	};
 	
+	/**
+	 * @param currEl The element that's currently being processed
+	 * @param defHits A list of define tags that have already been processed
+	 * @param level The level of recursion
+	 * @param canContainText Whether the element can contain text
+	 */
+	var checkForText = function(currEl, defHits, level, canContainText) {
+		if (canContainText.isTrue) {
+			return false;
+		}
+		
+		// check for the text element
+		var textHits = currEl.find('text');
+		if (textHits.length > 0) {
+			canContainText.isTrue = true;
+			return false;
+		}
+		
+		// now process the references
+		currEl.find('ref').each(function(index, el) {
+			var name = $(el).attr('name');
+			if ($(el).parents('element').length > 0 && level > 0) {
+				return; // don't get attributes from other elements
+			}
+			if (!defHits[name]) {
+				defHits[name] = true;
+				var def = $('define[name="'+name+'"]', writer.schemaXML);
+				return checkForText(def, defHits, level+1, canContainText);
+			}
+		});
+	};
+	
+	/**
+	 * Checks to see if the tag can contain text, as specified in the schema
+	 * @param tag The tag to check
+	 * @returns boolean
+	 */
+	u.canTagContainText = function(tag) {
+		var element = $('element[name="'+tag+'"]', writer.schemaXML);
+		var defHits = {};
+		var level = 0;
+		var canContainText = {isTrue: false}; // needs to be an object so change is visible outside of checkForText
+		checkForText(element, defHits, level, canContainText);
+		return canContainText.isTrue;
+	};
+	
 	return u;
 };

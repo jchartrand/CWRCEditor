@@ -660,9 +660,13 @@ var FileManager = function(config) {
 			var idNum = parseInt(id.split('_')[1]);
 			if (idNum > tinymce.DOM.counter) tinymce.DOM.counter = idNum;
 			
+			var canContainText = w.u.canTagContainText(tag);
+			editorString += ' _textallowed="'+canContainText+'"';
+			
 			w.structs[id] = {
 				id: id,
-				_tag: tag
+				_tag: tag,
+				_textallowed: canContainText
 			};
 			$(currentNode.attributes).each(function(index, att) {
 				var attName = att.name;

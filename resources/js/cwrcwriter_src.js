@@ -220,20 +220,34 @@ var Writer = function(config) {
 			w.emptyTagId = null;
 		}
 		
+		if (ed.currentNode) {
+			// check if text is allowed in this node
+			if (ed.currentNode.getAttribute('_textallowed') == 'false') {
+				w.d.show('message', {
+					title: 'No Text Allowed',
+					msg: 'Text is not allowed in the current tag: '+ed.currentNode.getAttribute('_tag')+'.',
+					type: 'error'
+				});
+				
+				// remove all text
+				$(ed.currentNode).contents().filter(function() {
+					return this.nodeType == 3;
+				}).remove();
+			}
+			
+			// replace br's inserted on shift+enter
+			if (evt.shiftKey && evt.which == 13) {
+				var node = ed.currentNode;
+				if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
+				ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
+			}
+		}
+		
 		// delete keys check
 		// need to do this here instead of in onchangehandler because that one doesn't update often enough
 		if (evt.which == 8 || evt.which == 46) {
 			_findDeletedTags();
 			w.tree.update();
-		}
-		
-		// replace br's inserted on shift+enter
-		if (evt.shiftKey && evt.which == 13) {
-			if (ed.currentNode) {
-				var node = ed.currentNode;
-				if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
-				ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
-			}
 		}
 	};
 	
@@ -683,6 +697,7 @@ var Writer = function(config) {
 		
 		var id = tinymce.DOM.uniqueId('struct_');
 		attributes.id = id;
+		attributes._textallowed = w.u.canTagContainText(attributes._tag);
 		w.structs[id] = attributes;
 		w.editor.currentStruct = id;
 		
@@ -3552,6 +3567,52 @@ var Writer = function(config) {
 		return parents;
 	};
 	
+	/**
+	 * @param currEl The element that's currently being processed
+	 * @param defHits A list of define tags that have already been processed
+	 * @param level The level of recursion
+	 * @param canContainText Whether the element can contain text
+	 */
+	var checkForText = function(currEl, defHits, level, canContainText) {
+		if (canContainText.isTrue) {
+			return false;
+		}
+		
+		// check for the text element
+		var textHits = currEl.find('text');
+		if (textHits.length > 0) {
+			canContainText.isTrue = true;
+			return false;
+		}
+		
+		// now process the references
+		currEl.find('ref').each(function(index, el) {
+			var name = $(el).attr('name');
+			if ($(el).parents('element').length > 0 && level > 0) {
+				return; // don't get attributes from other elements
+			}
+			if (!defHits[name]) {
+				defHits[name] = true;
+				var def = $('define[name="'+name+'"]', writer.schemaXML);
+				return checkForText(def, defHits, level+1, canContainText);
+			}
+		});
+	};
+	
+	/**
+	 * Checks to see if the tag can contain text, as specified in the schema
+	 * @param tag The tag to check
+	 * @returns boolean
+	 */
+	u.canTagContainText = function(tag) {
+		var element = $('element[name="'+tag+'"]', writer.schemaXML);
+		var defHits = {};
+		var level = 0;
+		var canContainText = {isTrue: false}; // needs to be an object so change is visible outside of checkForText
+		checkForText(element, defHits, level, canContainText);
+		return canContainText.isTrue;
+	};
+	
 	return u;
 };/**
  * Contains the load and save dialogs, as well as file related functions.
@@ -4215,9 +4276,13 @@ var FileManager = function(config) {
 			var idNum = parseInt(id.split('_')[1]);
 			if (idNum > tinymce.DOM.counter) tinymce.DOM.counter = idNum;
 			
+			var canContainText = w.u.canTagContainText(tag);
+			editorString += ' _textallowed="'+canContainText+'"';
+			
 			w.structs[id] = {
 				id: id,
-				_tag: tag
+				_tag: tag,
+				_textallowed: canContainText
 			};
 			$(currentNode.attributes).each(function(index, att) {
 				var attName = att.name;

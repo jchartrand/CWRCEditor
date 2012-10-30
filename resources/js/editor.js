@@ -220,20 +220,34 @@ var Writer = function(config) {
 			w.emptyTagId = null;
 		}
 		
+		if (ed.currentNode) {
+			// check if text is allowed in this node
+			if (ed.currentNode.getAttribute('_textallowed') == 'false') {
+				w.d.show('message', {
+					title: 'No Text Allowed',
+					msg: 'Text is not allowed in the current tag: '+ed.currentNode.getAttribute('_tag')+'.',
+					type: 'error'
+				});
+				
+				// remove all text
+				$(ed.currentNode).contents().filter(function() {
+					return this.nodeType == 3;
+				}).remove();
+			}
+			
+			// replace br's inserted on shift+enter
+			if (evt.shiftKey && evt.which == 13) {
+				var node = ed.currentNode;
+				if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
+				ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
+			}
+		}
+		
 		// delete keys check
 		// need to do this here instead of in onchangehandler because that one doesn't update often enough
 		if (evt.which == 8 || evt.which == 46) {
 			_findDeletedTags();
 			w.tree.update();
-		}
-		
-		// replace br's inserted on shift+enter
-		if (evt.shiftKey && evt.which == 13) {
-			if (ed.currentNode) {
-				var node = ed.currentNode;
-				if (ed.$(node).attr('_tag') == 'lb') node = node.parentNode;
-				ed.$(node).find('br').replaceWith('<span _tag="lb"></span>');
-			}
 		}
 	};
 	
@@ -683,6 +697,7 @@ var Writer = function(config) {
 		
 		var id = tinymce.DOM.uniqueId('struct_');
 		attributes.id = id;
+		attributes._textallowed = w.u.canTagContainText(attributes._tag);
 		w.structs[id] = attributes;
 		w.editor.currentStruct = id;
 		
