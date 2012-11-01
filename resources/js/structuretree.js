@@ -134,10 +134,17 @@ var StructureTree = function(config) {
 						}
 					},
 					'delete': {
-						label: 'Remove Tag',
+						label: 'Remove Tag Only',
 						icon: 'img/tag_blue_delete.png',
 						action: function(obj) {
 							w.removeStructureTag(obj.attr('name'));
+						}
+					},
+					'delete_all': {
+						label: 'Remove Tag and All Content',
+						icon: 'img/tag_blue_delete.png',
+						action: function(obj) {
+							w.removeStructureTag(obj.attr('name'), true);
 						}
 					}
 				};

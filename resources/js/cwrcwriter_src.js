@@ -764,19 +764,23 @@ var Writer = function(config) {
 		w.tree.update();
 	};
 	
-	w.removeStructureTag = function(id) {
+	w.removeStructureTag = function(id, removeContents) {
 		id = id || w.editor.currentStruct;
 		
 		delete w.structs[id];
 		var node = w.editor.$('#'+id);
-		var parent = node.parent()[0];
-		var contents = node.contents();
-		if (contents.length > 0) {
-			contents.unwrap();
-		} else {
+		if (removeContents) {
 			node.remove();
+		} else {
+			var parent = node.parent()[0];
+			var contents = node.contents();
+			if (contents.length > 0) {
+				contents.unwrap();
+			} else {
+				node.remove();
+			}
+			parent.normalize();
 		}
-		parent.normalize();
 		w.tree.update();
 		w.editor.currentStruct = null;
 	};
@@ -3605,11 +3609,14 @@ var Writer = function(config) {
 	 * @returns boolean
 	 */
 	u.canTagContainText = function(tag) {
+		if (tag == writer.root) return false;
+		
 		var element = $('element[name="'+tag+'"]', writer.schemaXML);
 		var defHits = {};
 		var level = 0;
 		var canContainText = {isTrue: false}; // needs to be an object so change is visible outside of checkForText
 		checkForText(element, defHits, level, canContainText);
+		
 		return canContainText.isTrue;
 	};
 	
@@ -4924,10 +4931,17 @@ $.fn.filterNode = function(name) {
 						}
 					},
 					'delete': {
-						label: 'Remove Tag',
+						label: 'Remove Tag Only',
 						icon: 'img/tag_blue_delete.png',
 						action: function(obj) {
 							w.removeStructureTag(obj.attr('name'));
+						}
+					},
+					'delete_all': {
+						label: 'Remove Tag and All Content',
+						icon: 'img/tag_blue_delete.png',
+						action: function(obj) {
+							w.removeStructureTag(obj.attr('name'), true);
 						}
 					}
 				};

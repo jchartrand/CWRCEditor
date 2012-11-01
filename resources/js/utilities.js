@@ -298,11 +298,14 @@ var Utilities = function(config) {
 	 * @returns boolean
 	 */
 	u.canTagContainText = function(tag) {
+		if (tag == writer.root) return false;
+		
 		var element = $('element[name="'+tag+'"]', writer.schemaXML);
 		var defHits = {};
 		var level = 0;
 		var canContainText = {isTrue: false}; // needs to be an object so change is visible outside of checkForText
 		checkForText(element, defHits, level, canContainText);
+		
 		return canContainText.isTrue;
 	};
 	

@@ -764,19 +764,23 @@ var Writer = function(config) {
 		w.tree.update();
 	};
 	
-	w.removeStructureTag = function(id) {
+	w.removeStructureTag = function(id, removeContents) {
 		id = id || w.editor.currentStruct;
 		
 		delete w.structs[id];
 		var node = w.editor.$('#'+id);
-		var parent = node.parent()[0];
-		var contents = node.contents();
-		if (contents.length > 0) {
-			contents.unwrap();
-		} else {
+		if (removeContents) {
 			node.remove();
+		} else {
+			var parent = node.parent()[0];
+			var contents = node.contents();
+			if (contents.length > 0) {
+				contents.unwrap();
+			} else {
+				node.remove();
+			}
+			parent.normalize();
 		}
-		parent.normalize();
 		w.tree.update();
 		w.editor.currentStruct = null;
 	};
