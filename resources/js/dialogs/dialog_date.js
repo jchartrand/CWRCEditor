@@ -179,9 +179,26 @@ var DateDialog = function(config) {
 			var prefix = 'Tag ';
 			
 			if (mode == ADD) {
+				var dateValue = '';
+				var dateString = w.editor.currentBookmark.rng.toString();
+				var dateObj = new Date(dateString);
+				var year = dateObj.getFullYear();
+				if (!isNaN(year)) {
+					if (dateString.length > 4) {
+						var month = dateObj.getMonth();
+						if (month < 10) month = '0'+month;
+						var day = dateObj.getDate();
+						if (day < 10) day = '0'+day;
+						dateValue = year+'-'+month+'-'+day;
+					} else {
+						year++; // if just the year, Date makes it dec 31st at midnight of the prior year
+						dateValue = year;
+					}
+				}
+
 				toggleDate('date');
 				$('#type_date').attr('checked', true);
-				dateInput.value = '';
+				dateInput.value = dateValue;
 				startDate.value = '';
 				endDate.value = '';
 			} else {
