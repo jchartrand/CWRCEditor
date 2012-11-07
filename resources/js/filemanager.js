@@ -247,9 +247,15 @@ var FileManager = function(config) {
 				content: docText
 			},
 			success: function(data, status, xhr) {
-				_validationHandler(data, isSave);
+				_validationHandler(data, docText, isSave);
 			},
 			error: function() {
+//				$.ajax({
+//					url: 'xml/validation.xml',
+//					success: function(data, status, xhr) {
+//						_validationHandler(data, docText, isSave);
+//					}
+//				});
 				w.d.show('message', {
 					title: 'Error',
 					msg: 'An error occurred while trying to validate '+currentDoc+'.',
@@ -259,19 +265,15 @@ var FileManager = function(config) {
 		});
 	};
 	
-	var _validationHandler = function(data, isSave) {
+	var _validationHandler = function(data, docText, isSave) {
 		var doc = currentDoc;
 		if (doc == null) doc = 'The current document';
+		
 		if ($('status', data).text() != 'pass') {
-			var errors = '<ul>';
-			$('error', data).each(function(index, el) {
-				errors += '<li>'+$(this).find('message').text()+'</li>';
-			});
-			errors += '</ul>';
 			if (isSave) {
 				w.d.confirm({
 					title: 'Document Invalid',
-					msg: doc+' is not valid. <b>Save anyways?</b><br/>'+errors,
+					msg: doc+' is not valid. <b>Save anyways?</b>',
 					callback: function(yes) {
 						if (yes) {
 							fm.saveDocument();
@@ -279,11 +281,7 @@ var FileManager = function(config) {
 					}
 				});
 			} else {
-				w.d.show('message', {
-					title: 'Document Invalid',
-					msg: doc+' is not valid.<br/>'+errors,
-					type: 'error'
-				});
+				w.validation.showErrors(data, docText);
 			}
 		} else {
 			if (isSave) {

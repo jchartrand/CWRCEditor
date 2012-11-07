@@ -2,6 +2,7 @@ var Writer = function(config) {
 	config = config || {};
 
 	var w = {
+		layout: null, // jquery ui layout object
 		editor: null, // reference to the tinyMCE instance we're creating, set in setup
 		entities: {}, // entities store
 		structs: {}, // structs store
@@ -113,7 +114,9 @@ var Writer = function(config) {
 			}
 		});
 		
-		_doResize();
+		setTimeout(function() {
+			w.layout.resizeAll(); // now that the editor is loaded, set proper sizing
+		}, 250);
 		
 		// load a starting document
 		w.fm.loadInitialDocument(window.location.hash);
@@ -178,7 +181,7 @@ var Writer = function(config) {
 		}
 	};
 	
-	var _onKeyUpHandler = function(ed, evt) {
+	var _onKeyUpHandler = function(ed, evt) {	
 		// nav keys check
 		if (evt.which >= 33 || evt.which <= 40) {
 			_doHighlightCheck(ed, evt);
@@ -825,33 +828,11 @@ var Writer = function(config) {
 		return doc;
 	};
 	
-	var _doResize = function() {
-		var newHeight = $(window).height() - 30;
-		$('#leftcol > div').height(newHeight);
-		$('#'+w.editor.id+'_ifr').height(newHeight - 53);
-		var tabHeight = $('#tabs ul').height();
-		$('#tabs > div').height(newHeight - tabHeight - 7);
-	};
-	
-	w.toggleSidepanel = function() {
-		if ($('#main').css('marginLeft') == '6px') {
-			$('#main').css('marginLeft', '250px');
-			$('#tabs').show();
-			$('#leftcol').width(250);
-			$('#separator').addClass('arrowLeft').removeClass('arrowRight');
-		} else {
-			$('#main').css('marginLeft', '6px');
-			$('#tabs').hide();
-			$('#leftcol').width(6);
-			$('#separator').addClass('arrowRight').removeClass('arrowLeft');
-		}
-	};
-	
 	/**
 	 * Begin init functions
 	 */
 	w.init = function() {
-		var cssFiles = ['css/style.css', 'smoothness/jquery-ui-1.9.0.custom.css', 'js/snippet/jquery.snippet.css'];
+		var cssFiles = ['css/style.css', 'smoothness/jquery-ui-1.9.0.custom.css', 'css/layout-default-latest.css', 'js/snippet/jquery.snippet.css'];
 		for (var i = 0; i < cssFiles.length; i++) {
 			var css = $('<link />');
 			css.attr({
@@ -863,7 +844,62 @@ var Writer = function(config) {
 		}
 		
 		var title = 'CWRC-Writer v0.3';
-		$(document.body).append('<div id="wrap"><div id="header"><h1>'+title+'</h1></div><div id="leftcol"><div id="tabs"><ul><li><a href="#entities">Entities</a></li><li><a href="#structure">Structure</a></li><li><a href="#relations">Relations</a></li></ul></div><div id="separator" class="arrowLeft" title="Click to expand/contract"></div></div><div id="main"><form method="post" action=""><textarea id="editor" name="editor" class="tinymce"></textarea></form></div></div>');
+		$(document.body).append(''+
+			'<div id="header" class="ui-layout-north"><h1>'+title+'</h1></div>'+
+			'<div class="ui-layout-west"><div id="westTabs" class="tabs"><ul><li><a href="#entities">Entities</a></li><li><a href="#structure">Structure</a></li><li><a href="#relations">Relations</a></li></ul><div id="tabsContent" class="ui-layout-content"></div></div></div>'+
+			'<div id="main" class="ui-layout-center">'+
+				'<div class="ui-layout-center"><form method="post" action=""><textarea id="editor" name="editor" class="tinymce"></textarea></form></div>'+
+				'<div class="ui-layout-south"><div id="southTabs" class="tabs"><ul><li><a href="#validation">Validation</a></li></ul><div class="ui-layout-content"><div id="validation"></div></div></div></div>'+
+			'</div>');		
+		
+		w.layout = $(document.body).layout({
+			defaults: {
+				maskIframesOnResize: true,
+				resizable: true,
+				slidable: false
+			},
+			north: {
+				size: 27,
+				resizable: false,
+				spacing_open: 0,
+				spacing_closed: 0
+			},
+			west: {
+				size: 'auto',
+				minSize: 230,
+				onresize: function(region, pane, state, options) {
+					var tabsHeight = $('#westTabs > ul').outerHeight();
+					$('#tabsContent').height(state.layoutHeight - tabsHeight);
+				}
+			}
+		});
+		w.layout.panes.center.layout({
+			defaults: {
+				maskIframesOnResize: true,
+				resizable: true,
+				slidable: false
+			},
+			center: {
+				onresize: function(region, pane, state, options) {
+					var uiHeight = $('#'+w.editor.id+'_tbl tr.mceFirst').outerHeight() + 2;
+					$('#'+w.editor.id+'_ifr').height(state.layoutHeight - uiHeight);
+				}
+			},
+			south: {
+				size: 250,
+				initClosed: true,
+				onopen_start: function(region, pane, state, options) {
+					var southTabs = $('#southTabs');
+					if (!southTabs.hasClass('ui-tabs')) {
+						southTabs.tabs({
+							create: function(event, ui) {
+								southTabs.parent().find('.ui-corner-all').removeClass('ui-corner-all');
+							}
+						});
+					}
+				}
+			}
+		});
 		
 		$('#header h1').click(function() {
 			window.location = 'index.htm';
@@ -878,18 +914,22 @@ var Writer = function(config) {
 		w.d = new DialogManager({writer: w});
 		w.u = new Utilities({writer: w});
 		w.fm = new FileManager({writer: w});
-		w.tree = new StructureTree({writer: w, parentId: '#tabs'});
-		w.entitiesList = new EntitiesList({writer: w, parentId: '#tabs'});
+		w.tree = new StructureTree({writer: w, parentId: '#tabsContent'});
+		w.entitiesList = new EntitiesList({writer: w, parentId: '#tabsContent'});
 		w.em = new EntitiesModel();
-		w.relations = new Relations({writer: w, parentId: '#tabs'});
+		w.relations = new Relations({writer: w, parentId: '#tabsContent'});
+		w.validation = new Validation({writer: w, parentId: '#validation'});
 		w.settings = new SettingsDialog(w, {
 			showEntityBrackets: true,
 			showStructBrackets: false
 		});
 		
 		$(document.body).click(_hideContextMenus);
-		$('#separator').click(w.toggleSidepanel);
-		$('#tabs').tabs();
+		$('#westTabs').tabs({
+			create: function(event, ui) {
+				$('#westTabs').parent().find('.ui-corner-all').removeClass('ui-corner-all');
+			}
+		});
 		
 		w._initEditor();
 	};
@@ -1080,7 +1120,7 @@ var Writer = function(config) {
 				});
 				ed.addButton('addtriple', {title: 'Add Relation', image: 'img/chart_org.png', 'class': 'entityButton',
 					onclick: function() {
-						$('#tabs').tabs('select', 2);
+						$('#westTabs').tabs('select', 2);
 						w.d.show('triple');
 					}
 				});
@@ -1093,8 +1133,6 @@ var Writer = function(config) {
 //				});
 			}
 		});
-		
-		$(window).resize(_doResize);
 	};
 	
 	return w;
@@ -1845,9 +1883,26 @@ var Writer = function(config) {
 			var prefix = 'Tag ';
 			
 			if (mode == ADD) {
+				var dateValue = '';
+				var dateString = w.editor.currentBookmark.rng.toString();
+				var dateObj = new Date(dateString);
+				var year = dateObj.getFullYear();
+				if (!isNaN(year)) {
+					if (dateString.length > 4) {
+						var month = dateObj.getMonth();
+						if (month < 10) month = '0'+month;
+						var day = dateObj.getDate();
+						if (day < 10) day = '0'+day;
+						dateValue = year+'-'+month+'-'+day;
+					} else {
+						year++; // if just the year, Date makes it dec 31st at midnight of the prior year
+						dateValue = year;
+					}
+				}
+
 				toggleDate('date');
 				$('#type_date').attr('checked', true);
-				dateInput.value = '';
+				dateInput.value = dateValue;
 				startDate.value = '';
 				endDate.value = '';
 			} else {
@@ -3870,9 +3925,15 @@ var FileManager = function(config) {
 				content: docText
 			},
 			success: function(data, status, xhr) {
-				_validationHandler(data, isSave);
+				_validationHandler(data, docText, isSave);
 			},
 			error: function() {
+//				$.ajax({
+//					url: 'xml/validation.xml',
+//					success: function(data, status, xhr) {
+//						_validationHandler(data, docText, isSave);
+//					}
+//				});
 				w.d.show('message', {
 					title: 'Error',
 					msg: 'An error occurred while trying to validate '+currentDoc+'.',
@@ -3882,19 +3943,15 @@ var FileManager = function(config) {
 		});
 	};
 	
-	var _validationHandler = function(data, isSave) {
+	var _validationHandler = function(data, docText, isSave) {
 		var doc = currentDoc;
 		if (doc == null) doc = 'The current document';
+		
 		if ($('status', data).text() != 'pass') {
-			var errors = '<ul>';
-			$('error', data).each(function(index, el) {
-				errors += '<li>'+$(this).find('message').text()+'</li>';
-			});
-			errors += '</ul>';
 			if (isSave) {
 				w.d.confirm({
 					title: 'Document Invalid',
-					msg: doc+' is not valid. <b>Save anyways?</b><br/>'+errors,
+					msg: doc+' is not valid. <b>Save anyways?</b>',
 					callback: function(yes) {
 						if (yes) {
 							fm.saveDocument();
@@ -3902,11 +3959,7 @@ var FileManager = function(config) {
 					}
 				});
 			} else {
-				w.d.show('message', {
-					title: 'Document Invalid',
-					msg: doc+' is not valid.<br/>'+errors,
-					type: 'error'
-				});
+				w.validation.showErrors(data, docText);
 			}
 		} else {
 			if (isSave) {
@@ -5436,4 +5489,49 @@ $.fn.filterNode = function(name) {
 	};
 	
 	return relations;
+};var Validation = function(config) {
+	
+	var w = config.writer;
+	
+	var id = config.parentId;
+	
+	var validation = {};
+	
+	/**
+	 * Processes a validation response from the server.
+	 * @param errorDoc The actual response
+	 * @param docString The doc string sent to the server for validation  
+	 */
+	validation.showErrors = function(errorDoc, docString) {
+		var container = $(id);
+		container.empty().append('<ul class="validationList"></ul>');
+		var list = container.find('ul');
+		
+		docString = docString.split('\n')[1]; // remove the xml header
+		
+		$('error', errorDoc).each(function(index, el) {
+			var id = '';
+			var message = $(this).find('message').text();
+			
+			var column = parseInt($(this).find('column').text());
+			if (!isNaN(column)) {
+				var docSubstring = docString.substring(0, column);
+				var tags = docSubstring.match(/<.*?>/g);
+				var tag = tags[tags.length-1];
+				id = tag.match(/id="(.*?)"/i)[1];
+			}
+			
+			var item = list.append('<li>'+message+'</li>').find('li:last');
+			item.data('id', id);
+		});
+		
+		list.find('li').click(function() {
+			var id = $(this).data('id');
+			w.selectStructureTag(id);
+		});
+		
+		w.layout.center.children.layout1.show('south');
+	};
+	
+	return validation;
 };

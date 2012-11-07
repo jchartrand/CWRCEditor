@@ -38,19 +38,20 @@ label {
 }
 
 #header {
-	height: 17px;
-	padding: 5px 10px;
+	padding: 0 10px;
 	color: #eee;
 	background-color: #455372;
 	border-bottom: 1px solid #ccc;
 }
 
 #header h1 {
+	margin-top: 5px;
 	float: left;
 	cursor: pointer;
 }
 
-#settingsLink, #helpLink, #headerLink {
+#header > div {
+	margin-top: 5px;
 	float: right;
 	cursor: pointer;
 	margin-left: 20px;
@@ -68,27 +69,6 @@ label {
 	height: 100%;
 }
 
-#main {
-	margin: 0 0 0 250px;
-}
-
-#leftcol {
-	float: left;
-	width: 250px;
-	background-color: #fff;
-	border-bottom: 1px solid #ccc;
-}
-
-#separator {
-	float: left;
-	width: 5px;
-	background-color: #e2e2e0;
-	border-left: 1px solid #ccc;
-	background-repeat: no-repeat;
-	background-position: center;
-	cursor: pointer;
-}
-
 .arrowLeft {
 	background-image: url('../img/arrow_left.gif');
 }
@@ -101,31 +81,29 @@ label {
 	padding: 3px 10px;
 }
 
-#tabs {
-	float: left;
-	width: 244px;
+.tabs {
+	overflow: hidden;
 	border: none !important;
+	border-right: 1px solid #ccc !important;
 	padding: 0 !important;
 }
 
-#tabs > ul {
+.tabs > ul {
 	padding: 3px 2px 0 !important;
 	border-top: none !important;
 	border-left: none !important;
 	border-right: none !important;
-	border-radius: 0 !important;
 }
 
-#tabs > ul li a {
+.tabs > ul li a {
 	padding: 4px 1em !important;
 }
 
-#tabs .ui-tabs-panel {
-	padding: 5px 0 0 0;
-	overflow: auto;
+.tabs .ui-tabs-panel {
+	padding: 5px 0 0 0 !important;
 }
 
-.entitiesList, .relationsList {
+.entitiesList, .relationsList, .validationList {
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -313,11 +291,11 @@ label {
 	cursor: pointer;
 }
 
-.relationsList li {
+.relationsList li, .validationList li {
 	padding: 3px 5px;
 }
 
-.relationsList li:hover {
+.relationsList li:hover, .validationList li:hover {
 	background-color: #ddd !important;
 	cursor: pointer;
 }
@@ -417,6 +395,7 @@ label {
 
 #tree_popup {
 	display: none;
+	z-index: 3;
 	position: absolute;
 	width: 175px;
 	border-radius: 4px;

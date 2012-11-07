@@ -22,6 +22,7 @@
        		<filelist dir="${jsroot}">
        			<file name="jquery/jquery-1.8.2.js"/>
 				<file name="jquery/jquery-ui-1.9.0.custom.js"/>
+       			<file name="jquery/jquery.layout-latest.min.js"/>
        			<file name="jquery/jquery.contextmenu.js"/>
        			<file name="jquery/jquery.watermark.min.js"/>
        			<file name="tinymce/jscripts/tiny_mce/jquery.tinymce.js"/>
@@ -46,6 +47,7 @@
 				<file name="entitieslist.js"/>
 				<file name="entities_model.js"/>
 				<file name="relations.js"/>
+				<file name="validation.js"/>
 			</filelist>
 		</concat>
 	</target>
@@ -85,6 +87,7 @@
 				<file name="entitieslist.js"/>
 				<file name="entities_model.js"/>
 				<file name="relations.js"/>
+				<file name="validation.js"/>
 			</sources>
 
 		</jscomp>
