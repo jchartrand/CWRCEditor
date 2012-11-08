@@ -3947,8 +3947,8 @@ var FileManager = function(config) {
 		var doc = currentDoc;
 		if (doc == null) doc = 'The current document';
 		
-		if ($('status', data).text() != 'pass') {
-			if (isSave) {
+		if (isSave) {
+			if ($('status', data).text() != 'pass') {
 				w.d.confirm({
 					title: 'Document Invalid',
 					msg: doc+' is not valid. <b>Save anyways?</b>',
@@ -3959,26 +3959,10 @@ var FileManager = function(config) {
 					}
 				});
 			} else {
-				w.validation.showErrors(data, docText);
+				fm.saveDocument();
 			}
 		} else {
-			if (isSave) {
-				fm.saveDocument();
-			} else {
-				var warnings = '';
-				if ($('warning', data).length > 0) {
-					warnings += '<ul>';
-					$('warning', data).each(function(index, el) {
-						warnings += '<li>'+$(this).find('message').text()+'</li>';
-					});
-					warnings += '</ul>';
-				}
-				w.d.show('message', {
-					title: 'Document Valid',
-					msg: doc+' is valid.<br/>'+warnings,
-					type: 'info'
-				});
-			}
+			w.validation.showValidationResult(data, docText);
 		}
 	};
 	
@@ -5499,17 +5483,18 @@ $.fn.filterNode = function(name) {
 	
 	/**
 	 * Processes a validation response from the server.
-	 * @param errorDoc The actual response
+	 * @param resultDoc The actual response
 	 * @param docString The doc string sent to the server for validation  
 	 */
-	validation.showErrors = function(errorDoc, docString) {
+	validation.showValidationResult = function(resultDoc, docString) {
 		var container = $(id);
 		container.empty().append('<ul class="validationList"></ul>');
 		var list = container.find('ul');
 		
 		docString = docString.split('\n')[1]; // remove the xml header
 		
-		$('error', errorDoc).each(function(index, el) {
+		$('error, warning', resultDoc).each(function(index, el) {
+			var type = el.nodeName;
 			var id = '';
 			var message = $(this).find('message').text();
 			
@@ -5521,7 +5506,11 @@ $.fn.filterNode = function(name) {
 				id = tag.match(/id="(.*?)"/i)[1];
 			}
 			
-			var item = list.append('<li>'+message+'</li>').find('li:last');
+			var item = list.append(''+
+				'<li class="'+(type=='error'?'ui-state-error':'ui-state-highlight')+'">'+
+					'<span class="ui-icon '+(type=='error'?'ui-icon-alert':'ui-icon-info')+'" style="float: left; margin-right: 4px;"></span>'+message+
+				'</li>'
+			).find('li:last');
 			item.data('id', id);
 		});
 		
@@ -5530,7 +5519,7 @@ $.fn.filterNode = function(name) {
 			w.selectStructureTag(id);
 		});
 		
-		w.layout.center.children.layout1.show('south');
+		w.layout.center.children.layout1.open('south');
 	};
 	
 	return validation;

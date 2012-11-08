@@ -269,8 +269,8 @@ var FileManager = function(config) {
 		var doc = currentDoc;
 		if (doc == null) doc = 'The current document';
 		
-		if ($('status', data).text() != 'pass') {
-			if (isSave) {
+		if (isSave) {
+			if ($('status', data).text() != 'pass') {
 				w.d.confirm({
 					title: 'Document Invalid',
 					msg: doc+' is not valid. <b>Save anyways?</b>',
@@ -281,26 +281,10 @@ var FileManager = function(config) {
 					}
 				});
 			} else {
-				w.validation.showErrors(data, docText);
+				fm.saveDocument();
 			}
 		} else {
-			if (isSave) {
-				fm.saveDocument();
-			} else {
-				var warnings = '';
-				if ($('warning', data).length > 0) {
-					warnings += '<ul>';
-					$('warning', data).each(function(index, el) {
-						warnings += '<li>'+$(this).find('message').text()+'</li>';
-					});
-					warnings += '</ul>';
-				}
-				w.d.show('message', {
-					title: 'Document Valid',
-					msg: doc+' is valid.<br/>'+warnings,
-					type: 'info'
-				});
-			}
+			w.validation.showValidationResult(data, docText);
 		}
 	};
 	

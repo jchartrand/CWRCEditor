@@ -8,17 +8,18 @@ var Validation = function(config) {
 	
 	/**
 	 * Processes a validation response from the server.
-	 * @param errorDoc The actual response
+	 * @param resultDoc The actual response
 	 * @param docString The doc string sent to the server for validation  
 	 */
-	validation.showErrors = function(errorDoc, docString) {
+	validation.showValidationResult = function(resultDoc, docString) {
 		var container = $(id);
 		container.empty().append('<ul class="validationList"></ul>');
 		var list = container.find('ul');
 		
 		docString = docString.split('\n')[1]; // remove the xml header
 		
-		$('error', errorDoc).each(function(index, el) {
+		$('error, warning', resultDoc).each(function(index, el) {
+			var type = el.nodeName;
 			var id = '';
 			var message = $(this).find('message').text();
 			
@@ -30,7 +31,11 @@ var Validation = function(config) {
 				id = tag.match(/id="(.*?)"/i)[1];
 			}
 			
-			var item = list.append('<li>'+message+'</li>').find('li:last');
+			var item = list.append(''+
+				'<li class="'+(type=='error'?'ui-state-error':'ui-state-highlight')+'">'+
+					'<span class="ui-icon '+(type=='error'?'ui-icon-alert':'ui-icon-info')+'" style="float: left; margin-right: 4px;"></span>'+message+
+				'</li>'
+			).find('li:last');
 			item.data('id', id);
 		});
 		
@@ -39,7 +44,7 @@ var Validation = function(config) {
 			w.selectStructureTag(id);
 		});
 		
-		w.layout.center.children.layout1.show('south');
+		w.layout.center.children.layout1.open('south');
 	};
 	
 	return validation;

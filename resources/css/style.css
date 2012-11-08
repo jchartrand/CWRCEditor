@@ -308,6 +308,12 @@ label {
 	background-color: #eee;
 }
 
+.validationList li {
+	border: none !important;
+	background: none !important;
+	color: #333333 !important;
+}
+
 #currentPath a:hover {
 	text-decoration: underline;
 	cursor: pointer;
