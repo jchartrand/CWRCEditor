@@ -5493,6 +5493,15 @@ $.fn.filterNode = function(name) {
 		
 		docString = docString.split('\n')[1]; // remove the xml header
 		
+		var status = $('status', resultDoc).text();
+		
+		if (status == 'pass') {
+			list.append(''+
+				'<li class="ui-state-default">'+
+					'<span class="ui-icon ui-icon-check" style="float: left; margin-right: 4px;"></span>Your document is valid!'+
+				'</li>');
+		}
+		
 		$('error, warning', resultDoc).each(function(index, el) {
 			var type = el.nodeName;
 			var id = '';
@@ -5516,7 +5525,9 @@ $.fn.filterNode = function(name) {
 		
 		list.find('li').click(function() {
 			var id = $(this).data('id');
-			w.selectStructureTag(id);
+			if (id) {
+				w.selectStructureTag(id);
+			}
 		});
 		
 		w.layout.center.children.layout1.open('south');
