@@ -314,6 +314,10 @@ label {
 	color: #333333 !important;
 }
 
+#validation button {
+	margin: 2px 0 2px 5px;
+}
+
 #currentPath a:hover {
 	text-decoration: underline;
 	cursor: pointer;

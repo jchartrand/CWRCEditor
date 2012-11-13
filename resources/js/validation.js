@@ -2,7 +2,14 @@ var Validation = function(config) {
 	
 	var w = config.writer;
 	
-	var id = config.parentId;
+	$(config.parentId).append('<div id="validation"><button>Validate</button><button>Clear</button><ul class="validationList"></ul></div>');
+	
+	$('#validation button:eq(0)').button().click(function() {
+		w.fm.validate();
+	});
+	$('#validation button:eq(1)').button().click(function() {
+		$('#validation > ul').empty();
+	});
 	
 	var validation = {};
 	
@@ -12,9 +19,8 @@ var Validation = function(config) {
 	 * @param docString The doc string sent to the server for validation  
 	 */
 	validation.showValidationResult = function(resultDoc, docString) {
-		var container = $(id);
-		container.empty().append('<ul class="validationList"></ul>');
-		var list = container.find('ul');
+		var list = $('#validation > ul');
+		list.empty();
 		
 		docString = docString.split('\n')[1]; // remove the xml header
 		

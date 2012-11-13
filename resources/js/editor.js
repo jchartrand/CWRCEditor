@@ -846,10 +846,10 @@ var Writer = function(config) {
 		var title = 'CWRC-Writer v0.3';
 		$(document.body).append(''+
 			'<div id="header" class="ui-layout-north"><h1>'+title+'</h1></div>'+
-			'<div class="ui-layout-west"><div id="westTabs" class="tabs"><ul><li><a href="#entities">Entities</a></li><li><a href="#structure">Structure</a></li><li><a href="#relations">Relations</a></li></ul><div id="tabsContent" class="ui-layout-content"></div></div></div>'+
+			'<div class="ui-layout-west"><div id="westTabs" class="tabs"><ul><li><a href="#entities">Entities</a></li><li><a href="#structure">Structure</a></li><li><a href="#relations">Relations</a></li></ul><div id="westTabsContent" class="ui-layout-content"></div></div></div>'+
 			'<div id="main" class="ui-layout-center">'+
 				'<div class="ui-layout-center"><form method="post" action=""><textarea id="editor" name="editor" class="tinymce"></textarea></form></div>'+
-				'<div class="ui-layout-south"><div id="southTabs" class="tabs"><ul><li><a href="#validation">Validation</a></li></ul><div class="ui-layout-content"><div id="validation"></div></div></div></div>'+
+				'<div class="ui-layout-south"><div id="southTabs" class="tabs"><ul><li><a href="#validation">Validation</a></li></ul><div id="southTabsContent" class="ui-layout-content"></div></div></div>'+
 			'</div>');		
 		
 		w.layout = $(document.body).layout({
@@ -869,7 +869,7 @@ var Writer = function(config) {
 				minSize: 230,
 				onresize: function(region, pane, state, options) {
 					var tabsHeight = $('#westTabs > ul').outerHeight();
-					$('#tabsContent').height(state.layoutHeight - tabsHeight);
+					$('#westTabsContent').height(state.layoutHeight - tabsHeight);
 				}
 			}
 		});
@@ -893,10 +893,14 @@ var Writer = function(config) {
 					if (!southTabs.hasClass('ui-tabs')) {
 						southTabs.tabs({
 							create: function(event, ui) {
-								southTabs.parent().find('.ui-corner-all').removeClass('ui-corner-all');
+								southTabs.parent().find('div.ui-corner-all, ul.ui-corner-all').removeClass('ui-corner-all');
 							}
 						});
 					}
+				},
+				onresize: function(region, pane, state, options) {
+					var tabsHeight = $('#southTabs > ul').outerHeight();
+					$('#southTabsContent').height(state.layoutHeight - tabsHeight);
 				}
 			}
 		});
@@ -914,11 +918,11 @@ var Writer = function(config) {
 		w.d = new DialogManager({writer: w});
 		w.u = new Utilities({writer: w});
 		w.fm = new FileManager({writer: w});
-		w.tree = new StructureTree({writer: w, parentId: '#tabsContent'});
-		w.entitiesList = new EntitiesList({writer: w, parentId: '#tabsContent'});
+		w.tree = new StructureTree({writer: w, parentId: '#westTabsContent'});
+		w.entitiesList = new EntitiesList({writer: w, parentId: '#westTabsContent'});
 		w.em = new EntitiesModel();
-		w.relations = new Relations({writer: w, parentId: '#tabsContent'});
-		w.validation = new Validation({writer: w, parentId: '#validation'});
+		w.relations = new Relations({writer: w, parentId: '#westTabsContent'});
+		w.validation = new Validation({writer: w, parentId: '#southTabsContent'});
 		w.settings = new SettingsDialog(w, {
 			showEntityBrackets: true,
 			showStructBrackets: false
