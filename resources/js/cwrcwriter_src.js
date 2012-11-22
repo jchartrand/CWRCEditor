@@ -791,19 +791,26 @@ var Writer = function(config) {
 	w.selectStructureTag = function(id) {
 		w.editor.currentStruct = id;
 		var node = w.editor.$('#'+id);
-		var nodeEl = node[0];
-		
 		w.fixEmptyTag = true;
 		node.append('<span class="empty_tag_remove_me"></span>');
 		
-		if (tinymce.isWebKit) {
-			w.editor.getWin().getSelection().selectAllChildren(nodeEl);
-		} else {
-			var range = w.editor.selection.getRng(true);
-			range.setStart(nodeEl.firstChild, 0);
-			range.setEnd(nodeEl.lastChild, nodeEl.lastChild.length);
-			w.editor.getWin().getSelection().addRange(range);
-		}		
+		var nodeEl = node[0];
+		
+		// select node and its contents
+		w.editor.selection.select(nodeEl);
+		
+		// select node contents only
+//		if (tinymce.isWebKit) {
+//			w.editor.getWin().getSelection().selectAllChildren(nodeEl);
+//		} else {
+//			var range = w.editor.selection.getRng(true);
+//			range.setStart(nodeEl.firstChild, 0);
+//			range.setEnd(nodeEl.lastChild, nodeEl.lastChild.length);
+//			w.editor.getWin().getSelection().addRange(range);
+//		}
+		
+		var range = w.editor.selection.getRng(true);
+		console.log(range.startContainer, range.startOffset, range.endContainer, range.endOffset);
 		
 		// fire the onNodeChange event
 		w.editor.parents = [];

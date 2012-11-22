@@ -103,16 +103,8 @@ var Writer = function(config) {
 			_doHighlightCheck(ed, evt);
 		});
 		
+		ed.onKeyDown.add(_onKeyDownHandler);
 		ed.onKeyUp.add(_onKeyUpHandler);
-		
-		$(ed.dom.doc).keydown(function(e) {
-			// redo/undo listener
-			if ((e.which == 89 || e.which == 90) && e.ctrlKey) {
-				_findDeletedTags();
-				w.entitiesList.update();
-				w.tree.update();
-			}
-		});
 		
 		setTimeout(function() {
 			w.layout.resizeAll(); // now that the editor is loaded, set proper sizing
@@ -178,6 +170,15 @@ var Writer = function(config) {
 				}
 				w.structs[newId].id = newId;
 			}
+		}
+	};
+	
+	var _onKeyDownHandler = function(ed, evt) {
+		// redo/undo listener
+		if ((evt.which == 89 || evt.which == 90) && evt.ctrlKey) {
+			_findDeletedTags();
+			w.entitiesList.update();
+			w.tree.update();
 		}
 	};
 	
@@ -791,19 +792,23 @@ var Writer = function(config) {
 	w.selectStructureTag = function(id) {
 		w.editor.currentStruct = id;
 		var node = w.editor.$('#'+id);
-		var nodeEl = node[0];
-		
 		w.fixEmptyTag = true;
 		node.append('<span class="empty_tag_remove_me"></span>');
 		
-		if (tinymce.isWebKit) {
-			w.editor.getWin().getSelection().selectAllChildren(nodeEl);
-		} else {
-			var range = w.editor.selection.getRng(true);
-			range.setStart(nodeEl.firstChild, 0);
-			range.setEnd(nodeEl.lastChild, nodeEl.lastChild.length);
-			w.editor.getWin().getSelection().addRange(range);
-		}		
+		var nodeEl = node[0];
+		
+		// select node and its contents
+		w.editor.selection.select(nodeEl);
+		
+		// select node contents only
+//		if (tinymce.isWebKit) {
+//			w.editor.getWin().getSelection().selectAllChildren(nodeEl);
+//		} else {
+//			var range = w.editor.selection.getRng(true);
+//			range.setStart(nodeEl.firstChild, 0);
+//			range.setEnd(nodeEl.lastChild, nodeEl.lastChild.length);
+//			w.editor.getWin().getSelection().addRange(range);
+//		}
 		
 		// fire the onNodeChange event
 		w.editor.parents = [];
