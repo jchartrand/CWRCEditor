@@ -12,13 +12,13 @@
 	</target>
 	
 	<target name="concat_libs" depends="cleanup">
-        <concat destfile="${jsroot}/dialogs/all_dialogs.js">
+        <concat destfile="${jsroot}/dialogs/all_dialogs.js" fixlastline="yes">
        		<fileset dir="${jsroot}/dialogs">
 				<include name="*.js"/>
 			</fileset>
         </concat>
         	
-    	<concat destfile="${jsroot}/libs.js">
+    	<concat destfile="${jsroot}/libs.js" fixlastline="yes">
        		<filelist dir="${jsroot}">
        			<file name="jquery/jquery-1.8.2.js"/>
 				<file name="jquery/jquery-ui-1.9.0.custom.js"/>
@@ -36,7 +36,7 @@
 	<target name="concat" depends="concat_libs">
 		<delete file="${jsroot}/cwrcwriter_src.js"/>
 		
-		<concat destfile="${jsroot}/cwrcwriter_src.js">
+		<concat destfile="${jsroot}/cwrcwriter_src.js" fixlastline="yes">
 			<filelist dir="${jsroot}">
 				<file name="editor.js"/>
 				<file name="dialogs/all_dialogs.js"/>
@@ -92,7 +92,7 @@
 
 		</jscomp>
 		
-		<concat destfile="${jsroot}/cwrcwriter_and_libs.js">
+		<concat destfile="${jsroot}/cwrcwriter_and_libs.js" fixlastline="yes">
 			<filelist dir=".">
 				<file name="${jsroot}/libs.js"/>
 				<file name="${jsroot}/cwrcwriter.js"/>
