@@ -43,7 +43,38 @@ var Validation = function(config) {
 				var docSubstring = docString.substring(0, column);
 				var tags = docSubstring.match(/<.*?>/g);
 				var tag = tags[tags.length-1];
-				id = tag.match(/id="(.*?)"/i)[1];
+				id = tag.match(/id="(.*?)"/i);
+				if (id == null) { // no id means it's a closing tag
+					if (message.search('text not allowed here') != -1) {
+						// find the parent tag
+						var level = 0;
+						for (var i = tags.length-1; i > -1; i--) {
+							tag = tags[i];
+							if (tag.search('/') != -1) {
+								level++; // closing tag, add a level
+							} else {
+								level--; // opening tag, remove a level
+							}
+							if (level == -1) {
+								id = tag.match(/id="(.*?)"/i)[1];
+								break;
+							}
+						}
+					} else {
+						// find the matching start tag
+						var tagName = tag.match(/<\/(.*)>/)[1];
+						for (var i = tags.length-1; i > -1; i--) {
+							tag = tags[i];
+							var startTagName = tag.match(/<(.*?)\s/);
+							if (startTagName != null && startTagName[1] == tagName) {
+								id = tag.match(/id="(.*?)"/i)[1];
+								break;
+							}
+						}
+					}
+				} else {
+					id = id[1];
+				}
 			}
 			
 			var item = list.append(''+
