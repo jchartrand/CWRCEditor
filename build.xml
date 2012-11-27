@@ -29,6 +29,7 @@
        			<file name="jstree/jquery.hotkeys.js"/>
        			<file name="jstree/jquery.jstree.js"/>
        			<file name="snippet/jquery.snippet.min.js"/>
+       			<file name="moment/moment.min.js"/>
 			</filelist>
         </concat>
 	</target>
@@ -75,6 +76,10 @@
 
 			<externs dir="${jsroot}/snippet">
 				<file name="jquery.snippet.min.js"/>
+			</externs>
+			
+			<externs dir="${jsroot}/moment">
+				<file name="moment.min.js"/>
 			</externs>
 
 			<sources dir="${jsroot}">

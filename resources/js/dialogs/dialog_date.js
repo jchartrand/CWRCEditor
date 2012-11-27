@@ -181,11 +181,12 @@ var DateDialog = function(config) {
 			if (mode == ADD) {
 				var dateValue = '';
 				var dateString = w.editor.currentBookmark.rng.toString();
-				var dateObj = new Date(dateString);
+				var dateObj = moment(dateString).toDate(); // use moment library to parse date string properly
 				var year = dateObj.getFullYear();
 				if (!isNaN(year)) {
 					if (dateString.length > 4) {
 						var month = dateObj.getMonth();
+						month++; // month is zero based index
 						if (month < 10) month = '0'+month;
 						var day = dateObj.getDate();
 						if (day < 10) day = '0'+day;
@@ -230,6 +231,7 @@ var DateDialog = function(config) {
 				date.dialog('option', 'position', 'center');
 			}
 			date.dialog('open');
+			$(dateInput).focus();
 		},
 		hide: function() {
 			date.dialog('close');

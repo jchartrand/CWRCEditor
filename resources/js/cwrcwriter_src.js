@@ -103,16 +103,8 @@ var Writer = function(config) {
 			_doHighlightCheck(ed, evt);
 		});
 		
+		ed.onKeyDown.add(_onKeyDownHandler);
 		ed.onKeyUp.add(_onKeyUpHandler);
-		
-		$(ed.dom.doc).keydown(function(e) {
-			// redo/undo listener
-			if ((e.which == 89 || e.which == 90) && e.ctrlKey) {
-				_findDeletedTags();
-				w.entitiesList.update();
-				w.tree.update();
-			}
-		});
 		
 		setTimeout(function() {
 			w.layout.resizeAll(); // now that the editor is loaded, set proper sizing
@@ -178,6 +170,15 @@ var Writer = function(config) {
 				}
 				w.structs[newId].id = newId;
 			}
+		}
+	};
+	
+	var _onKeyDownHandler = function(ed, evt) {
+		// redo/undo listener
+		if ((evt.which == 89 || evt.which == 90) && evt.ctrlKey) {
+			_findDeletedTags();
+			w.entitiesList.update();
+			w.tree.update();
 		}
 	};
 	
@@ -809,9 +810,6 @@ var Writer = function(config) {
 //			w.editor.getWin().getSelection().addRange(range);
 //		}
 		
-		var range = w.editor.selection.getRng(true);
-		console.log(range.startContainer, range.startOffset, range.endContainer, range.endOffset);
-		
 		// fire the onNodeChange event
 		w.editor.parents = [];
 		w.editor.dom.getParent(nodeEl, function(n) {
@@ -1147,7 +1145,8 @@ var Writer = function(config) {
 	};
 	
 	return w;
-};var AddEventDialog = function(config) {
+};
+var AddEventDialog = function(config) {
 	var w = config.writer;
 	
 	$(document.body).append(''+
@@ -1340,7 +1339,8 @@ var Writer = function(config) {
 			d.dialog('close');
 		}
 	};
-};var AddOrganizationDialog = function(config) {
+};
+var AddOrganizationDialog = function(config) {
 	var w = config.writer;
 	
 	$(document.body).append(''+
@@ -1400,7 +1400,8 @@ var Writer = function(config) {
 			d.dialog('close');
 		}
 	};
-};var AddPersonDialog = function(config) {
+};
+var AddPersonDialog = function(config) {
 	var w = config.writer;
 	
 	$(document.body).append(''+
@@ -1489,7 +1490,8 @@ var Writer = function(config) {
 			addPerson.dialog('close');
 		}
 	};
-};var AddPlaceDialog = function(config) {
+};
+var AddPlaceDialog = function(config) {
 	var w = config.writer;
 	
 	$(document.body).append(''+
@@ -1540,7 +1542,8 @@ var Writer = function(config) {
 			d.dialog('close');
 		}
 	};
-};var CitationDialog = function(config) {
+};
+var CitationDialog = function(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -1617,7 +1620,8 @@ var Writer = function(config) {
 			citation.dialog('close');
 		}
 	};
-};var CorrectionDialog = function(config) {
+};
+var CorrectionDialog = function(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -1713,7 +1717,8 @@ var Writer = function(config) {
 			correction.dialog('close');
 		}
 	};
-};var DateDialog = function(config) {
+};
+var DateDialog = function(config) {
 	var w = config.writer;
 	
 	var mode = null;
@@ -1896,11 +1901,12 @@ var Writer = function(config) {
 			if (mode == ADD) {
 				var dateValue = '';
 				var dateString = w.editor.currentBookmark.rng.toString();
-				var dateObj = new Date(dateString);
+				var dateObj = moment(dateString).toDate(); // use moment library to parse date string properly
 				var year = dateObj.getFullYear();
 				if (!isNaN(year)) {
 					if (dateString.length > 4) {
 						var month = dateObj.getMonth();
+						month++; // month is zero based index
 						if (month < 10) month = '0'+month;
 						var day = dateObj.getDate();
 						if (day < 10) day = '0'+day;
@@ -1945,12 +1951,14 @@ var Writer = function(config) {
 				date.dialog('option', 'position', 'center');
 			}
 			date.dialog('open');
+			$(dateInput).focus();
 		},
 		hide: function() {
 			date.dialog('close');
 		}
 	};
-};var HeaderDialog = function(config) {
+};
+var HeaderDialog = function(config) {
 	var w = config.writer;
 	
 	$('#header').append(''+
@@ -2021,7 +2029,8 @@ var Writer = function(config) {
 			header.dialog('close');
 		}
 	};
-};var KeywordDialog = function(config) {
+};
+var KeywordDialog = function(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -2212,7 +2221,8 @@ var Writer = function(config) {
 			keyword.dialog('close');
 		}
 	};
-};var LinkDialog = function(config) {
+};
+var LinkDialog = function(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -2299,7 +2309,8 @@ var Writer = function(config) {
 			link.dialog('close');
 		}
 	};
-};var MessageDialog = function(config) {
+};
+var MessageDialog = function(config) {
 	var w = config.writer;
 	
 	$(document.body).append(''+
@@ -2372,7 +2383,8 @@ var Writer = function(config) {
 			message.dialog('close');
 		}
 	};
-};var NoteDialog = function(config) {
+};
+var NoteDialog = function(config) {
 	var w = config.writer;
 	
 	var noteEditor = null;
@@ -2489,7 +2501,8 @@ var Writer = function(config) {
 			note.dialog('close');
 		}
 	};
-};var SearchDialog = function(config) {
+};
+var SearchDialog = function(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -2826,7 +2839,8 @@ var Writer = function(config) {
 			search.dialog('close');
 		}
 	};
-};var SettingsDialog = function(writer, config) {
+};
+var SettingsDialog = function(writer, config) {
 	var w = writer;
 	
 	var settings = {
@@ -3007,7 +3021,8 @@ var Writer = function(config) {
 			return settings;
 		}
 	};
-};var TitleDialog = function(config) {
+};
+var TitleDialog = function(config) {
 	var w = config.writer;
 	
 	var mode = null;
@@ -3129,7 +3144,8 @@ var Writer = function(config) {
 			title.dialog('close');
 		}
 	};
-};var TripleDialog = function(config) {
+};
+var TripleDialog = function(config) {
 	var w = config.writer;
 	
 	var precidateList = {
@@ -3327,7 +3343,9 @@ var Writer = function(config) {
 			d.dialog('close');
 		}
 	};
-};var DialogManager = function(config) {
+};
+
+var DialogManager = function(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -3375,7 +3393,8 @@ var Writer = function(config) {
 			}
 		}
 	};
-};var Utilities = function(config) {
+};
+var Utilities = function(config) {
 	var w = config.writer;
 	
 	var u = {};
@@ -3687,7 +3706,8 @@ var Writer = function(config) {
 	};
 	
 	return u;
-};/**
+};
+/**
  * Contains the load and save dialogs, as well as file related functions.
  */
 var FileManager = function(config) {
@@ -4843,7 +4863,8 @@ $.fn.filterNode = function(name) {
 	return this.find('*').filter(function() {
 		return this.nodeName === name;
 	});
-};var StructureTree = function(config) {
+};
+var StructureTree = function(config) {
 	
 	var w = config.writer;
 	
@@ -5149,7 +5170,8 @@ $.fn.filterNode = function(name) {
 	};
 	
 	return tree;
-};var EntitiesList = function(config) {
+};
+var EntitiesList = function(config) {
 	
 	var w = config.writer;
 	
@@ -5315,7 +5337,8 @@ $.fn.filterNode = function(name) {
 	};
 	
 	return entitiesList;
-};var EntitiesModel = function() {
+};
+var EntitiesModel = function() {
 	var entities = {
 		person: {
 			title: 'Person'
@@ -5422,7 +5445,8 @@ $.fn.filterNode = function(name) {
 	};
 	
 	return em;
-};var Relations = function(config) {
+};
+var Relations = function(config) {
 	
 	var w = config.writer;
 	
@@ -5484,7 +5508,8 @@ $.fn.filterNode = function(name) {
 	};
 	
 	return relations;
-};var Validation = function(config) {
+};
+var Validation = function(config) {
 	
 	var w = config.writer;
 	
