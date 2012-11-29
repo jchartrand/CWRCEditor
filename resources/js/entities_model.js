@@ -1,22 +1,45 @@
 var EntitiesModel = function() {
 	var entities = {
 		person: {
-			title: 'Person'
+			title: 'Person',
+			mapping: {
+				cwrcbasic: '<person>{{editorText}}</person>',
+				events: '<NAME>{{editorText}}</NAME>'
+			}
 		},
 		date: {
-			title: 'Date'
+			title: 'Date',
+			mapping: {
+				cwrcbasic: '<date when="{{date}}" from="{{startDate}}" to="{{endDate}}">{{editorText}}</date>',
+				events: '<DATE VALUE="{{date}}">{{editorText}}</DATE>' // TODO dateRange
+			}
 		},
 		place: {
-			title: 'Place'
+			title: 'Place',
+			mapping: {
+				cwrcbasic: '<place cert="{{certainty}}">{{editorText}}</place>',
+				events: '<PLACE>{{editorText}}</PLACE>'
+			}
 		},
 		event: {
-			title: 'Event'
+			title: 'Event',
+			mapping: {
+				cwrcbasic: '<event cert="{{certainty}}">{{editorText}}</event>',
+				events: ''
+			}
 		},
 		org: {
-			title: 'Organization'
+			title: 'Organization',
+			mapping: {
+				cwrcbasic: '<org cert="{{certainty}}">{{editorText}}</org>',
+				events: '<ORGNAME>{{editorText}}</ORGNAME>'
+			}
 		},
 		citation: {
-			title: 'Citation'
+			title: 'Citation',
+			mapping: {
+				cwrcbasic: '<cit><quote>{{editorText}}</quote><ref>{{citation}}</ref></cit>'
+			}
 		},
 		note: {
 			title: 'Note',
@@ -34,7 +57,8 @@ var EntitiesModel = function() {
 		keyword: {
 			title: 'Keyword',
 			mapping: {
-				cwrcbasic: '<keywords scheme="http://classificationweb.net"><term sameAs="{{id|keyword}}" type="{{type}}">{{editorText}}</term></keywords>'
+				cwrcbasic: '<keywords scheme="http://classificationweb.net"><term sameAs="{{id|keyword}}" type="{{type}}">{{editorText}}</term></keywords>',
+				events: '<KEYWORDCLASS>{{editorText}}</KEYWORDCLASS>'
 			}
 		},
 		link: {
@@ -45,7 +69,11 @@ var EntitiesModel = function() {
 			}
 		},
 		title: {
-			title: 'Text/Title'
+			title: 'Text/Title',
+			mapping: {
+				cwrcbasic: '<title level="{{level}}">{{editorText}}</title>',
+				events: '<TITLE TITLETYPE="{{level}}">{{editorText}}</TITLE>'
+			}
 		}
 	};
 	

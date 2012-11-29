@@ -1,6 +1,7 @@
+/.project
 /.settings
 /.classpath
 /.tomcatplugin
 /WebContent
 /resources/js/dialogs/all_dialogs.js
-
+.externalToolBuilders
