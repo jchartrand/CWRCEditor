@@ -394,8 +394,8 @@
 				var url = t.url+'/../../img/';
 				t.menuButton = cm.createMenuButton('schemaTagsButton', {
 					title: 'Tags',
-					image: url+'tag.png',
-					'class': 'entityButton'
+					image: url+'tag_text.png',
+					'class': 'wideButton'
 				}, tinymce.ui.ScrollingMenuButton);
 				t.menuButton.beforeShowMenu.add(function(c) {
 					t.editor.currentBookmark = t.editor.selection.getBookmark(1);
