@@ -24,6 +24,7 @@
 				<file name="jquery/jquery-ui-1.9.0.custom.js"/>
        			<file name="jquery/jquery.layout-latest.min.js"/>
        			<file name="jquery/jquery.contextmenu.js"/>
+       			<file name="jquery/jquery.tmpl.min.js"/>
        			<file name="jquery/jquery.watermark.min.js"/>
        			<file name="tinymce/jscripts/tiny_mce/jquery.tinymce.js"/>
        			<file name="jstree/jquery.hotkeys.js"/>
@@ -61,6 +62,7 @@
 				<file name="jquery-1.8.2.js"/>
 				<file name="jquery-ui-1.9.0.custom.min.js"/>
 				<file name="jquery.contextmenu.js"/>
+				<file name="jquery.tmpl.min.js"/>
 				<file name="jquery.watermark.min.js"/>
 			</externs>
 

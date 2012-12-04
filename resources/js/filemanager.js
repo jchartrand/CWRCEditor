@@ -338,13 +338,7 @@ var FileManager = function(config) {
 			array.push(openingTag);
 			array.push('</'+tag+'>');
 		} else if (entityEntry) {
-			var tags = w.em.getMappingTags(entityEntry, w.validationSchema);
-			if (tags) {
-				array = tags;
-			} else {
-				// return empty strings if the entity has no mapping
-				array = ['', ''];
-			}
+			array = w.em.getMappingTags(entityEntry, w.validationSchema);
 		} else {
 			// not a valid tag so return empty strings
 			array = ['', ''];

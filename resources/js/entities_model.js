@@ -1,98 +1,108 @@
+// TODO add IDs
+
 var EntitiesModel = function() {
 	var entities = {
 		person: {
 			title: 'Person',
 			mapping: {
-				cwrcbasic: '<person>{{editorText}}</person>',
-				events: '<NAME>{{editorText}}</NAME>'
+				cwrcbasic: '<person cert="${info.certainty}">[[[editorText]]]</person>',
+				events: '<NAME>[[[editorText]]]</NAME>'
 			}
 		},
 		date: {
 			title: 'Date',
 			mapping: {
-				cwrcbasic: '<date when="{{date}}" from="{{startDate}}" to="{{endDate}}">{{editorText}}</date>',
-				events: '<DATE VALUE="{{date}}">{{editorText}}</DATE>' // TODO dateRange
+				cwrcbasic: ''+
+				'<date '+
+				'{{if info.date}}'+
+					'when="${info.date}"'+
+				'{{else info.startDate}}'+
+					'from="${info.startDate}" to="${info.endDate}"'+
+				'{{/if}}'+
+				'>[[[editorText]]]</date>',
+				events: ''+
+				'{{if info.date}}'+
+					'<DATE VALUE="${info.date}">[[[editorText]]]</DATE>'+
+				'{{else info.startDate}}'+
+					'<DATERANGE FROM="${info.startDate}" TO="${info.endDate}">[[[editorText]]]</DATERANGE>'+
+				'{{/if}}'
 			}
 		},
 		place: {
 			title: 'Place',
 			mapping: {
-				cwrcbasic: '<place cert="{{certainty}}">{{editorText}}</place>',
-				events: '<PLACE>{{editorText}}</PLACE>'
+				cwrcbasic: '<place cert="${info.certainty}">[[[editorText]]]</place>',
+				events: '<PLACE>[[[editorText]]]</PLACE>'
 			}
 		},
 		event: {
 			title: 'Event',
 			mapping: {
-				cwrcbasic: '<event cert="{{certainty}}">{{editorText}}</event>',
-				events: ''
+				cwrcbasic: '<event cert="${info.certainty}">[[[editorText]]]</event>'
 			}
 		},
 		org: {
 			title: 'Organization',
 			mapping: {
-				cwrcbasic: '<org cert="{{certainty}}">{{editorText}}</org>',
-				events: '<ORGNAME>{{editorText}}</ORGNAME>'
+				cwrcbasic: '<org cert="${info.certainty}">[[[editorText]]]</org>',
+				events: '<ORGNAME>[[[editorText]]]</ORGNAME>'
 			}
 		},
 		citation: {
 			title: 'Citation',
 			mapping: {
-				cwrcbasic: '<cit><quote>{{editorText}}</quote><ref>{{citation}}</ref></cit>'
+				cwrcbasic: '<cit><quote>[[[editorText]]]</quote><ref>${info.citation}</ref></cit>'
 			}
 		},
 		note: {
 			title: 'Note',
 			mapping: {
-				cwrcbasic: '<note type="{{type}}" ana="{{content}}">{{editorText}}</note>'
+				cwrcbasic: '<note type="${info.type}" ana="${info.content}">[[[editorText]]]</note>'
 			}
 		},
 		correction: {
 			title: 'Correction',
 			mapping: {
-				cwrcbasic: '<sic><corr cert="{{certainty}}" type="{{type}}" ana="{{content}}">{{editorText}}</corr></sic>',
-				events: '<SIC CORR="{{content}}">{{editorText}}</SIC>'
+				cwrcbasic: '<sic><corr cert="${info.certainty}" type="${info.type}" ana="${info.content}">[[[editorText]]]</corr></sic>',
+				events: '<SIC CORR="${info.content}">[[[editorText]]]</SIC>'
 			}
 		},
 		keyword: {
 			title: 'Keyword',
 			mapping: {
-				cwrcbasic: '<keywords scheme="http://classificationweb.net"><term sameAs="{{id|keyword}}" type="{{type}}">{{editorText}}</term></keywords>',
-				events: '<KEYWORDCLASS>{{editorText}}</KEYWORDCLASS>'
+				cwrcbasic: ''+
+				'<keywords scheme="http://classificationweb.net">'+
+					'<term '+
+					'{{if info.id}}'+
+						'sameAs="${info.id}"'+
+					'{{else info.keyword}}'+
+						'sameAs="${info.keyword}"'+
+					'{{/if}}'+
+					' type="${info.type}">[[[editorText]]]</term>'+
+				'</keywords>',
+				events: '<KEYWORDCLASS>[[[editorText]]]</KEYWORDCLASS>'
 			}
 		},
 		link: {
 			title: 'Link',
 			mapping: {
-				cwrcbasic: '<ref target="{{url}}">{{editorText}}</ref>',
-				events: '<XREF URL="{{url}}">{{editorText}}</XREF>'
+				cwrcbasic: '<ref target="${info.url}">[[[editorText]]]</ref>',
+				events: '<XREF URL="${info.url}">[[[editorText]]]</XREF>'
 			}
 		},
 		title: {
 			title: 'Text/Title',
 			mapping: {
-				cwrcbasic: '<title level="{{level}}">{{editorText}}</title>',
-				events: '<TITLE TITLETYPE="{{level}}">{{editorText}}</TITLE>'
+				cwrcbasic: '<title level="${info.level}">[[[editorText]]]</title>',
+				events: '<TITLE TITLETYPE="${info.level}">[[[editorText]]]</TITLE>'
 			}
 		}
 	};
 	
-	function doMapping(entity, map) {
-		return map.replace(/{{(.*?)}}/g, function(match, p1) {
-			if (/\|/.test(p1)) {
-				var infoKeys = p1.split('|');
-				for (var i = 0; i < infoKeys.length; i++) {
-					var key = infoKeys[i];
-					if (entity.info[key]) {
-						return entity.info[key];
-					}
-				}
-			} else if (entity.info[p1]) {
-				return entity.info[p1];
-			} else if (p1 == 'editorText') {
-				return entity.props.content;
-			}
-		});
+	function doMapping(entity, map) {		
+		var result = $.tmpl(map, entity);
+		if (result[0]) return result[0].outerHTML;
+		else return '';
 	}
 	
 	var em = {};
@@ -121,15 +131,11 @@ var EntitiesModel = function() {
 		var e = entities[entity.props.type];
 		if (e) {
 			if (e.mapping && e.mapping[schema]) {
-				var tags = [];
-				var maps = e.mapping[schema].split('{{editorText}}');
-				for (var i = 0; i < maps.length; i++) {
-					tags.push(doMapping(entity, maps[i]));
-				}
-				return tags;
+				var result = doMapping(entity, e.mapping[schema]);
+				return result.split('[[[editorText]]]');
 			}
 		}
-		return null;
+		return ['', '']; // return array of empty strings if there is no mapping
 	};
 	
 	return em;
