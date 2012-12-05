@@ -685,9 +685,9 @@ var FileManager = function(config) {
 		}
 		if (rootName != w.root.toLowerCase()) {
 			if (rootName == 'events') {
-				fm.loadSchema('xml/orlando_common_and_events_schema.xml', false, processDocument);
+				fm.loadSchema('events', false, processDocument);
 			} else {
-				fm.loadSchema('xml/CWRCBasicTEI.xml', false, processDocument);
+				fm.loadSchema('cwrcbasic', false, processDocument);
 			}
 		} else {
 			processDocument();
@@ -956,84 +956,120 @@ var FileManager = function(config) {
 	
 	/**
 	 * Load a new schema.
-	 * @param {String} url The url of the schema to load
+	 * @param {String} schema The schema to load (events, or cwrcbasic)
 	 * @param {Boolean} startText Whether to include the default starting text
 	 * @param {Function} callback Callback for when the load is complete
 	 */
-	fm.loadSchema = function(url, startText, callback) {
+	fm.loadSchema = function(schema, startText, callback) {
+		var schemaUrl = w.project == null ? '' : w.baseUrl; // handling difference between local and server urls
+		var cssUrl;
+		var blockElements = w.editor.schema.getBlockElements();
+		
+		if (schema == 'events') {
+			schemaUrl += 'schemas/events.rng';
+			cssUrl = 'css/orlando_converted.css';
+			
+			blockElements['L'] = {};
+			blockElements['P'] = {};
+			
+			w.root = 'EVENTS';
+			w.header = 'ORLANDOHEADER';
+			w.idName = 'ID';
+		} else {
+			schemaUrl += 'schemas/CWRC-TEIBasic.rng';
+			cssUrl = 'css/tei_converted.css';
+			
+			blockElements['l'] = {};
+	    	blockElements['p'] = {};
+	    	blockElements['sp'] = {};
+	    	
+	    	w.root = 'TEI';
+	    	w.header = 'teiHeader';
+	    	w.idName = 'xml:id';
+		}
+		
+		w.validationSchema = schema;
+		w.editor.settings.forced_root_block = w.root;
+		w.editor.schema.addCustomElements(w.root);
+	    w.editor.schema.addCustomElements(w.root.toLowerCase());
+	    
 		$.ajax({
-			url: url,
+			url: schemaUrl,
 			success: function(data, status, xhr) {
 				w.schemaXML = data;
-				
-				var root = $('start', w.schemaXML).find('ref, element').first();
-				var rootName = root.attr('name');
-				if (root.is('element')) {
-					w.root = rootName;
-				} else {
-					w.root = $('define[name="'+rootName+'"]', w.schemaXML).find('element').first().attr('name');
+			    
+				function processSchema() {
+					// remove old schema elements
+				    $('#schemaTags', w.editor.dom.doc).remove();
+				    $('#schemaRules', w.editor.dom.doc).remove();
+				    
+				    fm.loadSchemaCSS(cssUrl);
+				    
+				    // create css to display schema tags
+					$('head', w.editor.dom.doc).append('<style id="schemaTags" type="text/css" />');
+					var tag = w.root;
+					// xhtml only allows lower case elements
+					var schemaTags = w.root.toLowerCase()+' { display: block; }';
+					schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+					schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+					var elements = [];
+					$('element', w.schemaXML).each(function(index, el) {
+						var tag = $(el).attr('name');
+						if (elements.indexOf(tag) == -1) {
+							elements.push(tag);
+							schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
+							schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
+						}
+					});
+					// hide the header
+					schemaTags += 'span[_tag='+w.header+'] { display: none !important; }';
+					
+					$('#schemaTags', w.editor.dom.doc).text(schemaTags);
+				    
+					w.schema.elements = elements;
+					
+					var text = '';
+					if (startText) text = 'Paste or type your text here.';
+					w.editor.setContent('<'+w.root+' _tag="'+w.root+'">'+text+'</'+w.root+'>');
+					
+					w.entitiesList.update();
+					w.tree.update(true);
+					w.relations.update();
+					
+					if (callback) callback();
 				}
-				w.editor.settings.forced_root_block = w.root;
-				w.editor.schema.addCustomElements(w.root);
-			    w.editor.schema.addCustomElements(w.root.toLowerCase());
-			    
-			    var blockElements = w.editor.schema.getBlockElements();
-			    var cssUrl;
-			    if (w.root.toLowerCase() == 'events') {
-			    	blockElements['L'] = {};
-			    	blockElements['P'] = {};
-			    	
-			    	cssUrl = 'css/orlando_converted.css';
-			    	w.validationSchema = 'events';
-			    	w.header = 'ORLANDOHEADER';
-			    	w.idName = 'ID';
-			    } else {
-			    	blockElements['l'] = {};
-			    	blockElements['p'] = {};
-			    	blockElements['sp'] = {};
-			    	
-			    	cssUrl = 'css/tei_converted.css';
-			    	w.validationSchema = 'cwrcbasic';
-			    	w.header = 'teiHeader';
-			    	w.idName = 'xml:id';
-			    }
-			    
-			    $('#schemaTags', w.editor.dom.doc).remove();
-			    $('#schemaRules', w.editor.dom.doc).remove();
-			    fm.loadSchemaCSS(cssUrl);
-			    
-			    // create css to display schema tags
-				$('head', w.editor.dom.doc).append('<style id="schemaTags" type="text/css" />');
-				var tag = w.root;
-				// xhtml only allows lower case elements
-				var schemaTags = w.root.toLowerCase()+' { display: block; }';
-				schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-				schemaTags += '.showStructBrackets '+w.root.toLowerCase()+':after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-				var elements = [];
-				$('element', w.schemaXML).each(function(index, el) {
-					var tag = $(el).attr('name');
-					if (elements.indexOf(tag) == -1) {
-						elements.push(tag);
-						schemaTags += '.showStructBrackets span[_tag='+tag+']:before { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "<'+tag+'>"; }';
-						schemaTags += '.showStructBrackets span[_tag='+tag+']:after { color: #aaa; font-weight: normal; font-style: normal; font-family: monospace; content: "</'+tag+'>"; }';
-					}
-				});
-				// hide the header
-				schemaTags += 'span[_tag='+w.header+'] { display: none !important; }';
 				
-				$('#schemaTags', w.editor.dom.doc).text(schemaTags);
-			    
-				w.schema.elements = elements;
+				var include = $('include:first', w.schemaXML); // TODO add handling for multiple includes
+				if (include.length == 1) {
+					var href = include.attr('href');
+					$.ajax({
+						url: 'schemas/'+href,
+						success: function(data, status, xhr) {
+							// handle redefinitions
+							include.children().each(function(index, el) {
+								if (el.nodeName == 'start') {
+									$('start', data).replaceWith(el);
+								} else if (el.nodeName == 'define') {
+									var name = $(el).attr('name');
+									var match = $('define[name="'+name+'"]', data);
+									if (match.length == 1) {
+										match.replaceWith(el);
+									} else {
+										$('grammar', data).append(el);
+									}
+								}
+							});
+							
+							include.replaceWith($('grammar', data).children());
+							
+							processSchema();
+						}
+					});
+				} else {
+					processSchema();
+				}
 				
-				var text = '';
-				if (startText) text = 'Paste or type your text here.';
-				w.editor.setContent('<'+w.root+' _tag="'+w.root+'">'+text+'</'+w.root+'>');
 				
-				w.entitiesList.update();
-				w.tree.update(true);
-				w.relations.update();
-				
-				if (callback) callback();
 			},
 			error: function(xhr, status, error) {
 				w.d.show('message', {title: 'Error', msg: 'Error loading schema: '+error, type: 'error'});
@@ -1117,7 +1153,7 @@ var FileManager = function(config) {
 		} else if (start.match('prose')) {
 			_loadTemplate('xml/prose_template.xml');
 		} else {
-			fm.loadSchema('xml/CWRCBasicTEI.xml', true);
+			fm.loadSchema('cwrcbasic', true);
 		}
 	};
 	
