@@ -4675,17 +4675,17 @@ var FileManager = function(config) {
 		var blockElements = w.editor.schema.getBlockElements();
 		
 		if (schema == 'events') {
-			schemaUrl += 'schemas/events.rng';
+			schemaUrl += 'schema/events.rng';
 			cssUrl = 'css/orlando_converted.css';
 			
 			blockElements['L'] = {};
-	    	blockElements['P'] = {};
-	    	
-	    	w.root = 'EVENTS';
-	    	w.header = 'ORLANDOHEADER';
-	    	w.idName = 'ID';
+			blockElements['P'] = {};
+			
+			w.root = 'EVENTS';
+			w.header = 'ORLANDOHEADER';
+			w.idName = 'ID';
 		} else {
-			schemaUrl += 'schemas/CWRC-TEIBasic.rng';
+			schemaUrl += 'schema/CWRC-TEIBasic.rng';
 			cssUrl = 'css/tei_converted.css';
 			
 			blockElements['l'] = {};
@@ -4752,7 +4752,7 @@ var FileManager = function(config) {
 				if (include.length == 1) {
 					var href = include.attr('href');
 					$.ajax({
-						url: 'schemas/'+href,
+						url: 'schema/'+href,
 						success: function(data, status, xhr) {
 							// handle redefinitions
 							include.children().each(function(index, el) {
