@@ -961,12 +961,13 @@ var FileManager = function(config) {
 	 * @param {Function} callback Callback for when the load is complete
 	 */
 	fm.loadSchema = function(schema, startText, callback) {
-		var schemaUrl = w.project == null ? '' : w.baseUrl; // handling difference between local and server urls
+		var schemaUrl = '';
+		var baseUrl = w.project == null ? '' : w.baseUrl; // handling difference between local and server urls
 		var cssUrl;
 		var blockElements = w.editor.schema.getBlockElements();
 		
 		if (schema == 'events') {
-			schemaUrl += 'schema/events.rng';
+			schemaUrl = baseUrl + 'schema/events.rng';
 			cssUrl = 'css/orlando_converted.css';
 			
 			blockElements['L'] = {};
@@ -976,7 +977,7 @@ var FileManager = function(config) {
 			w.header = 'ORLANDOHEADER';
 			w.idName = 'ID';
 		} else {
-			schemaUrl += 'schema/CWRC-TEIBasic.rng';
+			schemaUrl = baseUrl + 'schema/CWRC-TEIBasic.rng';
 			cssUrl = 'css/tei_converted.css';
 			
 			blockElements['l'] = {};
@@ -1043,7 +1044,7 @@ var FileManager = function(config) {
 				if (include.length == 1) {
 					var href = include.attr('href');
 					$.ajax({
-						url: 'schema/'+href,
+						url: baseUrl + 'schema/'+href,
 						success: function(data, status, xhr) {
 							// handle redefinitions
 							include.children().each(function(index, el) {
