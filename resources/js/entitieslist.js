@@ -2,6 +2,8 @@ var EntitiesList = function(config) {
 	
 	var w = config.writer;
 	
+	var hiddenKeys = ['_id', '_rev']; // don't show these keys in the list
+	
 	var entitiesList = {};
 	
 	$(config.parentId).append('<div id="entities"><div id="sortBy"><span>Sort By</span> <input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input><input type="radio" id="category" name="sortBy"><label for="category">Category</label></input></div><ul class="entitiesList"></ul></div>');
@@ -144,11 +146,13 @@ var EntitiesList = function(config) {
 		var infoString = '<ul>';
 		var buildString = function(infoObject) {
 			for (var infoKey in infoObject) {
-				var info = infoObject[infoKey];
-				if ($.isPlainObject(info)) {
-					buildString(info);
-				} else {
-					infoString += '<li><strong>'+infoKey+'</strong>: '+info+'</li>';
+				if (hiddenKeys.indexOf(infoKey) == -1) {
+					var info = infoObject[infoKey];
+					if ($.isPlainObject(info)) {
+						buildString(info);
+					} else {
+						infoString += '<li><strong>'+infoKey+'</strong>: '+info+'</li>';
+					}
 				}
 			}
 		};
