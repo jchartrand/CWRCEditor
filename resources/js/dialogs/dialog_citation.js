@@ -10,6 +10,7 @@ var CitationDialog = function(config) {
 	$(document.body).append(''+
 	'<div id="citationDialog">'+
 	    '<textarea name="citation" style="margin-top: 10px;"></textarea>'+
+	    '<p><b>NB</b>: This popup is not yet functional. Eventually it will let you look up the text to which you want to refer, or to add an entry for a new text.</p>'+
 	'</div>');
 	
 	var citation = $('#citationDialog');
@@ -20,7 +21,7 @@ var CitationDialog = function(config) {
 		open: function(event, ui) {
 			$('#citationDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 225,
+		height: 280,
 		width: 380,
 		autoOpen: false,
 		buttons: {

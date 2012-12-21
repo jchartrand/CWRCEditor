@@ -1555,6 +1555,7 @@ var CitationDialog = function(config) {
 	$(document.body).append(''+
 	'<div id="citationDialog">'+
 	    '<textarea name="citation" style="margin-top: 10px;"></textarea>'+
+	    '<p><b>NB</b>: This popup is not yet functional. Eventually it will let you look up the text to which you want to refer, or to add an entry for a new text.</p>'+
 	'</div>');
 	
 	var citation = $('#citationDialog');
@@ -1565,7 +1566,7 @@ var CitationDialog = function(config) {
 		open: function(event, ui) {
 			$('#citationDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 225,
+		height: 280,
 		width: 380,
 		autoOpen: false,
 		buttons: {
@@ -3049,6 +3050,7 @@ var TitleDialog = function(config) {
 			'<input type="checkbox" name="unformatted" id="unformatted"/>'+
 			'<label for="unformatted">Unformatted</label>'+
 		'</div>'+
+		'<div><b>NB</b>: This popup is not yet functional. Eventually it will let you look up the text to which you want to refer, or to add an entry for a new text.</div>'+
 	'</div>');
 	
 	var title = $('#titleDialog');
@@ -3059,7 +3061,7 @@ var TitleDialog = function(config) {
 		open: function(event, ui) {
 			$('#titleDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 310,
+		height: 355,
 		width: 435,
 		autoOpen: false,
 		buttons: {
@@ -5206,6 +5208,8 @@ var EntitiesList = function(config) {
 	
 	var w = config.writer;
 	
+	var hiddenKeys = ['_id', '_rev']; // don't show these keys in the list
+	
 	var entitiesList = {};
 	
 	$(config.parentId).append('<div id="entities"><div id="sortBy"><span>Sort By</span> <input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input><input type="radio" id="category" name="sortBy"><label for="category">Category</label></input></div><ul class="entitiesList"></ul></div>');
@@ -5348,11 +5352,13 @@ var EntitiesList = function(config) {
 		var infoString = '<ul>';
 		var buildString = function(infoObject) {
 			for (var infoKey in infoObject) {
-				var info = infoObject[infoKey];
-				if ($.isPlainObject(info)) {
-					buildString(info);
-				} else {
-					infoString += '<li><strong>'+infoKey+'</strong>: '+info+'</li>';
+				if (hiddenKeys.indexOf(infoKey) == -1) {
+					var info = infoObject[infoKey];
+					if ($.isPlainObject(info)) {
+						buildString(info);
+					} else {
+						infoString += '<li><strong>'+infoKey+'</strong>: '+info+'</li>';
+					}
 				}
 			}
 		};

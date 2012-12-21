@@ -25,6 +25,7 @@ var TitleDialog = function(config) {
 			'<input type="checkbox" name="unformatted" id="unformatted"/>'+
 			'<label for="unformatted">Unformatted</label>'+
 		'</div>'+
+		'<div><b>NB</b>: This popup is not yet functional. Eventually it will let you look up the text to which you want to refer, or to add an entry for a new text.</div>'+
 	'</div>');
 	
 	var title = $('#titleDialog');
@@ -35,7 +36,7 @@ var TitleDialog = function(config) {
 		open: function(event, ui) {
 			$('#titleDialog').parent().find('.ui-dialog-titlebar-close').hide();
 		},
-		height: 310,
+		height: 355,
 		width: 435,
 		autoOpen: false,
 		buttons: {
