@@ -871,7 +871,7 @@ var Writer = function(config) {
 			},
 			west: {
 				size: 'auto',
-				minSize: 230,
+				minSize: 250,
 				onresize: function(region, pane, state, options) {
 					var tabsHeight = $('#westTabs > ul').outerHeight();
 					$('#westTabsContent').height(state.layoutHeight - tabsHeight);

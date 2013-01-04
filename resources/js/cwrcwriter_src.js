@@ -871,7 +871,7 @@ var Writer = function(config) {
 			},
 			west: {
 				size: 'auto',
-				minSize: 230,
+				minSize: 250,
 				onresize: function(region, pane, state, options) {
 					var tabsHeight = $('#westTabs > ul').outerHeight();
 					$('#westTabsContent').height(state.layoutHeight - tabsHeight);
@@ -5208,11 +5208,19 @@ var EntitiesList = function(config) {
 	
 	var w = config.writer;
 	
-	var hiddenKeys = ['_id', '_rev']; // don't show these keys in the list
+	var metaKeys = ['_id', '_ref'];
+	var showMetaKeys = false;
 	
 	var entitiesList = {};
 	
-	$(config.parentId).append('<div id="entities"><div id="sortBy"><span>Sort By</span> <input type="radio" id="sequence" name="sortBy" checked="checked"><label for="sequence">Sequence</label></input><input type="radio" id="category" name="sortBy"><label for="category">Category</label></input></div><ul class="entitiesList"></ul></div>');
+	$(config.parentId).append('<div id="entities">'+
+			'<ul class="entitiesList ui-layout-center"></ul>'+
+			'<div id="entitiesOptions" class="ui-layout-south">'+
+			'<div id="sortBy"><span>Sort By</span> '+
+			'<input type="radio" id="sequence" name="sortBy" checked="checked" /><label for="sequence">Sequence</label>'+
+			'<input type="radio" id="category" name="sortBy" /><label for="category">Category</label></div>'+
+			'<div><input type="checkbox" id="metaKeys" /><label for="metaKeys">Show Metadata</label></div>'+
+			'</div></div>');
 	$(document.body).append(''+
 		'<div id="entitiesMenu" class="contextMenu" style="display: none;"><ul>'+
 		'<li id="editEntity"><ins style="background:url(img/tag_blue_edit.png) center center no-repeat;" />Edit Entity</li>'+
@@ -5230,6 +5238,23 @@ var EntitiesList = function(config) {
 		w.highlightEntity(w.editor.currentEntity);
 	});
 	$('#sortBy').buttonset();
+	$('#metaKeys').button().click(function() {
+		showMetaKeys = !showMetaKeys;
+		w.entitiesList.update();
+		w.highlightEntity(w.editor.currentEntity);
+	});
+	
+	entitiesList.layout = $('#entities').layout({
+		defaults: {
+			resizable: false,
+			slidable: false,
+			closable: false
+		},
+		south: {
+			size: 'auto',
+			spacing_open: 0
+		}
+	});
 	
 	entitiesList.update = function(sort) {
 		if (sort == null) {
@@ -5352,7 +5377,7 @@ var EntitiesList = function(config) {
 		var infoString = '<ul>';
 		var buildString = function(infoObject) {
 			for (var infoKey in infoObject) {
-				if (hiddenKeys.indexOf(infoKey) == -1) {
+				if (showMetaKeys || metaKeys.indexOf(infoKey) == -1) {
 					var info = infoObject[infoKey];
 					if ($.isPlainObject(info)) {
 						buildString(info);
