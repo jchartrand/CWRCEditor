@@ -9,6 +9,8 @@ var FileManager = function(config) {
 	
 	var docNames = [];
 	
+	var collectionId = 'collection:fa7d0f90-0b6f-4319-b5eb-a57c00760fb4'; // hardcoded for the time being
+	
 	$(document.body).append(''+
 		'<div id="loader">'+
 			'<div id="files"><ul class="searchResults"></ul></div>'+
@@ -165,7 +167,8 @@ var FileManager = function(config) {
 	
 	var _getDocuments = function(callback) {
 		$.ajax({
-			url: w.baseUrl+'editor/documents',
+			url: w.baseUrl+'services/ccm/collection/children',
+			data: {id: collectionId},
 			type: 'GET',
 			dataType: 'json',
 			success: [function(data, status, xhr) {
@@ -288,16 +291,21 @@ var FileManager = function(config) {
 		}
 	};
 	
+	// TODO add overwrite
 	fm.saveDocument = function() {
 		if (currentDoc == null) {
 			fm.openSaver();
 		} else {
 			var docText = _exportDocument(true);
 			$.ajax({
-				url: w.baseUrl+'editor/documents/'+currentDoc,
+				url: w.baseUrl+'services/ccm/item/save',
 				type: 'PUT',
 				dataType: 'json',
-				data: docText,
+				data: {
+					xml: docText,
+					parent: collectionId,
+					name: currentDoc
+				},
 				success: function(data, status, xhr) {
 					w.editor.isNotDirty = 1; // force clean state
 					w.d.show('message', {
@@ -594,7 +602,7 @@ var FileManager = function(config) {
 		w.triples = [];
 		
 		$.ajax({
-			url: w.baseUrl+'editor/documents/'+docName,
+			url: w.baseUrl+'services/ccm/item/'+docName,
 			type: 'GET',
 			success: _loadDocumentHandler,
 			error: function(xhr, status, error) {
