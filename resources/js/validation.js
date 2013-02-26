@@ -48,7 +48,7 @@ var Validation = function(config) {
 				var tags = docSubstring.match(/<.*?>/g);
 				var tag = tags[tags.length-1];
 				id = tag.match(/id="(.*?)"/i);
-				if (id == null) { // no id means it's a closing tag
+				if (id == null) {
 					if (message.search('text not allowed here') != -1) {
 						// find the parent tag
 						var level = 0;
@@ -65,15 +65,20 @@ var Validation = function(config) {
 							}
 						}
 					} else {
-						// find the matching start tag
-						var tagName = tag.match(/<\/(.*)>/)[1];
-						for (var i = tags.length-1; i > -1; i--) {
-							tag = tags[i];
-							var startTagName = tag.match(/<(.*?)\s/);
-							if (startTagName != null && startTagName[1] == tagName) {
-								id = tag.match(/id="(.*?)"/i)[1];
-								break;
+						var tagMatch = tag.match(/<\/(.*)>/);
+						if (tagMatch != null) {
+							// it's and end tag, so find the matching start tag
+							var tagName = tagMatch[1];
+							for (var i = tags.length-1; i > -1; i--) {
+								tag = tags[i];
+								var startTagName = tag.match(/<(.*?)\s/);
+								if (startTagName != null && startTagName[1] == tagName) {
+									id = tag.match(/id="(.*?)"/i)[1];
+									break;
+								}
 							}
+						} else {
+							// probably entity tag
 						}
 					}
 				} else {
