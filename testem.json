@@ -1,0 +1,7 @@
+{
+	"src_files": [
+		"resources/js/libs.js",
+		"resources/js/cwrcwriter_src.js",
+		"tests/*"
+	]
+}
