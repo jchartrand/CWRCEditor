@@ -1104,7 +1104,7 @@ var Writer = function(config) {
 				});
 				ed.addButton('savebutton', {title: 'Save', image: 'img/save.png',
 					onclick: function() {
-						w.fm.validate(true);
+						w.fm.saveDocument();
 					}
 				});
 				ed.addButton('saveasbutton', {title: 'Save As', image: 'img/save_as.png',

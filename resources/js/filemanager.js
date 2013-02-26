@@ -89,7 +89,7 @@ var FileManager = function(config) {
 					return;
 				} else {
 					currentDoc = name;
-					fm.validate(true);
+					fm.saveDocument();
 					saver.dialog('close');
 				}
 			},
@@ -235,7 +235,7 @@ var FileManager = function(config) {
 		return name.match(/[^A-Za-z]+/) == null;
 	};
 	
-	fm.validate = function(isSave) {
+	fm.validate = function(callback) {
 		var docText = _exportDocument(false);
 		$.ajax({
 			url: w.baseUrl+'services/validator/validate.html',
@@ -247,15 +247,25 @@ var FileManager = function(config) {
 				content: docText
 			},
 			success: function(data, status, xhr) {
-				_validationHandler(data, docText, isSave);
+				if (callback) {
+					var valid = $('status', data).text() == 'pass';
+					callback(valid);
+				} else {
+					w.validation.showValidationResult(data, docText);
+				}
 			},
 			error: function() {
-//				$.ajax({
-//					url: 'xml/validation.xml',
-//					success: function(data, status, xhr) {
-//						_validationHandler(data, docText, isSave);
+//				 $.ajax({
+//					url : 'xml/validation.xml',
+//					success : function(data, status, xhr) {
+//						if (callback) {
+//							var valid = $('status', data).text() == 'pass';
+//							callback(valid);
+//						} else {
+//							w.validation.showValidationResult(data, docText);
+//						}
 //					}
-//				});
+//				}); 
 				w.d.show('message', {
 					title: 'Error',
 					msg: 'An error occurred while trying to validate '+currentDoc+'.',
@@ -265,54 +275,53 @@ var FileManager = function(config) {
 		});
 	};
 	
-	var _validationHandler = function(data, docText, isSave) {
-		var doc = currentDoc;
-		if (doc == null) doc = 'The current document';
-		
-		if (isSave) {
-			if ($('status', data).text() != 'pass') {
-				w.d.confirm({
-					title: 'Document Invalid',
-					msg: doc+' is not valid. <b>Save anyways?</b>',
-					callback: function(yes) {
-						if (yes) {
-							fm.saveDocument();
-						}
-					}
-				});
-			} else {
-				fm.saveDocument();
-			}
-		} else {
-			w.validation.showValidationResult(data, docText);
-		}
-	};
-	
 	fm.saveDocument = function() {
 		if (currentDoc == null) {
 			fm.openSaver();
 		} else {
-			var docText = _exportDocument(true);
-			$.ajax({
-				url: w.baseUrl+'editor/documents/'+currentDoc,
-				type: 'PUT',
-				dataType: 'json',
-				data: docText,
-				success: function(data, status, xhr) {
-					w.editor.isNotDirty = 1; // force clean state
-					w.d.show('message', {
-						title: 'Document Saved',
-						msg: currentDoc+' was saved successfully.'
-					});
-				},
-				error: function() {
-					w.d.show('message', {
-						title: 'Error',
-						msg: 'An error occurred and '+currentDoc+' was not saved.',
-						type: 'error'
+			function doSave() {
+				var docText = _exportDocument(true);
+				$.ajax({
+					url: w.baseUrl+'editor/documents/'+currentDoc,
+					type: 'PUT',
+					dataType: 'json',
+					data: docText,
+					success: function(data, status, xhr) {
+						w.editor.isNotDirty = 1; // force clean state
+						w.d.show('message', {
+							title: 'Document Saved',
+							msg: currentDoc+' was saved successfully.'
+						});
+					},
+					error: function() {
+						w.d.show('message', {
+							title: 'Error',
+							msg: 'An error occurred and '+currentDoc+' was not saved.',
+							type: 'error'
+						});
+					}
+				});
+			}
+			
+			function validationHandler(valid) {
+				if (valid) {
+					doSave();
+				} else {
+					var doc = currentDoc;
+					if (doc == null) doc = 'The current document';
+					w.d.confirm({
+						title: 'Document Invalid',
+						msg: doc+' is not valid. <b>Save anyways?</b>',
+						callback: function(yes) {
+							if (yes) {
+								doSave();
+							}
+						}
 					});
 				}
-			});
+			}
+			
+			fm.validate(validationHandler);
 		}
 	};
 	
