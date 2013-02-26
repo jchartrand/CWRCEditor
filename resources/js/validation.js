@@ -34,12 +34,16 @@ var Validation = function(config) {
 		}
 		
 		$('error, warning', resultDoc).each(function(index, el) {
-			var type = el.nodeName;
 			var id = '';
-			var message = $(this).find('message').text();
 			
+			var type = el.nodeName;
+			var message = $(this).find('message').text();
+			var parentId = $(this).find('parentId').text();
 			var column = parseInt($(this).find('column').text());
-			if (!isNaN(column)) {
+			
+			if (parentId != '') {
+				id = parentId;
+			} else if (!isNaN(column)) {
 				var docSubstring = docString.substring(0, column);
 				var tags = docSubstring.match(/<.*?>/g);
 				var tag = tags[tags.length-1];
