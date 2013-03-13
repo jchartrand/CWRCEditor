@@ -1,7 +1,7 @@
 /**
  * Contains the load and save dialogs, as well as file related functions.
  */
-var FileManager = function(config) {
+function FileManager(config) {
 	
 	var w = config.writer;
 	
@@ -150,6 +150,9 @@ var FileManager = function(config) {
 	
 	var fm = {};
 	
+	/**
+	 * @memberOf fm
+	 */
 	fm.openLoader = function() {
 		$('#files').css({borderColor: '#fff'});
 		_getDocuments(function() {

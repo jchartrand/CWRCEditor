@@ -1,4 +1,4 @@
-var Validation = function(config) {
+function Validation(config) {
 	
 	var w = config.writer;
 	
@@ -15,6 +15,7 @@ var Validation = function(config) {
 	
 	/**
 	 * Processes a validation response from the server.
+	 * @memberOf validation
 	 * @param resultDoc The actual response
 	 * @param docString The doc string sent to the server for validation  
 	 */

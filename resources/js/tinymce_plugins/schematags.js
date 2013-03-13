@@ -207,59 +207,52 @@
 			var level1Atts = '<div id="level1Atts">';
 			var highLevelAtts = '<div id="highLevelAtts">';
 			var attributeSelector = '<div id="attributeSelector"><h2>Attributes</h2><ul>';
-			var att, currAttString, attDef;
+			var att, currAttString;
 			var isLevel1 = false;
-			var required = false;
 			for (var i = 0; i < atts.length; i++) {
 				att = atts[i];
-				attDef = att.attribute;
 				currAttString = '';
-				required = attDef.parent('optional').length == 0;
-				if (att.level == 0 || required) {
+				if (att.level == 0 || att.required) {
 					isLevel1 = true; // required attributes should be displayed by default
 				} else {
 					isLevel1 = false;
 				}
 				
-				var attName = attDef.attr('name');
-				if (attName.toLowerCase() != 'id' && attName.toLowerCase() != 'xml:id') {
+				if (att.name.toLowerCase() != 'id' && att.name.toLowerCase() != 'xml:id') {
 					var display = 'block';
-					var requiredClass = required ? ' required' : '';
-					if (isLevel1 || (t.mode == t.EDIT && structsEntry[attName])) {
+					var requiredClass = att.required ? ' required' : '';
+					if (isLevel1 || (t.mode == t.EDIT && structsEntry[att.name])) {
 						display = 'block';
-						attributeSelector += '<li id="select_'+attName+'" class="selected'+requiredClass+'">'+attName+'</li>';
+						attributeSelector += '<li id="select_'+att.name+'" class="selected'+requiredClass+'">'+att.name+'</li>';
 					} else {
 						display = 'none';
-						attributeSelector += '<li id="select_'+attName+'">'+attName+'</li>';
+						attributeSelector += '<li id="select_'+att.name+'">'+att.name+'</li>';
 					}
-					currAttString += '<div id="form_'+attName+'" style="display:'+display+';"><label>'+attName+'</label>';
-					var doc = $('a\\:documentation, documentation', attDef).first().text();
-					if (doc != '') {
-						currAttString += '<ins class="ui-icon ui-icon-help">&nbsp;</ins><input type="hidden" name="help" value="'+doc+'"/>';
+					currAttString += '<div id="form_'+att.name+'" style="display:'+display+';"><label>'+att.name+'</label>';
+					if (att.documentation != '') {
+						currAttString += '<ins class="ui-icon ui-icon-help" title="'+att.documentation+'">&nbsp;</ins>';
 					}
 					currAttString += '<br/>';
-					var defaultVal = $('a\\:defaultValue, defaultValue', attDef).first().text();
-					if (t.mode == t.EDIT) defaultVal = structsEntry[attName] || '';
+					if (t.mode == t.EDIT) att.defaultValue = structsEntry[att.name] || '';
 					// TODO add list support
 //					if ($('list', attDef).length > 0) {
-//						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+//						currAttString += '<input type="text" name="'+att.name+'" value="'+att.defaultValue+'"/>';
 //					} else if ($('choice', attDef).length > 0) {
-					var choice = $('choice', attDef).first();
-					if (choice.length == 1) {
-						currAttString += '<select name="'+attName+'">';
+					if (att.choices) {
+						currAttString += '<select name="'+att.name+'">';
 						var attVal, selected;
-						$('value', choice).each(function(index, el) {
-							attVal = $(el).text();
-							selected = defaultVal == attVal ? ' selected="selected"' : '';
+						for (var j = 0; j < att.choices.length; j++) {
+							attVal = att.choices[j];
+							selected = att.defaultValue == attVal ? ' selected="selected"' : '';
 							currAttString += '<option value="'+attVal+'"'+selected+'>'+attVal+'</option>';
-						});
+						}
 						currAttString += '</select>';
-					} else if ($('ref', attDef).length > 0) {
-						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+//					} else if ($('ref', attDef).length > 0) {
+//						currAttString += '<input type="text" name="'+att.name+'" value="'+att.defaultValue+'"/>';
 					} else {
-						currAttString += '<input type="text" name="'+attName+'" value="'+defaultVal+'"/>';
+						currAttString += '<input type="text" name="'+att.name+'" value="'+att.defaultValue+'"/>';
 					}
-					if (required) currAttString += ' <span class="required">*</span>';
+					if (att.required) currAttString += ' <span class="required">*</span>';
 					currAttString += '</div>';
 					
 					if (isLevel1) {
@@ -289,11 +282,7 @@
 				}
 			});
 			
-			$('#schemaDialog ins').click(function() {
-				var label = $(this).prev('label').text();
-				var msg = $(this).next('input:hidden').val();
-				t.showHelpDialog(label, msg);
-			});
+			$('#schemaDialog ins').tooltip();
 			
 			$('#schemaDialog input, #schemaDialog select, #schemaDialog option').change(function(event) {
 				t.isDirty = true;
@@ -378,12 +367,14 @@
 					t.tag = null;
 			}
 			
+			$('#schemaDialog ins').tooltip('destroy');
 			$('#schemaDialog').dialog('close');
 		},
 		cancel: function() {
 			var t = this;
 			t.editor.selection.moveToBookmark(t.editor.currentBookmark);
 			t.editor.currentBookmark = null;
+			$('#schemaDialog ins').tooltip('destroy');
 			$('#schemaDialog').dialog('close');
 			$('#schemaHelpDialog').dialog('close');
 		},

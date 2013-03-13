@@ -5,8 +5,6 @@ var EntitiesList = function(config) {
 	var metaKeys = ['_id', '_ref'];
 	var showMetaKeys = false;
 	
-	var entitiesList = {};
-	
 	$(config.parentId).append('<div id="entities">'+
 			'<ul class="entitiesList ui-layout-center"></ul>'+
 			'<div id="entitiesOptions" class="ui-layout-south">'+
@@ -38,7 +36,9 @@ var EntitiesList = function(config) {
 		w.highlightEntity(w.editor.currentEntity);
 	});
 	
-	entitiesList.layout = $('#entities').layout({
+	var pm = {};
+	
+	pm.layout = $('#entities').layout({
 		defaults: {
 			resizable: false,
 			slidable: false,
@@ -50,7 +50,11 @@ var EntitiesList = function(config) {
 		}
 	});
 	
-	entitiesList.update = function(sort) {
+	/**
+	 * @memberOf pm
+	 * @param sort
+	 */
+	pm.update = function(sort) {
 		if (sort == null) {
 			if ($('#sequence').prop('checked')) {
 				sort = 'sequence';
@@ -188,9 +192,9 @@ var EntitiesList = function(config) {
 		'</li>';
 	};
 	
-	entitiesList.remove = function(id) {
+	pm.remove = function(id) {
 		$('#entities li[name="'+id+'"]').remove();
 	};
 	
-	return entitiesList;
+	return pm;
 };

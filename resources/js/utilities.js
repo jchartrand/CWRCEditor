@@ -1,8 +1,15 @@
-var Utilities = function(config) {
+function Utilities(config) {
 	var w = config.writer;
+	
+	var useLocalStorage = supportsLocalStorage();
 	
 	var u = {};
 	
+	/**
+	 * @memberOf u
+	 * @param content
+	 * @returns
+	 */
 	u.getTitleFromContent = function(content) {
 		if (content.length <= 34) return content;
 		var title = content.substring(0, 34) + '&#8230;';
@@ -175,6 +182,14 @@ var Utilities = function(config) {
 		return w.VALID;
 	};
 
+	function supportsLocalStorage() {
+		try {
+			return 'localStorage' in window && window['localStorage'] !== null;
+		} catch (e) {
+			return false;
+		}
+	}
+
 	/**
 	 * @param currEl The element that's currently being processed
 	 * @param defHits A list of define tags that have already been processed
@@ -182,15 +197,30 @@ var Utilities = function(config) {
 	 * @param type The type of child to search for (element or attribute)
 	 * @param children The children to return
 	 */
-	var _getChildren = function(currEl, defHits, level, type, children) {
+	function _getChildren(currEl, defHits, level, type, children) {
 		// first get the direct types
 		currEl.find(type).each(function(index, el) {
 			var child = $(el);
 			if (child.parents('element').length > 0 && level > 0) {
 				return; // don't get elements/attributes from other elements
 			}
-			var childObj = {name: child.attr('name'), level: level+0};
-			childObj[type] = child;
+			var childObj = {
+				name: child.attr('name'),
+				level: level+0,
+				documentation: $('a\\:documentation, documentation', child).first().text()
+			};
+			if (type == 'attribute') {
+				childObj.required = child.parent('optional').length == 0;
+				childObj.defaultValue = $('a\\:defaultValue, defaultValue', child).first().text();
+				var choice = $('choice', child).first();
+				if (choice.length == 1) {
+					var choices = [];
+					$('value', choice).each(function(index, el) {
+						choices.push($(el).text());
+					});
+					childObj.choices = choices;
+				}
+			}
 			children.push(childObj);
 		});
 		// now process the references
@@ -213,13 +243,27 @@ var Utilities = function(config) {
 	 * @param returnType Either: "array" or "object"
 	 */
 	u.getChildrenForTag = function(config) {
-		var element = $('element[name="'+config.tag+'"]', writer.schemaXML);
 		var type = config.type || 'element';
-		var defHits = {};
-		var level = 0;
+		var tag = config.tag;
 		var children = [];
-		_getChildren(element, defHits, level, type, children);
-
+		
+		if (useLocalStorage) {
+			var localData = localStorage['cwrc.'+tag+'.'+type+'.children'];
+			if (localData) {
+				children = JSON.parse(localData);
+			}
+		}
+		if (children.length == 0) {
+			var element = $('element[name="'+tag+'"]', writer.schemaXML);
+			var defHits = {};
+			var level = 0;
+			_getChildren(element, defHits, level, type, children);
+	
+			if (useLocalStorage) {
+				localStorage['cwrc.'+tag+'.'+type+'.children'] = JSON.stringify(children);
+			}
+		}
+		
 		if (config.returnType == 'array') {
 			children.sort(function(a, b) {
 				return a.level - b.level;
@@ -235,7 +279,7 @@ var Utilities = function(config) {
 		}
 	};
 	
-	var _getParentElementsFromDef = function(defName, defHits, level, parents) {
+	function _getParentElementsFromDef(defName, defHits, level, parents) {
 		$('define:has(ref[name="'+defName+'"])', writer.schemaXML).each(function(index, el) {
 			var name = $(el).attr('name');
 			if (!defHits[name]) {
@@ -251,12 +295,22 @@ var Utilities = function(config) {
 	};
 	
 	u.getParentsForTag = function(tag) {
+		if (useLocalStorage) {
+			var localData = localStorage['cwrc.'+tag+'.parents'];
+			if (localData) return JSON.parse(localData);
+		}
+		
 		var element = $('element[name="'+tag+'"]', writer.schemaXML);
 		var defName = element.parents('define').attr('name');
 		var parents = {};
 		var defHits = {};
 		var level = 0;
 		_getParentElementsFromDef(defName, defHits, level, parents);
+		
+		if (useLocalStorage) {
+			localStorage['cwrc.'+tag+'.parents'] = JSON.stringify(parents);
+		}
+		
 		return parents;
 	};
 	
@@ -266,7 +320,7 @@ var Utilities = function(config) {
 	 * @param level The level of recursion
 	 * @param canContainText Whether the element can contain text
 	 */
-	var checkForText = function(currEl, defHits, level, canContainText) {
+	function checkForText(currEl, defHits, level, canContainText) {
 		if (canContainText.isTrue) {
 			return false;
 		}
@@ -300,11 +354,20 @@ var Utilities = function(config) {
 	u.canTagContainText = function(tag) {
 		if (tag == writer.root) return false;
 		
+		if (useLocalStorage) {
+			var localData = localStorage['cwrc.'+tag+'.text'];
+			if (localData) return localData == 'true';
+		}
+		
 		var element = $('element[name="'+tag+'"]', writer.schemaXML);
 		var defHits = {};
 		var level = 0;
 		var canContainText = {isTrue: false}; // needs to be an object so change is visible outside of checkForText
 		checkForText(element, defHits, level, canContainText);
+		
+		if (useLocalStorage) {
+			localStorage['cwrc.'+tag+'.text'] = canContainText.isTrue;
+		}
 		
 		return canContainText.isTrue;
 	};

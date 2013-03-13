@@ -1,4 +1,4 @@
-var StructureTree = function(config) {
+function StructureTree(config) {
 	
 	var w = config.writer;
 	
@@ -49,10 +49,8 @@ var StructureTree = function(config) {
 					var inserted = false;
 					for (var key in keys) {
 						inserted = true;
-						var doc = $('a\\:documentation, documentation', keys[key].element).first();
-						if (doc.length == 1) {
-							doc = doc.text();
-						} else {
+						var doc = keys[key].documentation;
+						if (doc == '') {
 							doc = key;
 						}
 						inserts[key] = {
@@ -210,6 +208,9 @@ var StructureTree = function(config) {
 		_hidePopup();
 	});
 
+	/**
+	 * @memberOf tree
+	 */
 	tree.update = function() {
 		var body = w.editor.dom.select('body');
 	//	$('#tree').jstree('_get_children').each(function(index, element) {

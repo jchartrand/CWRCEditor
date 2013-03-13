@@ -1,4 +1,4 @@
-var Relations = function(config) {
+function Relations(config) {
 	
 	var w = config.writer;
 	
@@ -9,9 +9,12 @@ var Relations = function(config) {
 		'</ul></div>'
 	);
 	
-	var relations = {};
+	var pm = {};
 	
-	relations.update = function() {
+	/**
+	 * @memberOf pm
+	 */
+	pm.update = function() {
 		$('#relations ul').empty();
 		
 		var relationsString = '';
@@ -30,7 +33,7 @@ var Relations = function(config) {
 				'removeRelation': function(r) {
 					var i = $(r).data('index');
 					w.triples.splice(i, 1);
-					relations.update();
+					pm.update();
 				}
 			},
 			shadow: false,
@@ -59,5 +62,5 @@ var Relations = function(config) {
 		});
 	};
 	
-	return relations;
+	return pm;
 };

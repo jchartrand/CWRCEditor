@@ -105,18 +105,23 @@ var EntitiesModel = function() {
 		else return '';
 	}
 	
-	var em = {};
-	em.isEntity = function(type) {
+	var pm = {};
+	/**
+	 * @memberOf pm
+	 * @param type
+	 * @returns {Boolean}
+	 */
+	pm.isEntity = function(type) {
 		return entities[type] == null;
 	};
-	em.getTitle = function(type) {
+	pm.getTitle = function(type) {
 		var e = entities[type];
 		if (e) {
 			return e.title;
 		}
 		return null;
 	};
-	em.getMapping = function(entity, schema) {
+	pm.getMapping = function(entity, schema) {
 		var e = entities[entity.props.type];
 		if (e) {
 			if (e.mapping && e.mapping[schema]) {
@@ -127,7 +132,7 @@ var EntitiesModel = function() {
 		return null;
 	};
 	// returns the mapping as an array of opening and closing tags
-	em.getMappingTags = function(entity, schema) {
+	pm.getMappingTags = function(entity, schema) {
 		var e = entities[entity.props.type];
 		if (e) {
 			if (e.mapping && e.mapping[schema]) {
@@ -138,5 +143,5 @@ var EntitiesModel = function() {
 		return ['', '']; // return array of empty strings if there is no mapping
 	};
 	
-	return em;
+	return pm;
 };

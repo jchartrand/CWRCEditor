@@ -1,4 +1,4 @@
-var DialogManager = function(config) {
+function DialogManager(config) {
 	var w = config.writer;
 	
 	var currentType = null;
@@ -26,7 +26,10 @@ var DialogManager = function(config) {
 	dialogs.event = dialogs.search;
 	dialogs.org = dialogs.search;
 	
-	return {
+	var pm = {
+		/**
+		 * @memberOf pm
+		 */
 		getCurrentType: function() {
 			return currentType;
 		},
@@ -46,4 +49,6 @@ var DialogManager = function(config) {
 			}
 		}
 	};
+	
+	return pm;
 };

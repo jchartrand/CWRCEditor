@@ -1,57 +1,57 @@
-var Writer = function(config) {
+function Writer(config) {
 	config = config || {};
+	
+	var w = this;
+	
+	w.layout = null; // jquery ui layout object
+	w.editor = null; // reference to the tinyMCE instance we're creating, set in setup
+	w.entities = {}; // entities store
+	w.structs = {}; // structs store
+	w.triples = []; // triples store
+	// store deleted tags in case of undo
+	// TODO add garbage collection for this
+	w.deletedEntities = {};
+	w.deletedStructs = {};
 
-	var w = {
-		layout: null, // jquery ui layout object
-		editor: null, // reference to the tinyMCE instance we're creating, set in setup
-		entities: {}, // entities store
-		structs: {}, // structs store
-		triples: [], // triples store
-		// store deleted tags in case of undo
-		// TODO add garbage collection for this
-		deletedEntities: {},
-		deletedStructs: {},
-
-		schemaXML: null, // a cached copy of the loaded schema
-		schema: {elements: []}, // stores a list of all the elements of the loaded schema
-		
-		project: config.project, // the current project (cwrc or russell)
-		
-		baseUrl: window.location.protocol+'//'+window.location.host+'/',
-		
-		// editor mode
-		mode: config.mode,
-		
-		// schema for validation (http://www.arts.ualberta.ca/~cwrc/schema/)
-		validationSchema: 'cwrcbasic',
-		
-		// root block element, should come from schema
-		root: '',
-		// header element: hidden in editor view, can only edit from structure tree
-		header: '',
-		// id attribute name, based on schema
-		idName: '',
-		
-		// possible editor modes
-		XMLRDF: 0, // allows for overlapping elements, i.e. entities
-		XML: 1, // standard xml, no overlapping elements
-		
-		// possible results when trying to add entity
-		NO_SELECTION: 0,
-		NO_COMMON_PARENT: 1,
-		VALID: 2,
-		
-		fixEmptyTag: false, // whether to check for and remove a node inserted on empty struct add/select
-		emptyTagId: null, // stores the id of the entities tag to be added
-		
-		u: null, // utilities
-		fm: null, // filemanager
-		entitiesList: null, // entities list
-		tree: null, // structure tree
-		relations: null, // relations list
-		d: null, // dialog
-		settings: null // settings dialog
-	};
+	w.schemaXML = null; // a cached copy of the loaded schema
+	w.schema = {elements: []}; // stores a list of all the elements of the loaded schema
+	
+	w.project = config.project; // the current project (cwrc or russell)
+	
+	w.baseUrl = window.location.protocol+'//'+window.location.host+'/';
+	
+	// editor mode
+	w.mode = config.mode;
+	
+	// schema for validation (http://www.arts.ualberta.ca/~cwrc/schema/)
+	w.validationSchema = 'cwrcbasic';
+	
+	// root block element, should come from schema
+	w.root = '';
+	// header element: hidden in editor view, can only edit from structure tree
+	w.header = '';
+	// id attribute name, based on schema
+	w.idName = '';
+	
+	// possible editor modes
+	w.XMLRDF = 0; // allows for overlapping elements, i.e. entities
+	w.XML = 1; // standard xml, no overlapping elements
+	
+	// possible results when trying to add entity
+	w.NO_SELECTION = 0;
+	w.NO_COMMON_PARENT = 1;
+	w.VALID = 2;
+	
+	w.fixEmptyTag = false; // whether to check for and remove a node inserted on empty struct add/select
+	w.emptyTagId = null; // stores the id of the entities tag to be added
+	
+	w.u = null; // utilities
+	w.fm = null; // filemanager
+	w.entitiesList = null; // entities list
+	w.tree = null; // structure tree
+	w.relations = null; // relations list
+	w.d = null; // dialog
+	w.settings = null; // settings dialog
 	
 	var _onInitHandler = function(ed) {
 		// modify isBlock method to check _tag attributes
@@ -115,15 +115,18 @@ var Writer = function(config) {
 	};
 	
 	var _findDeletedTags = function() {
+		var wereTagsDeleted = false;
 		for (var id in w.entities) {
 			var nodes = w.editor.dom.select('span[name="'+id+'"]');
 			switch (nodes.length) {
 				case 0:
+					wereTagsDeleted = true;
 					w.entitiesList.remove(id);
 					w.deletedEntities[id] = w.entities[id];
 					delete w.entities[id];
 					break;
 				case 1:
+					wereTagsDeleted = true;
 					w.editor.dom.remove(nodes[0]);
 					w.entitiesList.remove(id);
 					w.deletedEntities[id] = w.entities[id];
@@ -133,10 +136,12 @@ var Writer = function(config) {
 		for (var id in w.structs) {
 			var nodes = w.editor.dom.select('#'+id);
 			if (nodes.length == 0) {
+				wereTagsDeleted = true;
 				w.deletedStructs[id] = w.structs[id];
 				delete w.structs[id];
 			}
 		}
+		return wereTagsDeleted;
 	};
 	
 	var _findDuplicateTags = function() {
@@ -176,9 +181,11 @@ var Writer = function(config) {
 	var _onKeyDownHandler = function(ed, evt) {
 		// redo/undo listener
 		if ((evt.which == 89 || evt.which == 90) && evt.ctrlKey) {
-			_findDeletedTags();
-			w.entitiesList.update();
-			w.tree.update();
+			var doUpdate = _findDeletedTags();
+			if (doUpdate) {
+				w.entitiesList.update();
+				w.tree.update();
+			}
 		}
 	};
 	
@@ -250,16 +257,16 @@ var Writer = function(config) {
 		// delete keys check
 		// need to do this here instead of in onchangehandler because that one doesn't update often enough
 		if (evt.which == 8 || evt.which == 46) {
-			_findDeletedTags();
-			w.tree.update();
+			var doUpdate = _findDeletedTags();
+			if (doUpdate) w.tree.update();
 		}
 	};
 	
 	var _onChangeHandler = function(ed, event) {
 		if (ed.isDirty()) {
 			ed.$('br').remove();
-			_findDeletedTags();
-			w.tree.update();
+			var doUpdate = _findDeletedTags();
+			if (doUpdate) w.tree.update();
 		}
 	};
 	
@@ -328,6 +335,7 @@ var Writer = function(config) {
 	
 	/**
 	 * Get the entity boundary tag that corresponds to the passed tag.
+	 * @memberOf Writer
 	 * @param tag
 	 */
 	w.getCorrespondingEntityTag = function(tag) {
@@ -940,10 +948,9 @@ var Writer = function(config) {
 			}
 		});
 		
-		w._initEditor();
-	};
-	
-	w._initEditor = function() {		
+		/**
+		 * Init tinymce
+		 */
 		$('#editor').tinymce({
 			script_url : 'js/tinymce/jscripts/tiny_mce/tiny_mce.js',
 //		tinyMCE.init({
@@ -1143,6 +1150,4 @@ var Writer = function(config) {
 			}
 		});
 	};
-	
-	return w;
 };
